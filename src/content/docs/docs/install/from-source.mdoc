@@ -1,0 +1,102 @@
+---
+title: Build from source
+description: Compile KoboldCpp yourself on Linux, macOS or Windows, with make flags, koboldcpp.sh and the KCPP_PORTABLE=1 change.
+sidebar:
+  order: 8
+---
+
+Most people don't need to build KoboldCpp: the [release files](/docs/install/releases/) are ready to run. Build it yourself for an Intel Mac, ARM Linux, Android, or to change how it is compiled.
+
+There is no `pip install koboldcpp`; KoboldCpp is not on PyPI.
+
+## Linux
+
+```sh {% title="Terminal" frame="terminal" %}
+git clone https://github.com/LostRuins/koboldcpp.git
+cd koboldcpp
+make
+python3 koboldcpp.py --model /path/to/model.gguf
+```
+
+### `make` flags
+
+| Flag | Effect |
+|---|---|
+| `LLAMA_VULKAN=1` | Build the Vulkan backend. |
+| `LLAMA_CUBLAS=1` | Build the CUDA backend (NVIDIA). |
+| `LLAMA_HIPBLAS=1` | Build the ROCm backend (AMD). |
+| `LLAMA_PORTABLE=1` | Build for other machines, not only your own. |
+| `LLAMA_NOAVX2=1` | Together with `LLAMA_PORTABLE=1`: build without AVX2, as the oldpc releases do. |
+
+Without `LLAMA_PORTABLE=1`, the build is optimized for your own processor (`-march=native` on x86, `-mcpu=native` on ARM) and may not run on other machines. On ARM, `LLAMA_PORTABLE=1` turns off `-mcpu=native`, so the compiler targets its default architecture.
+
+If you start `koboldcpp.py` before running `make`, it stops with `No Backends Available!`.
+
+### Python packages
+
+`requirements.txt` lists the Python packages KoboldCpp uses. Install them with `python -m pip install -r requirements.txt`. Optional packages include `customtkinter` and Tk for the launcher, `jinja2` for chat templates and `psutil` for system information. Tk may need a separate package from your operating system. Without the launcher packages, run KoboldCpp from the command line. `koboldcpp.sh` manages its own dependencies.
+
+## macOS
+
+```sh {% title="Terminal" frame="terminal" %}
+git clone https://github.com/LostRuins/koboldcpp.git
+cd koboldcpp
+make LLAMA_METAL=1
+python3 koboldcpp.py --model /path/to/model.gguf
+```
+
+Plain `make` also works. This is the way to run KoboldCpp on an Intel Mac.
+
+## Windows
+
+1. Install [w64devkit](https://github.com/skeeto/w64devkit/releases), the 64-bit version: `w64devkit-x64-….7z.exe` in current releases, or `w64devkit-1.22.0.zip`, which the official builds use. The 32-bit versions (x86, i686) conflict with the bundled libraries.
+2. Clone the repository (`git clone https://github.com/LostRuins/koboldcpp.git`). In the w64devkit shell, go to the `koboldcpp` folder and run `make`, or `make LLAMA_VULKAN=1` for Vulkan.
+3. To package an exe, build with `make LLAMA_VULKAN=1 LLAMA_PORTABLE=1` (the script bundles all of those libraries), install PyInstaller and the packages in `requirements.txt` with `pip`, then run `make_pyinstaller.bat`.
+
+### CUDA on Windows
+
+CUDA builds on Windows need Visual Studio with its C++ and CMake tools, and the CUDA Toolkit. The official builds use Visual Studio 2019 and CUDA 12.1. In the `koboldcpp` folder, run:
+
+```sh {% title="Command Prompt" frame="terminal" %}
+mkdir build
+cd build
+cmake .. -DLLAMA_CUBLAS=ON
+cmake --build . --config Release
+```
+
+The build copies `koboldcpp_cublas.dll` into the `koboldcpp` folder, next to `koboldcpp.py`. To package an exe with CUDA, also copy the matching `cublas`, `cublasLt` and `cudart` libraries from the CUDA Toolkit used for the build there (for CUDA 12: `cublas64_12.dll`, `cublasLt64_12.dll` and `cudart64_12.dll` from its `bin` folder), then run `make_pyinstaller_cuda.bat`.
+
+## `koboldcpp.sh` (Linux)
+
+`koboldcpp.sh` fetches all build dependencies into a local micromamba/conda environment, builds KoboldCpp and runs it. It works on x86_64 and aarch64 and needs `curl` and `bzip2`.
+
+| Command | What it does |
+|---|---|
+| `./koboldcpp.sh` | Opens the launcher (needs X11). |
+| `./koboldcpp.sh --help` | Lists the flags. Any argument other than `rebuild` or `dist` is passed to `koboldcpp.py`. |
+| `./koboldcpp.sh rebuild` | Recreates the environment and recompiles. Run it after updating. |
+| `./koboldcpp.sh dist` | Builds your own single-file binary. It only runs on distributions equal to or newer than yours. |
+
+The script picks the backend itself: with an NVIDIA GPU it uses CUDA 11.4 or 12.1 depending on what `nvidia-smi` reports, and ROCm when it finds ROCm on the system. Override this with `KCPP_CUDA=<version>` or `KCPP_CUDA=rocm`.
+
+### `KCPP_PORTABLE=1` (changed in v1.122)
+
+Since v1.122, `koboldcpp.sh` optimizes for the machine it runs on. To build binaries that run on other systems, set `KCPP_PORTABLE=1`:
+
+```sh {% title="Terminal" frame="terminal" %}
+KCPP_PORTABLE=1 ./koboldcpp.sh dist
+```
+
+Without it, `dist` warns "THIS BINARY WILL ONLY RUN ON YOUR SYSTEM!!". Portable mode is forced when no NVIDIA GPU is visible (except for ROCm builds), and for x64 builds with `NOAVX1` or `NOAVX2`.
+
+The script also reads `NOAVX2`, `NOAVX1`, `ARCHES_CU11`, `ARCHES_CU12`, `ARCHES_CU13` and `KCPP_APPEND`; see the top of `koboldcpp.sh`.
+
+## Other systems
+
+- **Android:** see [Android (Termux)](/docs/install/android/).
+- **OpenBSD:** build with `gmake`. The [README](https://github.com/LostRuins/koboldcpp) has OpenBSD notes on Vulkan and `ulimit -d`.
+
+## Related
+
+- [Release files and system requirements](/docs/install/releases/)
+- [Updating](/docs/install/updating/)

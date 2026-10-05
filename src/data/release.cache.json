@@ -1,0 +1,44 @@
+{
+	"tag": "v1.122.1",
+	"version": "1.122.1",
+	"publishedAt": "2026-09-26T09:05:10Z",
+	"htmlUrl": "https://github.com/LostRuins/koboldcpp/releases/tag/v1.122.1",
+	"assets": [
+		{
+			"name": "koboldcpp-linux-x64",
+			"size": 641836648,
+			"url": "https://github.com/LostRuins/koboldcpp/releases/download/v1.122.1/koboldcpp-linux-x64"
+		},
+		{
+			"name": "koboldcpp-linux-x64-nocuda",
+			"size": 136689280,
+			"url": "https://github.com/LostRuins/koboldcpp/releases/download/v1.122.1/koboldcpp-linux-x64-nocuda"
+		},
+		{
+			"name": "koboldcpp-linux-x64-oldpc",
+			"size": 490292328,
+			"url": "https://github.com/LostRuins/koboldcpp/releases/download/v1.122.1/koboldcpp-linux-x64-oldpc"
+		},
+		{
+			"name": "koboldcpp-mac-arm64",
+			"size": 67057424,
+			"url": "https://github.com/LostRuins/koboldcpp/releases/download/v1.122.1/koboldcpp-mac-arm64"
+		},
+		{
+			"name": "koboldcpp-nocuda.exe",
+			"size": 117328777,
+			"url": "https://github.com/LostRuins/koboldcpp/releases/download/v1.122.1/koboldcpp-nocuda.exe"
+		},
+		{
+			"name": "koboldcpp-oldpc.exe",
+			"size": 461403791,
+			"url": "https://github.com/LostRuins/koboldcpp/releases/download/v1.122.1/koboldcpp-oldpc.exe"
+		},
+		{
+			"name": "koboldcpp.exe",
+			"size": 636192312,
+			"url": "https://github.com/LostRuins/koboldcpp/releases/download/v1.122.1/koboldcpp.exe"
+		}
+	],
+	"fetchedAt": "2026-09-28T08:03:12.834Z"
+}

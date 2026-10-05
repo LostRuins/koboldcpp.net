@@ -1,0 +1,4 @@
+# Astro's build runs prerendered chunks from dist/ and resolves their externals (e.g. `cookie`)
+# from the project root, which needs hoisted node_modules. The global default is "isolated".
+[install]
+linker = "hoisted"

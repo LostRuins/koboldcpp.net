@@ -1,0 +1,100 @@
+---
+title: Multiple GPUs
+description: Run one model across several graphics cards in KoboldCpp with CUDA or Vulkan, and control the split, the main GPU and the split mode.
+sidebar:
+  order: 3
+---
+
+KoboldCpp can spread one model over several graphics cards. This works with CUDA and with Vulkan.
+
+## Use all GPUs
+
+In the launcher, set **GPU ID:** to **All**: by default the launcher picks one card (with CUDA the first, `0`). On the command line, give the backend flag without a number (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --usecuda --model mymodel.gguf
+koboldcpp --usevulkan --model mymodel.gguf
+```
+
+Leave **GPU Layers:** at `-1`. Autofit then distributes the model over the GPUs by itself. The "Autofit Result" line in the console shows the GPU layers after `-ngl` (`-1` means all) and, if autofit changed the split, the split after `-ts`. See [GPU layers](/docs/hardware/gpu-layers/).
+
+Qwen3-32B Q4_K_M at the default context, prompt of about 1,000 tokens:
+
+| GPUs | Autofit Result | VRAM used | Generation (tokens/s) |
+|---|---|---|---|
+| One RTX 3090 | `-c 16512 -ngl 64` (64 of 65 layers) | 22842 MiB | 18.9 |
+| Two RTX 3090 | `-c 16512 -ngl -1` | 11828 + 11888 MiB | 33.5 |
+
+## Use some of the GPUs
+
+| Goal | Flag |
+|---|---|
+| One CUDA GPU only | `--usecuda 1` |
+| Some Vulkan GPUs | `--usevulkan 0 2` |
+
+- `--usecuda` accepts one ID from 0 to 3. Without **Tensor Split:**, KoboldCpp hides all other GPUs from CUDA, so the chosen GPU becomes the only one. The load log then calls it `CUDA0`.
+- `--usevulkan` accepts several IDs.
+- The launcher's **GPU ID:** picks one GPU or **All**.
+- CUDA GPUs are numbered in PCI bus order. On a PC with two RTX 3090, this was the same order `nvidia-smi` shows.
+
+## Tensor split
+
+**Tensor Split:** on the **Hardware** tab (`--tensor_split`, `-ts`) sets how much of the model each GPU gets, as proportions in GPU order.
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --usecuda --tensor_split 3 2 --gpulayers 99 --model mymodel.gguf
+```
+
+`3 2` gives 60% to GPU 0 and 40% to GPU 1. In the launcher, separate the values with commas or spaces.
+
+- With a tensor split, autofit does not switch on by itself. Set **GPU Layers:** yourself.
+- **Force AutoFit** ignores the tensor split.
+- With a tensor split, `--usecuda N` does not hide the other GPUs; all of them stay in use.
+
+## Main GPU
+
+**Main GPU:** on the **Hardware** tab (`--maingpu`, `-mg`) sets which GPU is the main one (`-1` means default). It has no effect on GGUF models in this version. Use **Tensor Split:** to control how much each GPU gets.
+
+## Split mode
+
+**SplitMode:** on the **Hardware** tab (`--splitmode`) sets how the model is divided.
+
+| Mode | What it does |
+|---|---|
+| `layer` (default) | Each GPU gets whole layers. |
+| `tensor` | Tensors are split across the GPUs. Experimental. |
+| `row` | Removed. KoboldCpp prints "split mode row was removed! Using tensor split instead!" and uses `tensor`. |
+
+The old `--usecuda rowsplit` also ends up as `tensor`.
+
+Qwen3-32B Q4_K_M on two RTX 3090, prompt of about 1,000 tokens:
+
+| Split mode | VRAM used | Prompt (tokens/s) | Generation (tokens/s) |
+|---|---|---|---|
+| `layer` | 11828 + 11888 MiB | 1694 | 33.5 |
+| `tensor` | 11944 + 11944 MiB | 1313 | 39.4 |
+| `row` (runs as `tensor`) | 11944 + 11944 MiB | 879 | 40.0 |
+
+`tensor` generated faster but processed the prompt slower. With `tensor`, the load log shows both cards as one device: `using device Meta() (Meta()) (unknown id) - 47746 MiB free`.
+
+## Advanced: pipeline parallelism
+
+With more than one GPU, KoboldCpp turns on pipeline parallelism automatically when the physical batch size is smaller than the batch size: **Physical Batch Size:** (`--ubatchsize`) below **Batch Size:** (`--batchsize`, default 512). By default both are equal, so it is off. It also needs all layers on the GPUs, the `layer` split mode, the KV cache on the GPUs (no `--lowvram`) and no tensor overrides.
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --usecuda --batchsize 512 --ubatchsize 256 --model mymodel.gguf
+```
+
+The old `--pipelineparallel` and `--nopipelineparallel` flags have no effect.
+
+With Qwen3-32B Q4_K_M on two RTX 3090, `--batchsize 512 --ubatchsize 256` processed 1833 instead of 1694 prompt tokens per second and generated 33.7 instead of 33.5 tokens per second (single runs).
+
+## Advanced: GPUs on other computers
+
+To use GPUs in other computers over the network, see [RPC](/docs/hardware/rpc/).
+
+## Related
+
+- [GPU backends](/docs/hardware/backends/)
+- [GPU layers](/docs/hardware/gpu-layers/)
+- [Saving VRAM](/docs/hardware/saving-vram/)

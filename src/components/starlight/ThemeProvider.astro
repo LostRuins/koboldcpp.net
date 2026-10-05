@@ -1,0 +1,10 @@
+---
+/* Replaces Starlight's ThemeProvider: the site is light only (paper and ink, like the home page),
+   so no stored or system preference is read. Keeps the StarlightThemeProvider global that
+   Starlight scripts expect. */
+---
+
+<script is:inline>
+	document.documentElement.dataset.theme = 'light';
+	window.StarlightThemeProvider = { updatePickers() {} };
+</script>

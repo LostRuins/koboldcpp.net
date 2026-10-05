@@ -1,0 +1,95 @@
+---
+title: "Install on Android with Termux"
+description: Build and run KoboldCpp on an Android phone or tablet with Termux and the official quick setup script.
+sidebar:
+  label: "Android (Termux)"
+  order: 5
+---
+
+On Android, KoboldCpp runs inside the Termux terminal app and is compiled on the device. An official script does the setup for you.
+
+{% steps %}
+
+1. Install [Termux from F-Droid](https://f-droid.org/en/packages/com.termux/).
+
+2. Open Termux and run the setup script:
+
+   ```sh {% title="Termux" frame="terminal" %}
+   curl -sSL https://raw.githubusercontent.com/LostRuins/koboldcpp/concedo/android_install.sh | sh
+   ```
+
+   Run this way, the script installs KoboldCpp and starts it with a small Gemma3-1B model.
+
+3. When it has loaded, open `http://localhost:5001` in your phone's browser.
+
+{% /steps %}
+
+## Choosing a different model
+
+Download the script and run it yourself to get a menu:
+
+```sh {% title="Termux" frame="terminal" %}
+curl -sSLO https://raw.githubusercontent.com/LostRuins/koboldcpp/concedo/android_install.sh
+chmod +x android_install.sh
+./android_install.sh
+```
+
+| Option | What it does |
+|---|---|
+| 1 | Install and launch with Gemma3-1B |
+| 2 | Install without a model |
+| 3 | Download a GGUF model from a URL |
+| 4 | Load a GGUF model that is already on the device |
+| 5 | Exit |
+
+Options 3 and 4 need an existing install. Run them from the `koboldcpp` folder, which has its own copy of the script. Option 4 only lists `.gguf` files in that folder.
+
+```sh {% title="Termux" frame="terminal" %}
+cd koboldcpp
+bash android_install.sh
+```
+
+Use a small model. See [Choose a model](/getting-started/model/).
+
+## What the script does
+
+1. Stops if it is not running on Android.
+2. If `wget`, `git` or `python` is missing, runs `apt update`, installs `openssl`, `wget`, `git` and `python`, and runs `pkg upgrade`.
+3. Clones the KoboldCpp repository, unless it finds an existing copy.
+4. Compiles it with `make -j 2`, unless a build already exists.
+5. Starts it with `python koboldcpp.py --model <model>`.
+
+## Updating
+
+Running the script again does **not** rebuild KoboldCpp: it skips compiling when a build already exists. To update, pull the new source and compile it again:
+
+```sh {% title="Termux" frame="terminal" %}
+cd koboldcpp
+git pull
+make
+```
+
+## Advanced: manual setup
+
+```sh {% title="Termux" frame="terminal" %}
+pkg update
+pkg upgrade
+pkg install openssl wget git python clang make
+git clone https://github.com/LostRuins/koboldcpp.git
+cd koboldcpp
+make
+python koboldcpp.py --model mymodel.gguf
+```
+
+Download a small GGUF model into the folder first, or pass a model URL to `--model`. Then open `http://localhost:5001`.
+
+- **Packages fail to install:** run `termux-change-repo` and pick another mirror.
+- **`Illegal instruction` on your device:** rebuild with `make clean`, then `make LLAMA_PORTABLE=1`, which turns off tuning for your specific processor.
+- **GPU:** these instructions cover CPU builds. GPU acceleration depends on the device and its drivers.
+
+More: [OS-specific problems](/docs/troubleshooting/os-specific/#android-illegal-instruction).
+
+## Related
+
+- [Build from source](/docs/install/from-source/)
+- [Updating](/docs/install/updating/)

@@ -1,0 +1,201 @@
+---
+title: "Won't start or closes straight away"
+description: Fixes for KoboldCpp crashing or closing at startup, antivirus blocks, WinError 1114, Illegal instruction, a blank console and a port in use.
+sidebar:
+  label: "KoboldCpp won't start"
+  order: 1
+---
+
+Most start problems print an error in the console window. If the window closes too fast to read it, start with the first section.
+
+## The window closes straight away
+
+KoboldCpp crashed, and the console window closed before you could read the error. KoboldCpp writes no log file, so run it from a terminal, where the message stays on screen.
+
+{% tabs syncKey="os" %}
+{% tabitem label="Windows" %}
+
+1. Open Command Prompt.
+2. Go to the folder with KoboldCpp and start it:
+
+   ```sh {% title="Command Prompt" frame="terminal" %}
+   cd C:\mystuff
+   koboldcpp.exe
+   ```
+
+{% /tabitem %}
+{% tabitem label="Linux" %}
+
+1. Open a terminal.
+2. Go to the folder with KoboldCpp and start it:
+
+   ```sh {% title="Terminal" frame="terminal" %}
+   cd ~/Downloads
+   ./koboldcpp-linux-x64
+   ```
+
+{% /tabitem %}
+{% tabitem label="macOS" %}
+
+1. Open Terminal.
+2. Go to the folder with KoboldCpp and start it:
+
+   ```sh {% title="Terminal" frame="terminal" %}
+   cd ~/Downloads
+   ./koboldcpp-mac-arm64
+   ```
+
+{% /tabitem %}
+{% /tabs %}
+
+Look up the error on this page or in [Model won't load](/docs/troubleshooting/model-wont-load/). Errors from the launcher itself appear in a message box instead.
+
+## Antivirus or Windows blocks or deletes the file
+
+What you may see:
+
+- Microsoft Defender or another antivirus reports a trojan, for example:
+
+  ```text
+  Trojan:Win32/Sabsik.FL.A!ml
+  Trojan:Script/Wacatac.B!ml
+  ```
+
+- "Windows protected your PC" (SmartScreen).
+- The exe shrinks to 0 bytes, or this error appears:
+
+  ```text
+  Failed to extract koboldcpp_vulkan_noavx2.dll: decompression resulted in return code -3!
+  ```
+
+The exe is not code-signed and unpacks its libraries into a temporary folder when it starts. Heuristic and machine-learning scanners flag this. For a file from the official releases, it is a false positive.
+
+{% steps %}
+
+1. Check that the file came from the [official GitHub releases](https://github.com/LostRuins/koboldcpp/releases/latest). See [Staying safe](/docs/install/staying-safe/).
+2. For SmartScreen, click **More info**, then **Run anyway**.
+3. For an antivirus, add the file to its exceptions and report the false positive to the vendor.
+4. If the file was quarantined, shrank or fails to extract, download it again.
+
+{% /steps %}
+
+**Smart App Control** has no exception list. It blocks KoboldCpp for as long as it is turned on.
+
+## "DLL initialization routine failed" (WinError 1114)
+
+```text
+OSError: [WinError 1114] A dynamic link library (DLL) initialization routine failed
+```
+
+This appears after `Initializing dynamic library: …`. Related errors are `0xc0000142` and `Failed to execute script 'koboldcpp' due to unhandled exception!`.
+
+Common causes: the processor lacks AVX2, the NVIDIA driver is too old for the CUDA 12 build, or an antivirus removed a library.
+
+{% steps %}
+
+1. If your processor or NVIDIA card is older, use `koboldcpp-oldpc.exe` (CUDA 11, needs only AVX1). See [Download KoboldCpp](/download/)
+2. Otherwise, update your NVIDIA driver. `nvidia-smi` in Command Prompt shows the installed driver.
+3. Rule out your antivirus: download the file again and add an exception.
+
+{% /steps %}
+
+`Failed to execute script 'koboldcpp'` also follows other errors, such as a [port in use](#port-5001-already-appears-to-be-in-use). Read the lines above it.
+
+## "Illegal instruction" or `0xc000001d`
+
+```text
+Illegal instruction (core dumped)
+```
+
+On Windows the error code is `0xc000001d`. Your processor lacks an instruction set (AVX2 or AVX) that the selected backend needs. KoboldCpp normally detects this and picks a compatible mode, but a backend chosen by hand or saved in a config file overrides the detection.
+
+{% steps %}
+
+1. In the launcher, set **Backend:** to an option marked **(Old CPU)**, for example **Use CPU (Old CPU)** or **Use Vulkan (Old CPU)**. On the command line, add `--noavx2`.
+2. If it still crashes, your processor has no AVX either. Use **Failsafe Mode (Older CPU)** (`--failsafe`), which uses no graphics card.
+3. To use a graphics card on a processor without AVX, download the `oldpc` file and choose **Use Vulkan (Older CPU)** (`--usevulkan --failsafe`).
+
+{% /steps %}
+
+See [Processor requirements](/docs/install/releases/#processor-avx2-avx-no-avx) for which build contains which mode. On Android, see [OS-specific problems](/docs/troubleshooting/os-specific/#android-illegal-instruction).
+
+## The console stays blank and the launcher never opens
+
+The exe could not unpack itself into the temporary folder. It needs about 1 GB of free space on the system drive, and an antivirus can block the unpacking.
+
+{% steps %}
+
+1. Free up space on the system drive.
+2. Check your antivirus (see [above](#antivirus-or-windows-blocks-or-deletes-the-file)).
+3. Try the smaller `koboldcpp-nocuda.exe`.
+4. Or unpack KoboldCpp once and start it from the unpacked folder; see [Unpack for faster startup](/docs/install/windows/#advanced-unpack-for-faster-startup).
+
+{% /steps %}
+
+## "Port 5001 already appears to be in use"
+
+```text
+Warning: Port 5001 already appears to be in use by another program.
+OSError: Cannot start the server: no socket could bind.
+```
+
+Another KoboldCpp, or another program, already uses the port. KoboldCpp loads the whole model first and fails only when it starts the server.
+
+{% steps %}
+
+1. Close the other KoboldCpp window.
+2. Or use a different port: **Port:** on the **Network** tab, or `--port 5002`.
+
+{% /steps %}
+
+To let a new KoboldCpp replace a running one automatically, start both with **SingleInstance Mode** (**Admin** tab) or `--singleinstance`. The new instance then asks the old one on the same port to shut down.
+
+## "Warning, GUI failed to start"
+
+```text
+Warning, GUI failed to start: Reason: no display name and no $DISPLAY environment variable
+File selection GUI unsupported.
+customtkinter python module required!
+```
+
+The launcher could not open a window. Usually there is no display (a server or SSH session), or, when you run from source, the `tkinter` or `customtkinter` Python module is missing.
+
+{% steps %}
+
+1. Start KoboldCpp without the launcher by giving it a model: `--model mymodel.gguf`, or a config file with `--config mysettings.kcpps`.
+2. When running from source, install `tkinter` and `customtkinter` to get the launcher back.
+
+{% /steps %}
+
+`--skiplauncher` on its own does not help: without `--model` it exits with an error. See [Headless use](/docs/install/linux/#headless-use).
+
+## "Cannot find text model file" or "config file invalid or not found"
+
+```text
+Cannot find text model file: C:\models\mymodel.gguf
+Specified kcpp config file invalid or not found.
+No gguf model or kcpps file was selected. Exiting.
+```
+
+The path is wrong, or the file has moved.
+
+{% steps %}
+
+1. Check the path and file name. Put paths with spaces in quotes on the command line.
+2. Use folder and file names with plain ASCII characters. Umlauts and other accented letters in a model path can break loading.
+3. For a config file, open it with **Load Config** in the launcher to check it.
+
+{% /steps %}
+
+## "No Backends Available!" (running from source)
+
+```text
+KoboldCPP couldn't locate any backends to use (i.e Default, Vulkan, CUDA).
+```
+
+You started `koboldcpp.py` from source code without compiling it first. Run `make` in the folder; see [Build from source](/docs/install/from-source/).
+
+## Problems on one system only
+
+- Windows 7, Linux permissions and file pickers, macOS security settings, Android: [OS-specific problems](/docs/troubleshooting/os-specific/).
+- The model fails to load after KoboldCpp starts: [Model won't load](/docs/troubleshooting/model-wont-load/).

@@ -1,0 +1,34 @@
+/*
+ * No-JS fallback, inlined in a <noscript><style> in <head> on every page (Starlight `head` config and
+ * HomeLayout). Without JS the OS tabs can't switch, so every panel is shown, stacked, each with its
+ * OS name; the tab strip (JS-only) is hidden.
+ * The labels rely on every OS tab set using the order Windows, Linux, macOS (the docs do).
+ */
+starlight-tabs [role='tabpanel'][hidden] {
+	display: block !important;
+}
+starlight-tabs .tablist-wrapper {
+	display: none !important;
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel'] {
+	margin-top: 1.25rem;
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel'] + [role='tabpanel'] {
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--navy-200);
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']::before {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 700;
+	color: var(--accent);
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']:nth-child(1 of [role='tabpanel'])::before {
+	content: 'Windows';
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']:nth-child(2 of [role='tabpanel'])::before {
+	content: 'Linux';
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']:nth-child(3 of [role='tabpanel'])::before {
+	content: 'macOS';
+}

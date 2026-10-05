@@ -1,0 +1,84 @@
+---
+title: Music
+description: Generate songs with ACE-Step in KoboldCpp. The four model files, the LowSpec-MusicGen template, MusicUI and the music API.
+sidebar:
+  order: 5
+---
+
+KoboldCpp generates music with ACE-Step 1.5 and ACE-Step XL. You describe a song, and it generates the audio.
+
+## Quick start
+
+Music needs three model files, plus an optional fourth. A template downloads them for you.
+
+{% steps %}
+
+1. In the launcher, click **Get Help**.
+2. Choose **Newbie Templates**, pick `LowSpec-MusicGen` and click **Load Template**.
+3. Click **Launch**. KoboldCpp downloads the files.
+4. Open `http://localhost:5001/musicui`.
+
+{% /steps %}
+
+<!-- SCREENSHOT: MusicUI at /musicui -->
+
+## The model files
+
+Download the files from [huggingface.co/koboldcpp/music](https://huggingface.co/koboldcpp/music) and load them on the **Audio** tab:
+
+| File | Launcher field | Flag | Required |
+|---|---|---|---|
+| Music LLM, e.g. `acestep-5Hz-lm` | **MusicLLM:** | `--musicllm` | No. Without it, choose **Main LLM** as **Lyrics Planner** in MusicUI to plan the song with the loaded text model. `/api/extra/music/prepare` needs it. |
+| Embedding model, e.g. `Qwen3-Embedding-0.6B` | **MusicEmbeds:** | `--musicembeddings` | Yes |
+| Diffusion model (DiT), e.g. `acestep-v15-turbo` | **MusicDiffuser:** | `--musicdiffusion` | Yes |
+| VAE | **MusicVAE:** | `--musicvae` | Yes |
+
+The diffusion model does not load without the embedding model and the VAE. KoboldCpp stops with "Invalid config: Music Diffusion requires Music embedding and Music VAE models!".
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --musicllm music-lm.gguf --musicembeddings music-embed.gguf --musicdiffusion music-dit.gguf --musicvae music-vae.gguf
+```
+
+## Using it
+
+- **MusicUI** (`/musicui`) is the bundled interface for music and speech. It supports reference audio uploads and MP3 output. It also has a TTS tab.
+- **KoboldAI Lite:** **Add File** > **Launch MusicUI**.
+- **API:** the endpoints below.
+
+| Endpoint | Returns |
+|---|---|
+| `POST /api/extra/music/prepare` | JSON with the song plan (metadata and lyrics). Add `"gen_codes": true` to also get audio codes. |
+| `POST /api/extra/music/generate` | WAV or MP3 audio |
+
+The API works in two steps:
+
+{% steps %}
+
+1. Send `caption` (a description of the song), `lyrics` and `duration` (in seconds) to `/api/extra/music/prepare`. The plan you get back contains the rewritten caption, the lyrics, `bpm`, `duration`, `keyscale`, `timesignature`, `vocal_language`, `seed` and further generation settings.
+2. Send that plan to `/api/extra/music/generate`. It returns the audio.
+
+{% /steps %}
+
+With `--password` set, both endpoints need the password.
+
+## Advanced options
+
+| Launcher field | Flag | What it does |
+|---|---|---|
+| **Music Low VRAM** | `--musiclowvram` | Keeps the music models out of VRAM when idle and swaps them in when needed. |
+
+`LowSpec-MusicGen` turns **Music Low VRAM** on. Measured with that template on an RTX 3090 and a 10-second instrumental:
+
+| **Music Low VRAM** | Peak VRAM | Prepare + generate |
+|---|---|---|
+| On (template default) | 5644 MiB | 6.1 s + 11.1 s |
+| Off | 11330 MiB | 0.8 s + 2.1 s |
+
+With only **MusicLLM:** set and no other music file, KoboldCpp loads the music LLM alone. It can then only plan songs: `/api/extra/music/prepare` works, but `/api/extra/music/generate` returns an empty response instead of audio.
+
+## Related
+
+- [Text-to-speech](/docs/features/text-to-speech/)
+- [API endpoints](/docs/api/endpoints/)

@@ -1,0 +1,92 @@
+---
+title: Context size
+description: What KoboldCpp's context size does, its default of 16384 and its range, how it uses memory, and how ContextShift, FastForwarding and SWA reuse it.
+sidebar:
+  order: 2
+---
+
+The context size is how much text the model can keep in mind at once: your prompt, the conversation so far and the reply. It is counted in tokens (pieces of words). A bigger context lets the model remember more of a long chat or story, but uses more memory.
+
+| Setting | Details |
+|---|---|
+| Launcher | **Context Size:** slider on the **Quick Launch** and **Context** tabs (both move together) |
+| Command line | `--contextsize N` (also `--ctx-size`, `-c`) |
+| Default | 16384 tokens |
+
+## Choosing a value
+
+- Each model supports a maximum context. The model card on Hugging Face usually states it. Stay at or below it.
+- KoboldCpp does not lower your setting to fit the model. If you set more than the model was trained for, the terminal shows a `possible training context overflow` warning while loading.
+- More context needs more memory. If the model no longer fits, see [Memory](#memory) below.
+
+## KoboldAI Lite
+
+The launcher setting is how much context KoboldCpp reserves. KoboldAI Lite has its own **Context Size** setting for how much text it sends: **Settings** → **Samplers** → **Context Settings**.
+
+- When KoboldCpp's context is 16384 or more, the Lite that comes with KoboldCpp raises its own value to match when it connects.
+- Below 16384 (for example with the `LowSpec-Chatbot` template, which uses 12288), or after you lowered it yourself, set Lite's **Context Size** by hand.
+- If an app asks for more context than KoboldCpp reserved, KoboldCpp cuts the request down to fit and prints a warning once.
+
+<!-- SCREENSHOT: KoboldAI Lite Settings, Samplers tab, Context Settings with Context Size -->
+
+## Memory
+
+The context is stored in the **KV cache**, which comes on top of the memory for the model itself. On most models it grows in step with the context size: twice the context, twice the KV cache. Models with SWA (see below) need less.
+
+KV cache of Qwen3-VL-8B (no SWA), measured on KoboldCpp 1.122.1 with a Radeon RX 7600 XT:
+
+| Context | `--quantkv` | KV cache |
+|---|---|---|
+| 8192 | `f16` | 1188 MiB |
+| 16384 (default) | `f16` | 2340 MiB |
+| 16384 (default) | `q8_0` | 1243 MiB |
+| 32768 | `f16` | 4644 MiB |
+
+If you run out of memory:
+
+| What to change | Launcher | Flag |
+|---|---|---|
+| Lower the context size | **Context Size:** | `--contextsize` |
+| Store the context in a smaller format | **Quantize KV Cache:** (Context tab) | `--quantkv` |
+| Lower the batch size | **Batch Size:**, **Physical Batch Size:** (Hardware tab) | `--batchsize`, `--ubatchsize` |
+
+`--quantkv` accepts `f16` (default), `bf16`, `q8_0`, `q5_1` and `q4_0`. Full KV quantization needs flash attention, which is on by default. With flash attention off (`--noflashattention`), only the K half of the cache is quantized, and it can even use more graphics memory. Older guides use numbers; they still work: `0` = `f16`, `1` = `q8_0`, `2` = `q4_0`, `3` = `bf16`.
+
+See [Saving VRAM](/docs/hardware/saving-vram/) and [Memory](/docs/models/memory/) for more.
+
+## Reusing context between requests
+
+Each reply normally requires the model to read the whole prompt again. KoboldCpp has several ways to avoid that. The defaults work well; leave **Use FastForwarding** and **Use ContextShift** on. On some models, including Gemma 3 and Qwen3-VL, KoboldCpp turns ContextShift off by itself (see below).
+
+| Launcher (Context tab) | Flag | Default | What it does |
+|---|---|---|---|
+| **Use FastForwarding** | `--nofastforward` turns it off | on | Reuses the start of the prompt that has not changed since the last request. |
+| **Use ContextShift** | `--noshift` turns it off | on | When the context is full, drops the oldest text and keeps the rest instead of reprocessing everything. |
+| **Allow SWA** | `--noswa` turns it off | on | On models with sliding window attention (SWA), such as Gemma 3, uses a much smaller KV cache. |
+| **Use SmartCache** / **CacheSlots:** | `--smartcache [slots]` | off | Keeps snapshots of recent contexts in RAM (5 slots by default), so switching back to a recent chat needs little or no reprocessing. |
+| **Use SmartContext** | `--smartcontext` | off | Outdated and not recommended. Only shown when ContextShift is off. |
+
+How they depend on each other:
+
+- ContextShift and SmartCache need FastForwarding. Turning FastForwarding off turns them off too; in the launcher, turning ContextShift on turns FastForwarding back on.
+- **SWA and ContextShift do not work together.** On SWA models, KoboldCpp uses SWA and turns ContextShift off; the terminal shows `SWA Mode is ENABLED!`. To use ContextShift on such a model instead, turn off **Allow SWA**. This makes the KV cache much bigger.
+- ContextShift is also turned off when **Parallel Requests:** (`--parallelrequests`) is above 1, and on models that use MRoPE position encoding, such as Qwen2-VL, Qwen3-VL and Qwen3.5. The terminal then shows `MRope is used, context shift will be disabled!`.
+- SmartContext has no effect while ContextShift is active.
+
+In a test with Gemma 3 270M at the default context, the SWA part of the KV cache used 16.88 MiB with SWA and 243.75 MiB without it.
+
+## Advanced
+
+- **Range.** The launcher slider goes from 256 to 262144; the command line accepts 256 to 524288. For more than 262144, use `--contextsize`, or set it in a [config file](/docs/settings/config-files/) and start that with `--config`. The launcher cannot load a config whose context size is not one of its slider steps.
+- **The load log shows a slightly bigger number.** At the default 16384, the log reads `n_ctx = 16640`. KoboldCpp adds a small margin and rounds up. The API still reports 16384.
+- **SWA padding.** **SWA Padding Tokens:** (`--swapadding`) adds room to the SWA cache. More padding lets the chat change further back before KoboldCpp has to reprocess it.
+- **The default reply length is capped at half the context.** **Default Gen Amt:** (`--defaultgenamt`, default 2048) is lowered to half the context size if it is bigger.
+- **The KoboldCpp Agent needs a large context.** With **Launch KoboldCpp Agent** (`--agent`), KoboldCpp raises the context to at least 28672 and the default reply length to at least 8192 on its own.
+- **Old model formats.** Models in the old GGML formats (not GGUF) are limited to 16384.
+- **Checking the value.** The API endpoint `/api/extra/true_max_context_length` returns the reserved context size.
+
+## Related
+
+- [Launcher tour](/docs/settings/launcher-tour/)
+- [Config files](/docs/settings/config-files/)
+- [Out of memory](/docs/troubleshooting/out-of-memory/)

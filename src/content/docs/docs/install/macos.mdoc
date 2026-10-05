@@ -1,0 +1,67 @@
+---
+title: "Install on macOS (Apple Silicon)"
+description: Run KoboldCpp on an Apple Silicon Mac, allow it in Privacy & Security, and what to do on an Intel Mac.
+sidebar:
+  label: "macOS"
+  order: 4
+---
+
+KoboldCpp has a ready-made file for Macs with Apple Silicon (M-series) and macOS 14 (Sonoma) or newer. It is a single file that you run from Terminal.
+
+{% steps %}
+
+1. Download [`koboldcpp-mac-arm64`](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-mac-arm64).
+
+2. In Terminal, go to the folder with the file, make it executable and run it:
+
+   ```sh {% title="Terminal" frame="terminal" %}
+   cd ~/Downloads
+   chmod +x koboldcpp-mac-arm64
+   ./koboldcpp-mac-arm64
+   ```
+
+3. The first time, macOS shows "Apple could not verify “koboldcpp-mac-arm64” is free of malware…". Click **Done**, not **Move to Trash**. Open **System Settings → Privacy & Security**, scroll down to **Security** and click **Open Anyway** next to the message about `koboldcpp-mac-arm64`. Run the file again and confirm. After that, it starts without asking.
+
+{% /steps %}
+
+To skip the prompt, remove the download mark in Terminal before the first start:
+
+```sh {% title="Terminal" frame="terminal" %}
+xattr -d com.apple.quarantine koboldcpp-mac-arm64
+```
+
+The launcher opens. Continue with [Choose a model](/getting-started/model/).
+
+[Apple's guide](https://support.apple.com/en-us/102445) and a [video guide](https://youtube.com/watch?v=NOW5dyA_JgY) show how to allow the file.
+
+<!-- SCREENSHOT: Privacy & Security with the prompt to allow koboldcpp-mac-arm64 -->
+
+## GPU (Metal)
+
+The Mac build uses Metal on the GPU automatically.
+
+- With **GPU Layers** at -1 (the default), all layers go to the GPU. The console prints:
+
+  ```text
+  MacOS detected: Auto GPU layers set to maximum
+  ```
+- `Unable to determine GPU Memory` and `Unable to determine available RAM` in the console are expected on Apple Silicon and not a problem. When the launcher opens, it can also print `Unable to detect VRAM.`.
+
+More: [Apple Silicon](/docs/hardware/apple-silicon/).
+
+## Advanced: failsafe mode (no Metal)
+
+`--failsafe` switches to a CPU-only library that uses Apple's Accelerate framework instead of Metal:
+
+```sh {% title="Terminal" frame="terminal" %}
+./koboldcpp-mac-arm64 --failsafe
+```
+
+## Intel Macs
+
+There is no ready-made file for Intel (x86) Macs. Clone the repository and compile it yourself; see [Build from source](/docs/install/from-source/#macos). Intel Macs are poorly supported.
+
+## Related
+
+- [Release files and system requirements](/docs/install/releases/)
+- [Updating](/docs/install/updating/)

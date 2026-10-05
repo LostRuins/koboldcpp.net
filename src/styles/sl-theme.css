@@ -1,0 +1,84 @@
+/* =====================================================================
+   Starlight's custom properties mapped onto the mint-home tokens (tokens.css): light only,
+   paper and ink with the navy brand. Loaded by the Starlight docs AND the home page (the shared
+   nav bar and search use them).
+   Unlayered on purpose: it must beat Starlight's own `@layer starlight.*` defaults, including its
+   `:root[data-theme='light']` palette.
+   ===================================================================== */
+
+:root,
+::backdrop {
+	/* Also without JS, when <html> keeps Starlight's server-rendered data-theme="dark". */
+	color-scheme: light;
+
+	/* Greys, in Starlight's light-mode order: white = headings (darkest), black = page. */
+	--sl-color-white: var(--ink);
+	--sl-color-gray-1: var(--ink);
+	--sl-color-gray-2: var(--ink-2);
+	--sl-color-gray-3: var(--ink-3);
+	--sl-color-gray-4: var(--navy-400);
+	--sl-color-gray-5: var(--line);
+	--sl-color-gray-6: var(--paper-2);
+	--sl-color-gray-7: var(--paper-3);
+	--sl-color-black: var(--paper);
+
+	/* Accent: the link blue on paper (same as --accent on home). */
+	--sl-color-accent-low: var(--navy-100);
+	--sl-color-accent: var(--accent);
+	--sl-color-accent-high: var(--navy-800);
+
+	/* Aside / badge hues. Note = navy, tip = green, caution = amber, danger = red.
+	   -low is the tint, the base is the border, -high the text. */
+	--sl-color-blue-low: var(--navy-50);
+	--sl-color-blue: var(--accent);
+	--sl-color-blue-high: var(--navy-800);
+	--sl-color-purple-low: oklch(0.960 0.030 148);
+	--sl-color-purple: var(--green-600);
+	--sl-color-purple-high: oklch(0.360 0.090 148);
+	--sl-color-green-low: oklch(0.960 0.030 148);
+	--sl-color-green: var(--green-600);
+	--sl-color-green-high: oklch(0.360 0.090 148);
+	--sl-color-orange-low: oklch(0.965 0.040 80);
+	--sl-color-orange: oklch(0.720 0.150 65);
+	--sl-color-orange-high: oklch(0.420 0.100 55);
+	--sl-color-red-low: oklch(0.955 0.030 25);
+	--sl-color-red: oklch(0.580 0.180 25);
+	--sl-color-red-high: oklch(0.420 0.140 25);
+
+	/* UI parts */
+	--sl-color-text: var(--ink);
+	--sl-color-text-accent: var(--accent);
+	--sl-color-text-invert: var(--paper-3);
+	--sl-color-bg: var(--paper);
+	/* Starlight also paints the phone "On this page" bar with this; the nav bar itself is navy
+	   (--nav-bg, set on header.header in starlight.css). */
+	--sl-color-bg-nav: var(--paper-2);
+	--sl-color-bg-sidebar: var(--paper);
+	--sl-color-bg-inline-code: var(--paper-3);
+	--sl-color-bg-accent: var(--accent);
+	--sl-color-hairline-light: var(--line);
+	--sl-color-hairline: var(--line);
+	--sl-color-hairline-shade: var(--line);
+	--sl-color-backdrop-overlay: oklch(0.190 0.022 258 / 0.55);
+
+	/* Type */
+	--sl-font: var(--font-text);
+	--sl-font-mono: var(--font-mono);
+	--sl-text-body: var(--step-0);
+	--sl-text-h1: var(--step-3);
+	--sl-text-h2: var(--step-2);
+	--sl-text-h3: var(--step-1);
+	--sl-text-h4: 1.125rem;
+	--sl-line-height: 1.7;
+	--sl-line-height-headings: 1.15;
+
+	/* The nav bar (SiteNav) is the same box on home and docs: height, and the page gutter. */
+	--sl-nav-height: 4rem;
+	--sl-nav-pad-x: var(--gutter);
+}
+
+@media (min-width: 50rem) {
+	:root {
+		--sl-nav-height: 5.25rem;
+	}
+}

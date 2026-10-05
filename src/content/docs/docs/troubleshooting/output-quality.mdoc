@@ -1,0 +1,158 @@
+---
+title: Bad or strange output
+description: Fixes for gibberish output, a model that never stops, the AI replying as you, cut-off replies, ignored images and context warnings in KoboldCpp.
+sidebar:
+  order: 5
+---
+
+The model loads, but its replies are wrong. Most settings on this page are in KoboldAI Lite's settings, not in the launcher.
+
+## The AI writes gibberish
+
+Replies are random characters, repeated symbols or nonsense words. Known causes are graphics driver bugs (often AMD cards with Vulkan), a badly converted model file, and bugs in a KoboldCpp version with specific models.
+
+{% steps %}
+
+1. Update your graphics driver.
+2. Try another backend. With AMD on Vulkan, try **Use Vulkan (Old CPU)**. To rule out the graphics card, try **Use CPU**.
+3. Download the model again, from a well-known uploader.
+4. [Update KoboldCpp](/docs/install/updating/).
+5. Try a different **Batch Size:** on the **Hardware** tab (`--batchsize`).
+6. Turn off **Use FlashAttention** (`--noflashattention`).
+7. If you set a custom RoPE configuration, remove it. The default scales automatically.
+
+{% /steps %}
+
+If a model still produces gibberish, report it with the model name and your settings.
+
+## The AI never stops, or keeps rambling
+
+The model's end token (EOS) is banned, or the instruct format does not match the model. The reply then runs until the output length is used up.
+
+{% steps %}
+
+1. In KoboldAI Lite, open **Settings** > **Misc**. Under **Advanced Settings**, set **EOS token ban** to **Auto** (the default) or **Unban**.
+2. In instruct mode, check that the instruct tags match the model. Lite's default placeholder tags adapt to the model automatically.
+
+{% /steps %}
+
+The old `--unbantokens` flag no longer exists; KoboldCpp exits with `unrecognized arguments` if you pass it.
+
+## The AI replies as me in chat mode
+
+The model writes your lines as well as its own.
+
+{% steps %}
+
+1. Retry the reply.
+2. In KoboldAI Lite, open **Settings** > **General** and turn off **Allow multiline replies**.
+3. Use a model that was trained for chat.
+4. Check the character card and the start of the chat: consistent, correctly spelled names and a few good example messages help.
+
+{% /steps %}
+
+## Replies are cut short
+
+In other apps that use the API, replies stop after a fixed length when the app does not send a length. KoboldCpp then uses its default, **Default Gen Amt:** on the **Context** tab (`--defaultgenamt`, 2048 tokens). It is capped at half the context size.
+
+{% steps %}
+
+1. Set the reply length (`max_tokens` or "max length") in your app.
+2. Or raise **Default Gen Amt:**, and raise **Context Size:** if half of it is below what you need.
+3. Check that **Prompt Limit:** (`--genlimit`) is not set; it caps every reply.
+
+{% /steps %}
+
+In KoboldAI Lite chat mode, turning off **Allow multiline replies** (**Settings** > **General**) also shortens replies to one line.
+
+## Badly formatted replies over the Chat Completions API
+
+```text
+Chat template heuristics failed to identify chat completions format. Alpaca will be used.
+```
+
+KoboldCpp could not tell which chat format the model uses and fell back to Alpaca, which may not match.
+
+{% steps %}
+
+1. Turn on **Use Jinja** on the launcher's **Context** tab (`--jinja`). KoboldCpp then uses the chat template stored in the model file.
+2. Or pick the format yourself: **Chat Adapter:** on the **Loaded Files** tab, with **Pick Premade** (`--chatcompletionsadapter`).
+
+{% /steps %}
+
+See [Chat formatting](/docs/api/overview/#chat-formatting).
+
+## The whole prompt is processed again on every message
+
+Normally KoboldCpp reuses the processed text and, when the context is full, shifts it (ContextShift). On models with sliding window attention (SWA), such as Gemma 3, SWA is on by default and turns ContextShift off:
+
+```text
+SWA Mode is ENABLED!
+Note that using SWA Mode cannot be used with Context Shifting!
+```
+
+{% steps %}
+
+1. Keep **Use FastForwarding** and **Use ContextShift** on (the defaults).
+2. To get ContextShift back on an SWA model, turn off **Allow SWA** on the **Context** tab (`--noswa`). This uses much more memory for the context.
+3. **Parallel Requests:** above 1 also turns ContextShift off. Set it to 1 if you don't need parallel requests.
+
+{% /steps %}
+
+## The AI ignores my image or audio
+
+```text
+Warning: Media excluded - Context size too low or not enough mtmd tokens! (needed …)
+Media will be IGNORED! You probably want to relaunch with a larger context size!
+```
+
+The image or audio did not fit into the context. Relaunch with a larger **Context Size:**. Long audio clips need a lot of context.
+
+Without a vision file (mmproj) loaded, the model cannot see images at all. See [Vision and audio input](/docs/features/vision/).
+
+## Warnings about the context size
+
+```text
+Warning! Request max_context_length=32768 exceeds allocated context size of 16384. It will be reduced to fit.
+Warning: You are trying to generate text with max_length (10000) near or exceeding max_context_length limit (16384).
+```
+
+Your app asked for more context than KoboldCpp reserved at launch, or for a reply almost as long as the whole context. Most of the story is then cut off, and replies lose coherence.
+
+{% steps %}
+
+1. Relaunch with a larger **Context Size:** (`--contextsize`). An app's context setting cannot go above the launch value.
+2. Or lower the context size and reply length in your app.
+
+{% /steps %}
+
+See [Context size](/docs/settings/context-size/).
+
+## "Quantized KV was used without flash attention"
+
+```text
+Warning: Quantized KV was used without flash attention! This is NOT RECOMMENDED!
+```
+
+With **Use FlashAttention** off, a quantized context cache (**Quantize KV Cache:**, `--quantkv`) only partly works and can even use more VRAM. Turn **Use FlashAttention** back on, or set **Quantize KV Cache:** to `f16`.
+
+## Advanced: sampler settings
+
+Extreme sampler values also produce bad output. KoboldAI Lite's defaults are a good reset point:
+
+| Setting | Lite default |
+|---|---|
+| Temperature | 0.75 |
+| Repetition penalty | 1.05 |
+| Top-P | 0.92 |
+| Sampler order | `[6,0,1,3,4,2,5]` |
+
+An API request with an invalid order logs `ERROR: sampler_order must be a list of integers`.
+
+See [KoboldAI Lite](/docs/features/lite/).
+
+## Related
+
+- [Context size](/docs/settings/context-size/)
+- [GPU not used or slow](/docs/troubleshooting/gpu-and-speed/)
+- [Connection and API problems](/docs/troubleshooting/connection/)

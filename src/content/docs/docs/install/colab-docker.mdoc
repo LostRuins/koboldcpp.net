@@ -1,0 +1,93 @@
+---
+title: "Run on Google Colab or Docker"
+description: Run KoboldCpp in the cloud with the official Google Colab notebook or the official Docker image, and its environment variables.
+sidebar:
+  label: "Colab and Docker"
+  order: 6
+---
+
+Two official ways run KoboldCpp without installing it on your own computer: a Google Colab notebook for trying it in the browser, and a Docker image for cloud GPU servers.
+
+## Google Colab
+
+The [official Colab notebook](https://colab.research.google.com/github/LostRuins/koboldcpp/blob/concedo/colab.ipynb) runs KoboldCpp on a cloud GPU from Google. The short link is `https://koboldai.org/colabcpp`.
+
+{% steps %}
+
+1. Open the notebook and pick a model: choose a template from the dropdown, or tick the model options yourself.
+2. Press the two **Play** buttons.
+3. Open the Cloudflare URL shown at the end. KoboldAI Lite runs there.
+
+{% /steps %}
+
+- Keep the notebook page open, and check it now and then for captchas.
+- On a phone, also run the silent-audio cell so the session stays alive.
+- If Colab gives you no GPU, the notebook stops with "Colab did not give you a GPU due to usage limits".
+- The notebook always downloads the latest release.
+- You are responsible for following Google Colab's terms of use.
+
+### Colab options
+
+| Option | What it does |
+|---|---|
+| Google Drive save storage | Keeps your saves in your Google Drive. |
+| LocalTunnel | A fallback when the Cloudflare tunnel does not work. |
+| Delete cached models on restart | On by default. |
+
+## Docker (experts)
+
+The official image is [`koboldai/koboldcpp`](https://hub.docker.com/r/koboldai/koboldcpp) on Docker Hub. It is intended for experts, mainly for people who rent cloud GPUs. For KoboldCpp on your own computer, use the [normal downloads](/download/) instead.
+
+- It runs x86-64 Ubuntu inside and expects an NVIDIA or AMD GPU.
+- It may perform poorly on some Windows and macOS machines, and may fail outright on ARM.
+- Its AVX detection is crude. It can fall back to the failsafe libraries, which are extremely slow.
+- By default it downloads the latest KoboldCpp for your GPU when it starts; for AMD GPUs that is the experimental ROCm build. The image itself only changes when its Docker setup changes.
+
+### Environment variables
+
+| Variable | Value |
+|---|---|
+| `KCPP_MODEL` | Download URL of the text model. For a model split into several files, separate the URLs with commas. |
+| `KCPP_IMGMODEL` | Download URL of the image generation model. |
+| `KCPP_MMPROJ` | Download URL of the vision projector (mmproj). |
+| `KCPP_ARGS` | Extra KoboldCpp flags, for example `--lora` with a mounted file. |
+
+### Minimal example
+
+The image prints this example:
+
+```sh {% title="Terminal" frame="terminal" %}
+docker run --rm -e KCPP_DONT_TUNNEL=true -p 5001:5001 -it koboldai/koboldcpp
+```
+
+- `-p 5001:5001` makes KoboldCpp reachable on port 5001.
+- `KCPP_DONT_TUNNEL=true` turns off the public Cloudflare tunnel. The image opens it by default on purpose, because it is made for cloud GPU rentals.
+- If you set neither a model variable nor `KCPP_ARGS`, it loads a tiny demo model after one minute.
+- For an NVIDIA GPU, add `--gpus all`. This needs the NVIDIA Container Toolkit on the host.
+
+### Compose example
+
+The image prints its official Docker Compose example:
+
+```sh {% title="Terminal" frame="terminal" %}
+docker run --rm -it koboldai/koboldcpp compose-example
+```
+
+It turns the tunnel off, and shows how to pass an NVIDIA GPU, or an AMD or Intel GPU through `/dev/dri`. It also turns on admin mode with the password `ChangeMe`; change it before use.
+
+## Hosted GPU services
+
+KoboldCpp has official short links for two GPU rental services:
+
+- RunPod: `https://koboldai.org/runpodcpp`
+- SimplePod: `https://koboldai.org/simplepod`
+
+## Advanced: unofficial Docker images
+
+Community Docker images by korewaChino and noneabove1182 exist. They are unofficial and get no official support.
+
+## Related
+
+- [Updating Colab and Docker](/docs/install/updating/#colab-and-docker)
+- [Staying safe](/docs/install/staying-safe/)
+- [Passwords and security](/docs/api/passwords-and-security/)

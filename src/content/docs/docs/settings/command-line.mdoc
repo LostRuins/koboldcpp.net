@@ -1,0 +1,125 @@
+---
+title: Command line
+description: Run KoboldCpp without the launcher. Basic commands for Windows, Linux and macOS, the most-used flags, headless modes and exit codes.
+sidebar:
+  order: 5
+---
+
+Everything in the launcher is also a command-line flag. Use the command line to start KoboldCpp from a script, on a server without a screen, or with a screen reader (the launcher is not accessible to screen readers).
+
+## Start with a model
+
+When you pass a model, KoboldCpp skips the launcher and starts right away.
+
+{% tabs syncKey="os" %}
+{% tabitem label="Windows" %}
+
+```sh {% title="Command Prompt" frame="terminal" %}
+cd C:\mystuff
+koboldcpp.exe --model C:\models\mymodel.gguf --contextsize 16384
+```
+
+{% /tabitem %}
+{% tabitem label="Linux" %}
+
+```sh {% title="Terminal" frame="terminal" %}
+./koboldcpp-linux-x64 --model mymodel.gguf --contextsize 16384
+```
+
+{% /tabitem %}
+{% tabitem label="macOS" %}
+
+```sh {% title="Terminal" frame="terminal" %}
+./koboldcpp-mac-arm64 --model mymodel.gguf --contextsize 16384
+```
+
+{% /tabitem %}
+{% /tabs %}
+
+Use the name of the file you downloaded, for example `koboldcpp-nocuda.exe` or `./koboldcpp-linux-x64-nocuda`. Examples on other pages write `koboldcpp` for it.
+
+When the model is loaded, the terminal shows `Please connect to custom endpoint at http://localhost:5001`. Open that address in your browser, or add `--launch` to open it automatically.
+
+Other ways to start without the launcher:
+
+- `--config mysettings.kcpps` starts with a saved config. See [Config files](/docs/settings/config-files/).
+- `--model` also accepts a web address; KoboldCpp downloads the file first.
+- The model file and port also work without flag names: `koboldcpp.exe mymodel.gguf 5002`.
+
+## Get help
+
+| Command | What it does |
+|---|---|
+| `--help` | Lists all flags with a short description. |
+| `--version` | Prints the version and exits. It only works on its own; with other flags it is ignored. |
+
+The [flag reference](/docs/reference/flags/) explains every flag in detail.
+
+## Most-used flags
+
+| Flag | Launcher | What it does |
+|---|---|---|
+| [`--model`](/docs/reference/flags/#model) | **GGUF Text Model:** | The model file or web address. |
+| [`--config`](/docs/reference/flags/#config) | **Load Config** | Loads a `.kcpps` config or `.kcppt` template. |
+| [`--contextsize`](/docs/reference/flags/#contextsize) | **Context Size:** | Context size in tokens. Default 16384. |
+| [`--usecuda`](/docs/reference/flags/#usecuda) | **Backend:** Use CUDA | Runs on an NVIDIA card. |
+| [`--usevulkan`](/docs/reference/flags/#usevulkan) | **Backend:** Use Vulkan | Runs on most graphics cards. |
+| [`--usecpu`](/docs/reference/flags/#usecpu) | **Backend:** Use CPU | Runs without a graphics card. On macOS, also set `--gpulayers 0`. |
+| [`--gpulayers`](/docs/reference/flags/#gpulayers) | **GPU Layers:** | Layers on the graphics card. `-1` (default) fits automatically. |
+| [`--threads`](/docs/reference/flags/#threads) | **Threads:** | CPU threads. Automatic by default. |
+| [`--port`](/docs/reference/flags/#port) | **Port:** | Default 5001. |
+| [`--host`](/docs/reference/flags/#host) | **Host:** | Address to listen on. Default: all addresses. `127.0.0.1` allows only this computer. |
+| [`--launch`](/docs/reference/flags/#launch) | **Launch Browser** | Opens the browser after loading. Off on the command line, on in the launcher. |
+| [`--password`](/docs/reference/flags/#password) | **Password:** | API key for the text endpoints. |
+| [`--quantkv`](/docs/reference/flags/#quantkv) | **Quantize KV Cache:** | Stores the context in a smaller format. |
+| [`--mmproj`](/docs/reference/flags/#mmproj) | **Mmproj File:** | Vision projector for image input. |
+| [`--quiet`](/docs/reference/flags/#quiet) | **Quiet Mode** | Hides generation output. |
+| [`--debugmode`](/docs/reference/flags/#debugmode) | **Debug Mode** | Prints extra details for troubleshooting. |
+
+Without `--usecuda`, `--usevulkan` or `--usecpu`, KoboldCpp chooses a backend for your hardware.
+
+{% aside type="tip" title="Use the full flag names" %}
+Many flags also have short llama.cpp-style names, such as `-c` for `--contextsize` or `-ngl` for `--gpulayers`. Together with `--config`, only the full names override the config's values; see [Config files](/docs/settings/config-files/#change-one-setting-from-the-command-line).
+{% /aside %}
+
+## Passwords from environment variables
+
+Passwords can also be set as environment variables instead of flags:
+
+| Variable | Same as |
+|---|---|
+| `KCPP_PASSWORD` | `--password` |
+| `KCPP_ADMINPASSWORD` | `--adminpassword` |
+
+## Modes without the web server
+
+| Flag | What it does |
+|---|---|
+| `--cli` | Chat with the model in the terminal. Type `/quit` or `/exit` to end. With `--agent`, it runs the KoboldCpp Agent in the terminal instead, and the web server starts as usual. Cannot be combined with `--launch`, `--nomodel`, `--admin` or `--benchmark`. |
+| `--prompt "text"` | Generates one reply to the text, prints it and exits. With `--cli`, the text becomes the system prompt instead. |
+| `--benchmark` | Measures prompt processing and generation speed instead of starting the server. `--benchmark results.csv` appends the results to a file. |
+
+The opposite also exists: `--nomodel` starts the web server and KoboldAI Lite without a local model, for use with online services.
+
+## Showing or skipping the launcher
+
+- `--showgui` opens the launcher filled in with the flags and config you passed, instead of starting right away.
+- `--skiplauncher` cancels a `showgui` setting saved in a config. It does not replace a model: without one, KoboldCpp still asks for a file. On a system without a screen, it prints `Note: In order to use --skiplauncher, you need to specify a model with --model` and exits.
+
+If you pass flags but no model, KoboldCpp shows a file picker for a model or `.kcpps` file instead of the full launcher.
+
+## Exit codes
+
+| Code | When |
+|---|---|
+| `0` | `--version` printed the version. |
+| `1` | The port is already in use (`no socket could bind`). This happens after the model has loaded. |
+| `2` | A flag or value is invalid, for example a context size outside 256 to 524288. |
+| `2` | The model file does not exist (`Cannot find text model file`). |
+| `2` | `--skiplauncher` without a model, on a system without a screen. |
+
+## Related
+
+- [Config files (.kcpps)](/docs/settings/config-files/)
+- [Launcher tour](/docs/settings/launcher-tour/): every launcher setting and its flag
+- [Flag reference](/docs/reference/flags/)

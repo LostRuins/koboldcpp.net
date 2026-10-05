@@ -1,0 +1,105 @@
+/* =====================================================================
+   KoboldCpp design tokens, "mint-home" (shared by the home page and the Starlight docs).
+   A light, Linux Mint-style palette: warm paper and ink, with KoboldAI Lite's navy as the brand.
+   Source: the mint-home design (Daylight base), tokens copied unchanged; the fonts are
+   self-hosted, trimmed copies of the @fontsource files (scripts/subset-fonts.py). There is no
+   italic file: the few italic labels use the browser's slanted upright.
+   Apart from the font faces, keep this file to custom properties only: it is loaded on
+   Starlight pages too.
+   ===================================================================== */
+@font-face {
+    font-family: "Atkinson Hyperlegible Next Variable";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 400 700;
+    src: url("../assets/fonts/atkinson-hyperlegible-next.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono Variable";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 400 700;
+    src: url("../assets/fonts/atkinson-hyperlegible-mono.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Young Serif";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 400;
+    src: url("../assets/fonts/young-serif.woff2") format("woff2");
+}
+
+@layer reset, tokens, base, layout, components, utilities;
+/* Starlight's own layer order (its style/layers.css). The shared nav bundles Starlight's <Search>
+   styles (starlight.core) into the same CSS file as this one, which loads before Starlight's CSS;
+   without this line starlight.core would rank below starlight.reset, and the reset's
+   `* { margin: 0 }` would pin the search dialog to the top-left corner. */
+@layer starlight.base, starlight.reset, starlight.core, starlight.content, starlight.components, starlight.utils;
+
+@layer tokens {
+  :root {
+    color-scheme: light;
+    /* Lite navy (hue 258). 900/700/600 = Lite #182330 / #32496d / #415577 */
+    --navy-50:  oklch(0.975 0.010 258);
+    --navy-100: oklch(0.945 0.018 258);
+    --navy-200: oklch(0.885 0.032 258);
+    --navy-300: oklch(0.800 0.050 258);
+    --navy-400: oklch(0.680 0.065 258);
+    --navy-500: oklch(0.560 0.072 258);
+    --navy-600: oklch(0.448 0.061 261);
+    --navy-700: oklch(0.404 0.067 259);
+    --navy-800: oklch(0.330 0.050 258);
+    --navy-900: oklch(0.252 0.029 253);
+    --navy-950: oklch(0.190 0.022 258);
+
+    --paper:   oklch(0.975 0.008 85);
+    --paper-2: oklch(0.952 0.012 85);
+    --paper-3: oklch(0.990 0.004 85);
+    --line:    oklch(0.885 0.016 80);
+    --ink:     oklch(0.250 0.035 258);
+    --ink-2:   oklch(0.420 0.035 258);
+    --ink-3:   oklch(0.520 0.030 258);
+
+    --green-600: oklch(0.500 0.130 148);
+    --sky-300:   oklch(0.850 0.090 232);
+    --sky-200:   oklch(0.910 0.050 232);
+
+    /* the brand gradient: Lite navy into a lamp-lit steel blue, all hue 232–259 */
+    --brand-a: oklch(0.300 0.048 258);
+    --brand-b: oklch(0.404 0.067 252);
+    --brand-c: oklch(0.470 0.078 236);
+    --brand-gradient: linear-gradient(in oklch 125deg, var(--brand-a) 0%, var(--brand-b) 48%, var(--brand-c) 100%);
+    --accent: oklch(0.470 0.110 252);        /* icons + links on paper */
+    --night: var(--navy-900);                /* the footer */
+    --nav-bg: oklch(0.285 0.042 256);        /* the solid nav bar: docs header, home nav once scrolled */
+
+    --font-display: "Young Serif", "Iowan Old Style", Georgia, serif;
+    --font-text: "Atkinson Hyperlegible Next Variable", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "Atkinson Hyperlegible Mono Variable", ui-monospace, "Cascadia Mono", monospace;
+
+    --step--1: clamp(0.8854rem, 0.8744rem + 0.0488vw, 0.9135rem);
+    --step-0:  clamp(1.0rem, 0.97rem + 0.13vw, 1.0625rem);
+    --step-1:  clamp(1.2rem, 1.12rem + 0.35vw, 1.35rem);
+    --step-2:  clamp(1.4rem, 1.28rem + 0.5vw, 1.65rem);
+    --step-3:  clamp(1.85rem, 1.55rem + 1.3vw, 2.55rem);
+    --step-5:  clamp(2.6rem, 1.9rem + 3vw, 4.1rem);
+
+    --space-2xs: 0.5rem;
+    --space-xs: 0.75rem;
+    --space-s: 1rem;
+    --space-m: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+    --space-l: clamp(1.75rem, 1.5rem + 1vw, 2rem);
+    --space-xl: clamp(2.25rem, 1.8rem + 2vw, 3rem);
+    --space-2xl: clamp(3rem, 2.3rem + 3vw, 4.5rem);
+    --space-3xl: clamp(3.75rem, 2.6rem + 5vw, 7rem);
+    --gutter: clamp(1rem, 0.6rem + 2vw, 2rem);
+    --wrap: 72rem;
+
+    --radius-s: 4px;
+    --radius-m: 8px;
+    --radius-l: 14px;
+
+    --dur-fast: 120ms;
+    --ease-out: cubic-bezier(.2, .8, .2, 1);
+  }
+}

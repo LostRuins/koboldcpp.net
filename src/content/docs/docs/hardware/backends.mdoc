@@ -1,0 +1,124 @@
+---
+title: "GPU backends: CUDA, Vulkan, ROCm, Metal, CPU"
+description: CUDA, Vulkan, ROCm, Metal and CPU in KoboldCpp, which release file contains which, and how KoboldCpp picks a backend automatically.
+sidebar:
+  label: "GPU backends"
+  order: 1
+---
+
+The backend decides where the model runs: on an NVIDIA, AMD, Intel or Apple GPU, or on the processor alone. You choose it with **Backend:** on the **Quick Launch** tab, or with a flag. If you don't choose, KoboldCpp picks one for you.
+
+| Backend | Launcher | Flag | For |
+|---|---|---|---|
+| CUDA | **Use CUDA** | `--usecuda` | NVIDIA graphics cards |
+| Vulkan | **Use Vulkan** | `--usevulkan` | Any graphics card with Vulkan: NVIDIA, AMD, Intel |
+| ROCm (hipBLAS) | **Use hipBLAS (ROCm)** | `--usecuda` | AMD graphics cards, only in the ROCm build for Linux |
+| Metal | automatic | none | Apple Silicon Macs |
+| CPU | **Use CPU** | `--usecpu` | No graphics card, or to leave it unused |
+
+The launcher's tooltip sums it up: "CUDA runs on Nvidia GPUs, and is much faster. Vulkan works on all GPUs but is somewhat slower."
+
+On an RTX 3090 with Qwen3-VL-8B and a prompt of about 1,000 tokens, CUDA processed the prompt about 16 times as fast as Vulkan (6603 vs 414 tokens per second). Generation was closer: 82.0 vs 71.5 tokens per second.
+
+Old-processor variants (**Use CPU (Old CPU)**, **Use Vulkan (Old CPU)**, **Use Vulkan (Older CPU)**, **Failsafe Mode (Older CPU)**) are covered in [Old PCs and CPU-only](/docs/hardware/old-and-cpu-only/).
+
+## Which file has which backend
+
+The launcher only lists the backends your file contains.
+
+| File | CUDA | Vulkan | ROCm | Metal | CPU |
+|---|---|---|---|---|---|
+| `koboldcpp.exe`, `koboldcpp-linux-x64` | CUDA 12 | yes | | | yes |
+| `koboldcpp-nocuda.exe`, `koboldcpp-linux-x64-nocuda` | | yes | | | yes |
+| `koboldcpp-oldpc.exe`, `koboldcpp-linux-x64-oldpc` | CUDA 11 | yes | | | yes |
+| `koboldcpp-linux-x64-rocm` (rocm-rolling) | | yes | yes | | yes |
+| `koboldcpp-mac-arm64` | | | | yes | yes |
+
+- **NVIDIA:** the main file, with **Use CUDA**.
+- **AMD:** start with **Use Vulkan** in the nocuda file. The ROCm build for Linux is very experimental.
+- **Intel:** **Use Vulkan** in the nocuda file.
+
+See [Release files and system requirements](/docs/install/releases/) for all files and their CPU requirements.
+
+## Automatic selection
+
+If you set no backend, KoboldCpp picks one at startup and prints which:
+
+```text
+Auto Selected CUDA Backend (flag=0)
+```
+
+It checks in this order:
+
+1. **CUDA or ROCm**, if all of these are true:
+   - the file contains CUDA or hipBLAS;
+   - `nvidia-smi` (or, for AMD, `rocminfo`) finds a GPU;
+   - the detected VRAM is more than 3.5 GB (3,500,000,000 bytes);
+   - the processor has AVX2 (AVX is enough in the oldpc builds).
+2. **Vulkan**, if `vulkaninfo` reports a **discrete** graphics card and the file contains Vulkan.
+3. **CPU** otherwise ("Auto Selected Default Backend").
+
+Consequences:
+
+- **Vulkan is picked automatically only for a discrete graphics card.** To use an integrated GPU, choose **Use Vulkan** yourself.
+- **NVIDIA cards with 3.5 GB of VRAM or less** are not auto-selected for CUDA; KoboldCpp falls through to Vulkan or the CPU. Choose **Use CUDA** yourself if you want it.
+- **AMD on Linux:** with `vulkaninfo` installed and no `rocminfo`, the nocuda file picks Vulkan. Without `vulkaninfo`, it does not find the card and runs on the CPU (both checked with a Radeon RX 7600 XT).
+- If `nvidia-smi`, `rocminfo` and `vulkaninfo` are all missing or fail, KoboldCpp prints "Unable to detect VRAM." and uses the CPU. Install your GPU driver's tools, or choose the backend yourself.
+- If the processor lacks AVX2 or AVX, KoboldCpp switches to the matching old-CPU mode. See [Old PCs and CPU-only](/docs/hardware/old-and-cpu-only/).
+- Automatic selection is skipped when you set **GPU Layers:** to `0` (`--gpulayers 0`). KoboldCpp then runs on the CPU, even with a GPU present.
+- On macOS, Metal is used without this check.
+
+The launcher makes the same choice when it opens, as long as you haven't changed **Backend:** yourself. A template (`.kcppt`) also lets KoboldCpp choose, unless you pass `--usecuda` or `--usevulkan`.
+
+## Choosing a GPU
+
+**GPU ID:** next to the backend selects one GPU or **All**. The name of the selected GPU is shown in yellow. IDs start at 0. On the command line, add the ID after the backend flag (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --usecuda 0 --model mymodel.gguf
+koboldcpp --usevulkan 1 --model mymodel.gguf
+```
+
+Without a number, all GPUs are used. For several GPUs, see [Multiple GPUs](/docs/hardware/multi-gpu/).
+
+## CUDA
+
+- `--usecuda` accepts a GPU ID from 0 to 3.
+- **Use MMQ** (on by default) uses dedicated kernels for prompt processing instead of cuBLAS. Turn it off with `--nommq`. It only affects CUDA and ROCm.
+- The first start on a new card can take a few minutes: "Initializing CUDA/HIP, please wait, the following step may take a few minutes (only for first launch)". Later starts are faster.
+- The oldpc builds use CUDA 11 for older NVIDIA cards. See [Release files: CUDA versions](/docs/install/releases/#advanced-cuda-versions-and-nvidia-cards).
+
+## Vulkan
+
+- `--usevulkan` takes one or more device IDs, for example `--usevulkan 0 1`. Without IDs, it uses all devices.
+- If the environment variable `GGML_VK_VISIBLE_DEVICES` is set, it wins over the IDs given to `--usevulkan`.
+
+## ROCm
+
+An official ROCm build for AMD cards on Linux is published under the [rocm-rolling](https://github.com/LostRuins/koboldcpp/releases/tag/rocm-rolling) tag. See [Release files: ROCm build](/docs/install/releases/#advanced-rocm-build-for-amd-on-linux). In it, **Use hipBLAS (ROCm)** and `--usecuda` select ROCm. KoboldCpp picks ROCm by itself only when `rocminfo` finds the card, so without ROCm installed, select it yourself.
+
+If generation is slow with Vulkan on Linux, try the ROCm build. On a Radeon RX 7600 XT with a prompt of about 1,000 tokens, it generated more than three times as fast as Vulkan (Qwen3-VL-8B: 36.7 vs 10.3 tokens per second).
+
+There is no official ROCm build for Windows. Use Vulkan there.
+
+<!-- TODO measure on GPU: auto-selection and VRAM detection on the AMD machine with rocminfo installed -->
+
+## Metal
+
+The Mac build uses Metal automatically. See [Apple Silicon](/docs/hardware/apple-silicon/).
+
+## Advanced: removed backends
+
+- **CLBlast** was removed in favor of Vulkan. Use **Use Vulkan** instead.
+- **OpenBLAS** was removed. The CPU backend no longer needs it.
+- `--noblas` still works and means the same as `--usecpu`.
+
+## Advanced: selecting devices by name
+
+`--device` (**Device Override** on the **Hardware** tab) takes a comma-separated list of llama.cpp device names, for example `Vulkan0,Vulkan1`, and overrides the normal device choice for the text model, TTS and embeddings. CPU names and unknown names are rejected, and then the whole override is ignored. The load log shows the device names, for example `CUDA0` and `CUDA1` for the first two CUDA GPUs, `Vulkan0` for the first Vulkan GPU and `ROCm0` for the first GPU in the ROCm build. Buffers named `CUDA_Host` in the log are in system RAM.
+
+## Related
+
+- [GPU layers](/docs/hardware/gpu-layers/)
+- [Multiple GPUs](/docs/hardware/multi-gpu/)
+- [Download KoboldCpp](/download/)

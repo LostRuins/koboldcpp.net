@@ -1,0 +1,83 @@
+---
+import '../styles/tokens.css';
+import '../styles/buttons.css';
+import '../styles/sl-theme.css';
+import '../styles/sl-bridge.css';
+import '../styles/home.css';
+import { getImage } from 'astro:assets';
+import { release, LATEST_URL, isoDate } from '../data/release';
+import { EXT } from '../data/routes';
+import { OG_IMAGE } from '../data/og';
+import { FONT_PRELOADS } from '../data/font-preloads';
+import liteVision from '../assets/home/lite-vision.png';
+import osPrefScript from '../scripts/os-pref.js?raw';
+import noscriptCss from '../scripts/noscript.css?raw';
+
+interface Props {
+	title: string;
+	description: string;
+	ogTitle: string;
+	ogDescription: string;
+}
+const { title, description, ogTitle, ogDescription } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const screenshot = await getImage({ src: liteVision, format: 'webp' });
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		// WebSite tells search engines the site's name.
+		{ '@type': 'WebSite', '@id': 'https://koboldcpp.net/#website', name: 'KoboldCpp', url: 'https://koboldcpp.net/' },
+		{
+			'@type': 'SoftwareApplication',
+			'@id': 'https://koboldcpp.net/#software',
+			name: 'KoboldCpp',
+			description:
+				'Free, open-source software for running GGUF AI models on your own computer, with a bundled KoboldAI Lite interface. One file, no install.',
+			url: canonical,
+			applicationCategory: 'DeveloperApplication',
+			operatingSystem: 'Windows, Linux, macOS',
+			softwareVersion: release.version,
+			// The latest release's date; datePublished would mean the first release.
+			dateModified: isoDate(release.publishedAt),
+			license: 'https://www.gnu.org/licenses/agpl-3.0.html',
+			downloadUrl: LATEST_URL,
+			screenshot: new URL(screenshot.src, Astro.site).href,
+			offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+			sameAs: [EXT.repo, EXT.hf, 'https://hub.docker.com/r/koboldai/koboldcpp'],
+		},
+	],
+};
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="KoboldCpp" />
+		<meta property="og:title" content={ogTitle} />
+		<meta property="og:description" content={ogDescription} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={OG_IMAGE.url} />
+		<meta property="og:image:width" content={OG_IMAGE.width} />
+		<meta property="og:image:height" content={OG_IMAGE.height} />
+		<meta property="og:image:alt" content={OG_IMAGE.alt} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="theme-color" content="#223351" />
+		<link rel="icon" href="/favicon.png" type="image/png" />
+		{FONT_PRELOADS.map((attrs) => <link {...attrs} />)}
+		<link rel="sitemap" href="/sitemap-index.xml" />
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+		<script is:inline set:html={osPrefScript} />
+		<noscript><style is:inline set:html={noscriptCss}></style></noscript>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Skip to content</a>
+		<slot />
+	</body>
+</html>

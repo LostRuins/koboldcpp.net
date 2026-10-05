@@ -1,0 +1,70 @@
+# Builds the site on every push and pull request. Pushes to main, the daily run and manual runs on main
+# also commit the built site to the root of the deploy branch, which the host serves; unchanged builds make
+# no commit. The daily run picks up a new KoboldCpp release (the build reads the latest release from the
+# GitHub API and fails if a docs download link names a missing file, so a broken build is never published).
+# Host setup: README.md, "Hosting".
+name: Build and deploy
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+        env:
+          # With CI set, a token turns on strict release mode (src/data/release.ts): no fallback to the cache.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site
+          path: dist
+          include-hidden-files: true
+          retention-days: 1
+
+  # A separate job, so the dependencies that run during the build never get a token that can write to the repo.
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: site
+          path: site
+      - name: Commit the site to the deploy branch
+        env:
+          # Outside the site folder, so nothing in the build output can act as git config or hooks.
+          GIT_DIR: ${{ runner.temp }}/deploy.git
+          GIT_WORK_TREE: site
+          REPO: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        run: |
+          git init -q
+          if git fetch -q --depth=1 "$REPO" deploy; then git reset -q FETCH_HEAD; fi
+          git add -A
+          if [ -z "$(git status --porcelain)" ]; then echo 'The site has not changed.'; exit 0; fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -qm "Site from ${GITHUB_SHA::7}"
+          git push -q "$REPO" HEAD:deploy

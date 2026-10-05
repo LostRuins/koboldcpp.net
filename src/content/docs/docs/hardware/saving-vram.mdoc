@@ -1,0 +1,147 @@
+---
+title: Saving VRAM
+description: Fit bigger models or longer contexts in KoboldCpp with KV cache quantization, flash attention, SWA, MoE CPU offload and other memory options.
+sidebar:
+  order: 4
+---
+
+When a model does not fit on your graphics card, these options reduce how much VRAM it needs.
+
+| Option | Launcher | Flag | Cost |
+|---|---|---|---|
+| Smaller context | **Context Size:** | `--contextsize` | The model keeps less text in mind |
+| Quantized KV cache | **Quantize KV Cache:** (Context tab) | `--quantkv` | Works best with flash attention (on by default) |
+| Smaller quant | pick another file | | Some quality |
+| MoE experts on the CPU | **MoE CPU Layers:** (Context tab) | `--moecpu` | Slower, only for MoE models |
+| Vision projector on the CPU | **V.Force CPU** (Loaded Files tab) | `--mmprojcpu` | Images are processed on the CPU |
+| Fewer GPU layers | **GPU Layers:** | `--gpulayers` | Slower; autofit does this for you |
+| Smaller batch size | **Batch Size:** (Hardware tab) | `--batchsize` | Slower prompt processing |
+| KV cache in RAM | **No KV offload** (Hardware tab) | `--lowvram` | Much slower |
+
+Measured with Qwen3-VL-8B Q4_K_S at the default context (16384) on an RTX 3090 (CUDA, KoboldCpp 1.122.1), with a prompt of about 1,000 tokens. VRAM is what `nvidia-smi` showed for the card:
+
+| Setting | VRAM | Prompt (tokens/s) | Generation (tokens/s) |
+|---|---|---|---|
+| Default (all 37 layers, `f16` KV cache, flash attention) | 7192 MiB | 6789 | 86.9 |
+| `--quantkv q8_0` | 6096 MiB | 5842 | 84.9 |
+| `--quantkv q4_0` | 5512 MiB | 5807 | 84.0 |
+| `--gpulayers 30` | 5988 MiB | 3235 | 45.2 |
+| `--batchsize 256` | 7038 MiB | 4247 | 86.7 |
+| `--lowvram` | 4860 MiB | 3324 | 38.3 |
+| `--noflashattention` | 8064 MiB | 5074 | 51.5 |
+
+A quantized KV cache saved 1.1 to 1.7 GB here; generation was 2–3% slower and prompt processing about 15% slower. On a Radeon RX 7600 XT (Vulkan) the VRAM savings were similar.
+
+See [How much memory a model needs](/docs/models/memory/) for where the memory goes.
+
+## Quantize the KV cache
+
+The KV cache holds the context. **Quantize KV Cache:** on the **Context** tab (`--quantkv`) stores it in a smaller format.
+
+The last column is the KV cache of Qwen3-VL-8B at the default context, measured on a Radeon RX 7600 XT.
+
+| Value | Size compared with `f16` | Qwen3-VL-8B |
+|---|---|---|
+| `f16` (default) | 100% | 2340 MiB |
+| `bf16` | 100% | not measured |
+| `q8_0` | about 53% | 1243 MiB |
+| `q5_1` | about 38% | 877.5 MiB |
+| `q4_0` | about 28% | 658.1 MiB |
+
+For example (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --quantkv q8_0
+```
+
+- It needs flash attention for full effect. Without flash attention, only the K half of the cache is quantized (except `bf16`), and KoboldCpp warns: "Quantized KV was used without flash attention! This is NOT RECOMMENDED! … In some cases, it might even use more VRAM when doing a full offload."
+- With Qwen3-VL-8B on a Radeon RX 7600 XT, `q8_0` without flash attention used 7947 MiB of VRAM, more than the default `f16` cache with flash attention (6813 MiB), because the compute buffer grew from 337 to 2156.6 MiB.
+- It works together with [ContextShift](/docs/settings/context-size/#reusing-context-between-requests).
+- Old numeric values still work: `0` = `f16`, `1` = `q8_0`, `2` = `q4_0`, `3` = `bf16`.
+
+KV cache of Gemma 3 4B at the default context, measured on KoboldCpp 1.122.1 with a Radeon RX 7600 XT. Gemma 3 uses SWA: 5 of its 34 layers keep the whole context, the other 29 keep only 1664 tokens.
+
+| `--quantkv` | 5 full-context layers | 29 SWA layers |
+|---|---|---|
+| `f16` (default) | 325 MiB | 188.5 MiB |
+| `q8_0` | 172.7 MiB | 100.1 MiB |
+| `q4_0` | 91.4 MiB | 53.0 MiB |
+
+## Flash attention
+
+Flash attention is **on by default**. **Use FlashAttention** on the **Quick Launch** and **Hardware** tabs turns it off when unchecked (`--noflashattention`, `-nofa`). Leave it on, especially with a quantized KV cache.
+
+With Gemma 3 4B on a Radeon RX 7600 XT, turning flash attention off left the `f16` KV cache the same size and made generation slower.
+
+The old `--flashattention` flag has no effect. An old `.kcpps` file with `"flashattention": false` turns flash attention **off**, and one with `"useswa": false` turns SWA off; check these settings when you reuse old config files.
+
+## SWA
+
+Some models, such as the Gemma 3 family, use sliding window attention (SWA). KoboldCpp uses it by default, which makes their KV cache much smaller.
+
+- **Allow SWA** on the **Context** tab controls it. Uncheck it or pass `--noswa` for a full-size cache.
+- With SWA on, ContextShift cannot be used. The console says "Note that using SWA Mode cannot be used with Context Shifting!".
+- **SWA Padding Tokens:** (`--swapadding`) adds room to the SWA cache. More padding lets KoboldCpp rewind further before it has to reprocess the prompt, at the cost of some memory.
+
+## MoE models
+
+Mixture-of-Experts (MoE) models have many "expert" weights, of which only a few are used per token. Keeping the experts in system RAM and the rest on the GPU often lets a large MoE model run on a small GPU.
+
+Autofit does this by itself when the model does not fit: it keeps all layers on the GPU and moves the expert weights of the last layers to the CPU. For example, Qwen3-30B-A3B at 16k context on a 16 GB Radeon RX 7600 XT (Vulkan, shortened):
+
+```text
+Autofit Success: 1, Autofit Result: -c 16512 -ngl 49 -ot blk\.25\.ffn_(gate|gate_up|down).*=CPU,blk\.26\.ffn_(up|down|gate_up|gate)_(ch|)exps=CPU,...
+```
+
+`-ngl 49` means all layers. The `-ot …=CPU` patterns move the expert weights from layer 25 on to the CPU.
+
+**MoE CPU Layers:** on the **Context** tab (`--moecpu N`) keeps the expert weights of the first N layers on the CPU. `--moecpu` without a number keeps all of them there.
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model my-moe-model.gguf --usecuda --moecpu --gpulayers 99
+```
+
+- With `--moecpu`, autofit does not switch on by itself. Set **GPU Layers:** yourself; a number at least as high as the layer count puts everything that is not an expert on the GPU.
+- **Force AutoFit** ignores `--moecpu`.
+- It only takes effect when KoboldCpp uses a GPU besides the CPU.
+- The value is capped at 200.
+
+With Qwen3-30B-A3B Q4_K_M at 16k context on a Radeon RX 7600 XT (Vulkan), `--moecpu --gpulayers 99` used 2724 MiB of VRAM instead of 11472 MiB with autofit, and generated 15.1 instead of 17.2 tokens per second.
+
+**FFN CPU Layers:** (`--ffncpu N`) does the same for the feed-forward weights of normal (dense) models.
+
+**MoE Experts:** (`--moeexperts N`) changes how many experts are used per token. The default follows the model file. This changes the model's output quality and speed.
+
+## KV cache in system RAM
+
+**No KV offload** on the **Hardware** tab (`--lowvram`, `-nkvo`) keeps the KV cache in system RAM while the layers run on the GPU. More layers fit, but it is much slower. It works with CUDA and Vulkan. Use it as a last resort.
+
+## Advanced: override tensors
+
+**Override Tensors:** on the **Context** tab (`--overridetensors`, `-ot`) places tensors whose names match a pattern on a chosen device, as in llama.cpp: `regex=buffer type`, separated by commas. `--moecpu` and `--ffncpu` are shortcuts that add such patterns. Like them, it stops autofit from switching on by itself, and **Force AutoFit** ignores it.
+
+The buffer type is a device name: `CUDA0` or `CPU` with CUDA, `Vulkan0` or `CPU` with Vulkan, `ROCm0` or `CPU` with ROCm. The console lists the accepted names after `Handling Override Tensors for backends:`. An unknown name prints `Unknown Buffer Type: <name>`, and that pattern is ignored.
+
+## Advanced: loading options (mmap, mlock, direct I/O)
+
+These change how the model file is read into memory, not how much VRAM it uses.
+
+| Option | Launcher | Flag | Effect |
+|---|---|---|---|
+| mmap | **Use MMAP** | `--usemmap` | Maps the file into memory instead of reading it. Off by default. The launcher notes that the model "will not be unloadable". |
+| mlock | **Use mlock** (Hardware tab) | `--usemlock` | Keeps the model's RAM from being paged out. "Not usually recommended." |
+| Direct I/O | **Direct I/O** (Hardware tab) | `--usedirectio` | Reads the file with direct I/O on Linux, which may load faster from some drives. Ignored on other systems. |
+
+- mmap and direct I/O can't be combined. Direct I/O wins over mlock.
+- With mmap or direct I/O, the CPU backend does not repack the weights.
+- The old `--nommap` flag has no effect, since mmap is off by default.
+
+With Qwen3-VL-8B and all layers on a Radeon RX 7600 XT, the 334 MiB of weights that stay in RAM were mapped from the file with mmap (`CPU_Mapped` in the log). The process used 504 MB of RAM with mmap and 187 MB with direct I/O.
+
+<!-- TODO measure on GPU: RAM use without mmap, and load time with mmap, without mmap and with direct I/O (file not in the page cache) -->
+
+## Related
+
+- [How much memory a model needs](/docs/models/memory/)
+- [GPU layers](/docs/hardware/gpu-layers/)
+- [Out of memory](/docs/troubleshooting/out-of-memory/)

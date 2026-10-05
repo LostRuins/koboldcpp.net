@@ -1,0 +1,100 @@
+---
+title: Remote access
+description: Use KoboldCpp from your phone or another PC - on the same network with the LAN IP, or over the internet with Remote Tunnel. Set a password first.
+sidebar:
+  order: 5
+---
+
+KoboldCpp runs on one PC, and you can use it from other devices. KoboldAI Lite works in any browser, including on phones.
+
+| Where the other device is | Use |
+|---|---|
+| Same Wi-Fi or network | [The PC's network address](#same-network) |
+| Anywhere | [Remote Tunnel](#anywhere-remote-tunnel) |
+
+{% aside type="caution" %}
+Set a **Password:** on the **Network** tab (`--password`) before you open KoboldCpp to other devices. See [Passwords and security](/docs/api/passwords-and-security/).
+{% /aside %}
+
+## Same network
+
+KoboldCpp listens on all network interfaces by default, so devices on your network can already reach it.
+
+{% steps %}
+
+1. If others share your network, set a **Password:** on the **Network** tab. Leave **Host:** on the same tab empty; with `127.0.0.1`, only this PC can connect.
+2. Launch KoboldCpp.
+3. Find the PC's IP address on your network, for example `192.168.1.20`.
+   - Windows: run `ipconfig` in Command Prompt and look for **IPv4 Address**.
+   - Linux: run `hostname -I`.
+   - macOS: run `ipconfig getifaddr en0`.
+4. On the other device, open `http://<IP address>:5001`, for example `http://192.168.1.20:5001`.
+
+{% /steps %}
+
+The console still prints `http://localhost:5001`. That address is only for the PC itself.
+
+If the page does not load, the PC's firewall is usually blocking port 5001, or the IP address is wrong:
+
+- **Windows:** on first launch, Windows may ask whether KoboldCpp may use the network. Allow **Private networks**. If you missed it, open **Windows Security** > **Firewall & network protection** > **Allow an app through firewall** and tick KoboldCpp for **Private**.
+- **Linux (ufw):** `sudo ufw allow 5001/tcp`.
+
+Browsers allow the microphone and camera only on HTTPS or on the PC itself (`localhost`). For voice input or the camera from another device, use the **Remote Tunnel** link or [HTTPS](/docs/api/passwords-and-security/#https-ssl).
+
+For other apps, use the same address in place of `localhost`, for example `http://192.168.1.20:5001/v1` for OpenAI-compatible apps.
+
+## Anywhere: Remote Tunnel
+
+**Remote Tunnel** creates a public HTTPS link through Cloudflare. It works even behind a firewall.
+
+{% steps %}
+
+1. Set a **Password:** on the **Network** tab.
+2. Tick **Remote Tunnel** on the **Quick Launch** or **Network** tab. On the command line, add `--remotetunnel`.
+3. Launch. The first time, KoboldCpp downloads Cloudflare's `cloudflared` program from GitHub.
+4. Wait for the link in the console:
+
+   ```text {% title="Console" frame="terminal" %}
+   Your remote tunnel is ready, please connect to https://<random-words>.trycloudflare.com
+   ```
+
+5. Open the link on any device to use KoboldAI Lite. For other apps, add `/api` or `/v1` to it, as printed in the console.
+
+{% /steps %}
+
+The link changes every time you launch KoboldCpp.
+
+Anyone who has the link can reach your KoboldCpp. The password keeps them out of text generation, but not out of image generation. See [what the password protects](/docs/api/passwords-and-security/#what-the-password-protects).
+
+If the tunnel fails, the console prints `Error: Could not create cloudflare tunnel!` or `Remote Tunnel Failed!`. KoboldCpp needs internet access to download `cloudflared` and to open the tunnel.
+
+Remote Tunnel does not start in terminal-only modes (`--cli`, `--prompt`, `--benchmark`).
+
+## Share with the world: AI Horde
+
+To let anyone use your model through the AI Horde network instead of a private link, run KoboldCpp as a Horde worker. See [Horde worker](/docs/features/horde-worker/).
+
+## Advanced: choose the network address
+
+**Host:** (`--host`) sets the address KoboldCpp listens on. Leave it empty for all interfaces, use `127.0.0.1` for this PC only, or one of the PC's IP addresses to listen on that network only. When **Host:** is set, the console prints that address in place of `localhost`.
+
+The port is **Port:** on the **Network** tab (`--port`, default 5001).
+
+## Advanced: HTTPS on your network
+
+On your own network, KoboldCpp serves plain HTTP. To serve HTTPS, set **SSL Cert:** and **SSL Key:** (`--ssl cert.pem key.pem`). The console addresses then start with `https://`. See [HTTPS (SSL)](/docs/api/passwords-and-security/#https-ssl).
+
+With SSL on, **Remote Tunnel** connects to KoboldCpp over HTTPS and accepts its certificate even if it is self-signed.
+
+## Safety checklist
+
+- Set a **Password:** before you use **Remote Tunnel** or share on your network.
+- If admin mode is on, set an **Admin Password:**.
+- Image generation and `/tts_to_audio` are open to anyone who can reach the server. Load those models only on instances you trust, or limit image size with `--sdclamped`.
+- For shared servers, consider `--ratelimit`, `--genlimit` and `--maxrequestsize`. See [Limits for shared servers](/docs/api/passwords-and-security/#limits-for-shared-servers).
+
+## Related
+
+- [Passwords and security](/docs/api/passwords-and-security/)
+- [Connect other apps](/docs/api/connect-apps/)
+- [Connection problems](/docs/troubleshooting/connection/)

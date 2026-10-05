@@ -1,0 +1,55 @@
+---
+title: Embeddings
+description: Serve an embeddings model from KoboldCpp for search and RAG apps, through the OpenAI, Ollama and KoboldCpp embeddings endpoints.
+sidebar:
+  order: 7
+---
+
+An embeddings model turns text into a list of numbers (a vector). Apps use these vectors to find text with similar meaning, for example for document search and RAG. KoboldCpp serves an embeddings model next to the text model.
+
+You need this if an app asks for an embeddings endpoint, or to use **KoboldCpp Embeddings** in Lite's TextDB (**Context** > **TextDB**). Normal chatting in KoboldAI Lite does not need it.
+
+## Quick start
+
+Started with a `Chatbot` newbie template? It already loads an embeddings model. Skip to step 4.
+
+{% steps %}
+
+1. Download an embeddings model as a `.gguf` file. A good first pick is [bge-m3-q8_0.gguf](https://huggingface.co/ggml-org/bge-m3-Q8_0-GGUF/resolve/main/bge-m3-q8_0.gguf), the one the `LowSpec-Chatbot` template uses.
+2. In the launcher, open the **Loaded Files** tab and select the file in **Embeds Model:**.
+3. Click **Launch**.
+4. In your app, set the embeddings endpoint to `http://localhost:5001/v1` (OpenAI-compatible).
+
+{% /steps %}
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --embeddingsmodel embeddings-model.gguf
+```
+
+## API
+
+| Endpoint | Format |
+|---|---|
+| `POST /v1/embeddings` | OpenAI. Supports `"encoding_format": "base64"`. |
+| `POST /api/embed` | Ollama |
+| `POST /api/extra/embeddings` | KoboldCpp |
+
+With `--password` set, these endpoints need the password.
+
+## Advanced options
+
+| Launcher field | Flag | What it does |
+|---|---|---|
+| **ECtx:** | `--embeddingsmaxctx` | Maximum input length in tokens. Default `4096`, never more than the model was trained for. `0` uses the text model's context size. A negative value uses the model's trained context. |
+| **GPU** (next to **Embeds Model:**) | `--embeddingsgpu` | Puts the embeddings model on the GPU. Usually not needed. |
+
+An empty **ECtx:** field in the launcher saves as `0`.
+
+With bge-m3 on a PC with an RTX 3090, **GPU** embedded 32 texts of about 340 tokens in 0.69 s instead of 1.3 s on the CPU, and used about 300 MiB more VRAM.
+
+## Related
+
+- [Connect other apps](/docs/api/connect-apps/)
+- [API endpoints](/docs/api/endpoints/)

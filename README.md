@@ -1,66 +1,89 @@
 # koboldcpp.net
 
-Source files for KoboldCpp.net, the official KoboldCpp community website.
+The website and documentation for [KoboldCpp](https://github.com/LostRuins/koboldcpp). Astro + Starlight (Markdoc
+pages), built as a static site with Bun.
 
-A responsive, light-themed static website with 10 content pages plus a custom 404. All reading, navigation, download links, and FAQ content work without JavaScript. Small progressive enhancements provide mobile navigation, local resource/template filtering, and command copying. There are no runtime packages, remote fonts, analytics, or client-side content fetches.
+## Commands
 
-## Preview
+| Command | What it does |
+| --- | --- |
+| `bun install --frozen-lockfile` | Install the exact dependency versions from `bun.lock` |
+| `bun run dev` | Dev server on http://localhost:4321 |
+| `bun run build` | Static build into `dist/` |
+| `bun run check` | Type check |
+| `bun scripts/check-links.ts http://127.0.0.1:<port>` | Check every internal link and `#anchor` of the build, served at that address |
+| `bun run update-release` | Refresh `src/data/release.cache.json` (used when GitHub can't be reached at build time) |
 
-Double-click `index.html` to preview the site directly. Styles, images, page navigation, and resource filters work with `file://` URLs; reading and navigation also work with JavaScript disabled. If the browser does not permit clipboard access for local files, the copy button selects the command for manual copying.
+The build fetches the latest KoboldCpp release from the GitHub API to check every download link in the docs against its
+files (and for the home page's structured data). `RELEASE_STRICT=1` makes a failed fetch fail the build instead of
+using the cache. No page shows a version number, so a new release needs no edit.
 
-For a preview served over HTTP, run this from the repository root:
+## Where things are
 
-```sh
-python -m http.server 8080 --bind 127.0.0.1
-```
+- `src/pages/index.astro`, `src/components/home/`, `src/layouts/HomeLayout.astro`: the home page. Kept short on
+  purpose: hero with two KoboldAI Lite screenshots, three steps, four features. Details go into the beginner guide or the wiki.
+- `src/content/docs/getting-started/*.mdoc` and `src/content/docs/download.mdoc`: the beginner guide, a few short
+  pages with screenshots. Their order is the "Getting started" group in `astro.config.mjs`.
+- `src/content/docs/docs/**.mdoc`: the wiki (all details). Its sidebar is generated per folder (`astro.config.mjs`);
+  order comes from `sidebar.order` in each page.
+- `src/starlightRouteData.ts`: shows only the beginner guide's sidebar on its pages and hides it in the wiki.
+- `src/content/docs/links.mdoc`: every external link (community, mirrors, related projects), so the footer doesn't list them.
+- `src/data/routes.ts`: the nav bar and the internal links that components use.
+- `src/assets/docs/`: screenshots. A `<name>.mobile.png` next to `<name>.png` is shown on phones instead.
+  `getting-started/windows-*.png` are placeholders: replace them with real Windows screenshots of the same name.
 
-Then open http://127.0.0.1:8080. Content pages use document-relative asset paths and explicit `index.html` navigation links. Canonical URLs, structured data, and sitemap entries point to the preferred production URLs at https://koboldcpp.net. The custom `404.html` intentionally keeps root-relative paths because web hosts can serve it at arbitrary missing URLs; preview that error page through HTTP.
+## Writing docs pages
 
-On this workstation, Python is available at `D:\MainApplications\PythonPortable\App\python.exe` if `python` is not on PATH.
+- **`title`** is the page heading and the search result title (`<title> | KoboldCpp`). Name what people search for and
+  stay under ~48 characters. Put the short name for the sidebar in `sidebar.label`.
+- **`description`** is the search result snippet: one factual sentence, under ~155 characters.
+- On phones, a table is shown as stacked rows (`markdoc.config.mjs`) when its words and code don't fit 360 px side by
+  side, when it has 3 columns and a cell longer than 22 characters, or when a first-column cell is longer than 22
+  characters. Keep the first column the row's name.
+- `text` code blocks (messages, logs) wrap long lines; `sh` blocks scroll, so flags never split. Inline code breaks
+  only at spaces; a single token over 30 characters (paths, URLs) may break anywhere.
+- Facts need a source: the KoboldCpp code or README, or a test with the real release. Speeds name the model and the
+  hardware.
+- Beginner guide pages: one task per page, plain words, a screenshot for each click. Leave options and background to
+  the wiki and link there.
+- Point people only to official sources. Download links go to the GitHub releases; don't name or link unofficial
+  download sites.
 
-## Edit and rebuild
+## Generated files
 
-- `content.py`: page copy, template descriptions, resource directory, FAQs, and source links.
-- `build.py`: shared layout, home page, navigation, metadata, structured data, sitemap generation.
-- `assets/site.css`: responsive light theme, layout, focus styles, reduced-motion behavior.
-- `assets/site.js`: progressive enhancements; no third-party requests.
-- `SOURCES.md`: source references and editorial maintenance notes.
+- **Flag reference** (`reference/flags.mdoc`, `reference/deprecated-flags.mdoc`), per KoboldCpp release:
+  `python3 scripts/extract-flags.py <koboldcpp.py> > src/data/flags.json`, then `python3 scripts/gen-flag-docs.py`.
+  Explanations live in `src/data/flag-notes.json`; the generator lists flags without notes.
+- **Fonts** (`src/assets/fonts/`): trimmed copies of the `@fontsource` files (fewer characters and weights, about half
+  the size). After updating a font package or when text needs characters outside Latin-1, run
+  `python3 scripts/subset-fonts.py` (needs `pip install fonttools brotli`).
+- **Share image** (`public/og.jpg`, 1200x630): the brand, one line and the main home screenshot, without a version number.
+  Used by every page (`src/data/og.ts`).
 
-```sh
-python build.py
-python tools/check_site.py
-```
+## Hosting
 
-The build uses only the Python standard library. Commit the generated HTML, sitemap, and robots file alongside the sources. Build output is deterministic; rebuilding does not fabricate content modification dates. The included PNG assets need no build step. To recreate the social card and touch icon, `tools/render_assets.py` optionally uses Pillow.
+The site is plain static files, so any static host works. `.github/workflows/deploy.yml` builds it on every push and
+pull request. Pushes to `main`, a daily run and manual runs also commit the built site to the root of the `deploy`
+branch, only when a file changed (the build is reproducible). The host serves that branch as it is, without a build
+step, the same way KoboldAI Lite is hosted. The daily run picks up a new KoboldCpp release by itself; if a docs download
+link names a file the new release doesn't have, the build fails and the live site stays as it was. No secrets are
+needed.
 
-## Deploy
+Host setup, once (the `deploy` branch exists after the first run on `main`):
 
-The generated site is ready to serve; no server runtime or JavaScript build is needed.
+- **Cloudflare Pages:** Workers & Pages → Create → Pages → Connect to Git → this repository. Production branch
+  `deploy`, framework preset None, no build command, output directory `/`. Then Settings → Build → Branch control:
+  preview branch **None**. Otherwise every push to another branch publishes its raw source on a public
+  `*.pages.dev` address. Add the custom domain `koboldcpp.net` under Custom domains.
+- **GitHub Pages:** Settings → Pages → Deploy from a branch → `deploy`, `/ (root)`. Needs a paid GitHub plan while
+  the repository is private.
 
-- **GitHub Pages:** publish the repository root of the chosen branch. Set the custom domain to `koboldcpp.net`, configure domain ownership/DNS through the host, and enable HTTPS. `CNAME` and `.nojekyll` are included. A project URL below a repository subpath is not the intended deployment.
-- **Cloudflare Pages:** use no framework and publish the repository root. No build command is required if generated files are committed; alternatively run `python build.py`. Configure the custom domain. `_headers` supplies optional host-supported headers.
-- **Other hosts:** upload the generated HTML directories, `assets/`, `robots.txt`, `sitemap.xml`, and `404.html`. Configure the host to serve `index.html` inside directories and return HTTP 404 with `404.html` for missing paths.
+Other files:
 
-For production uploads to a generic host, source Python files and documentation are not needed. They contain no secrets, but can be left out of the public document root. Keep source available as required by the included license.
-
-The website is prepared locally. Deployment, DNS changes, account verification, and search-engine submissions are separate actions; none are performed by the site code.
-
-## Search visibility and launch work
-
-Built in: unique page titles/descriptions, crawlable HTML, internal topic links, one H1 per page, canonical HTTPS URLs, Open Graph/Twitter images, WebSite/WebPage/SoftwareApplication/BreadcrumbList JSON-LD, `robots.txt`, and an XML sitemap. FAQ content is visible in native details elements; no promise is made about search rich results or ranking.
-
-At launch:
-
-1. Verify that all public URLs use HTTPS and resolve to `koboldcpp.net`. Redirect alternate hostnames and preview domains to the canonical host where practical.
-2. Test the live site, downloads, custom 404 status, sitemap, and social card. Remove any host-level password or indexing block on the production site.
-3. Verify ownership in Google Search Console and Bing Webmaster Tools, then submit `https://koboldcpp.net/sitemap.xml`.
-4. Add an official link back to this domain from the project README, wiki, and other project-controlled profiles. This gives visitors a verifiable chain from the established project to the new community website.
-5. Keep the guides accurate as releases and templates change. Check Search Console for crawl/indexing problems and useful questions to answer.
-
-SEO improves discoverability; no implementation can guarantee an outranking result. The site emphasizes useful original guidance and source transparency.
-
-## Validation
-
-`tools/check_site.py` checks all pages for metadata, JSON-LD, local URLs and anchors, missing image alt text, duplicate IDs, sitemap coverage, and accidental links to the lookalike domain. `tools/browser_check.py` additionally uses a local matching Chrome/ChromeDriver pair for desktop/mobile, no-JavaScript navigation, filtering, FAQ, command-copy, and console checks. It uses only standard-library Python and does not install browser packages.
-
-See `SOURCES.md` for references and asset provenance. The upstream AGPL-3.0 license is included in `LICENSE.md`.
+- `public/_headers` (Cloudflare only): `noindex` for the `llms*.txt` files and long caching for the content-hashed
+  `/_astro/` files.
+- `public/CNAME` and `public/.nojekyll` (GitHub Pages only): keep the custom domain across deploy commits, and stop
+  Jekyll from dropping the `_astro/` folder.
+- `public/robots.txt` points to the sitemap that Starlight generates (`/sitemap-index.xml`).
+- Versions are pinned: dependencies in `bun.lock` (`bun install --frozen-lockfile`), Bun in the workflow, the GitHub
+  Actions by commit.

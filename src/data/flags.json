@@ -1,0 +1,2973 @@
+{
+ "version": "1.122.1",
+ "flags": [
+  {
+   "flags": [
+    "--usecuda",
+    "--usecublas",
+    "--usehipblas"
+   ],
+   "dest": "usecuda",
+   "group": "General",
+   "help": "Use CUDA for GPU Acceleration. Requires CUDA. Enter a number afterwards to select and use 1 GPU. Leaving no number will use all GPUs.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": "*",
+   "default": null,
+   "choices": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "all",
+    "mmq",
+    "nommq",
+    "normal",
+    "lowvram",
+    "rowsplit"
+   ],
+   "metavar": "[main GPU ID]",
+   "line": 13507
+  },
+  {
+   "flags": [
+    "--usevulkan"
+   ],
+   "dest": "usevulkan",
+   "group": "General",
+   "help": "Use Vulkan for GPU Acceleration. Can optionally specify one or more GPU Device ID (e.g. --usevulkan 0), leave blank to autodetect.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "*",
+   "default": null,
+   "choices": null,
+   "metavar": "[Device IDs]",
+   "line": 13508
+  },
+  {
+   "flags": [
+    "--usecpu"
+   ],
+   "dest": "usecpu",
+   "group": "General",
+   "help": "Do not use any GPU acceleration (CPU Only)",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13509
+  },
+  {
+   "flags": [
+    "--model",
+    "-m"
+   ],
+   "dest": "model",
+   "group": "General",
+   "help": "Model file to load. Accepts multiple values if they are URLs.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": "+",
+   "default": [],
+   "choices": null,
+   "metavar": "[filenames]",
+   "line": 13511
+  },
+  {
+   "flags": [
+    "--config"
+   ],
+   "dest": "config",
+   "group": "General",
+   "help": "Load settings from a .kcpps file. Other arguments will be ignored",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": 1,
+   "default": null,
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13513
+  },
+  {
+   "flags": [
+    "--contextsize",
+    "--ctx-size",
+    "-c"
+   ],
+   "dest": "contextsize",
+   "group": "General",
+   "help": "Controls the memory allocated for maximum context size, only change if you need more RAM for big contexts. (default 16384).",
+   "hidden": false,
+   "action": null,
+   "type": "check_range(int, 256, 524288)",
+   "nargs": null,
+   "default": 16384,
+   "choices": null,
+   "metavar": "[256 to 524288]",
+   "line": 13514
+  },
+  {
+   "flags": [
+    "--gpulayers",
+    "--gpu-layers",
+    "--n-gpu-layers",
+    "-ngl"
+   ],
+   "dest": "gpulayers",
+   "group": "General",
+   "help": "Set number of layers to offload to GPU (when using GPU). Set to -1 to enable autofit (default), set to 0 to disable GPU offload.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": -1,
+   "choices": null,
+   "metavar": "[GPU layers]",
+   "line": 13515
+  },
+  {
+   "flags": [
+    "--host"
+   ],
+   "dest": "host",
+   "group": "General",
+   "help": "Host IP to listen on. If this flag is not set, all routable interfaces are accepted.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[ipaddr]",
+   "line": 13516
+  },
+  {
+   "flags": [
+    "--launch"
+   ],
+   "dest": "launch",
+   "group": "General",
+   "help": "Launches a web browser when load is completed.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13517
+  },
+  {
+   "flags": [
+    "--tensor_split",
+    "--tensorsplit",
+    "--tensor-split",
+    "-ts"
+   ],
+   "dest": "tensor_split",
+   "group": "General",
+   "help": "For CUDA and Vulkan only, ratio to split tensors across multiple GPUs, space-separated list of proportions, e.g. 7 3",
+   "hidden": false,
+   "action": null,
+   "type": "float",
+   "nargs": "+",
+   "default": null,
+   "choices": null,
+   "metavar": "[Ratios]",
+   "line": 13518
+  },
+  {
+   "flags": [
+    "--threads",
+    "-t"
+   ],
+   "dest": "threads",
+   "group": "General",
+   "help": "Use a custom number of threads if specified. Otherwise, uses an amount based on CPU cores",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": "get_default_threads()",
+   "choices": null,
+   "metavar": "[threads]",
+   "line": 13519
+  },
+  {
+   "flags": [
+    "--port"
+   ],
+   "dest": "port",
+   "group": "General",
+   "help": "Port to listen on. (Defaults to 5001)",
+   "hidden": false,
+   "action": "store",
+   "type": "int",
+   "nargs": null,
+   "default": 5001,
+   "choices": null,
+   "metavar": "[portnumber]",
+   "line": 13521
+  },
+  {
+   "flags": [
+    "--version"
+   ],
+   "dest": "version",
+   "group": "General",
+   "help": "Prints version and exits.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13523
+  },
+  {
+   "flags": [
+    "--agent"
+   ],
+   "dest": "agent",
+   "group": "Advanced Commands",
+   "help": "Launches the simple KoboldCpp Agent in a new terminal window, or the current terminal with --cli.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13527
+  },
+  {
+   "flags": [
+    "--analyze"
+   ],
+   "dest": "analyze",
+   "group": "Advanced Commands",
+   "help": "Reads the metadata, weight types and tensor names in any GGUF or safetensors file.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13528
+  },
+  {
+   "flags": [
+    "--autofit",
+    "--fit",
+    "-fit"
+   ],
+   "dest": "autofit",
+   "group": "Advanced Commands",
+   "help": "Forces autofit, which attempts to fit the model in the best possible way. Overrides everything else.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13529
+  },
+  {
+   "flags": [
+    "--autofitpadding"
+   ],
+   "dest": "autofitpadding",
+   "group": "Advanced Commands",
+   "help": "How much spare allowance in MB should autofit reserve? If it's too little, the load might fail.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 1024,
+   "choices": null,
+   "metavar": "[padding in MB]",
+   "line": 13530
+  },
+  {
+   "flags": [
+    "--batchsize",
+    "--blasbatchsize",
+    "--batch-size",
+    "-b"
+   ],
+   "dest": "batchsize",
+   "group": "Advanced Commands",
+   "help": "Sets the logical batch size used in batched processing (default 512). Setting it to -1 disables batched mode, but keeps other benefits like GPU offload.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 512,
+   "choices": [
+    -1,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048,
+    4096
+   ],
+   "metavar": null,
+   "line": 13531
+  },
+  {
+   "flags": [
+    "--ubatchsize",
+    "--ubatch-size",
+    "-ub"
+   ],
+   "dest": "ubatchsize",
+   "group": "Advanced Commands",
+   "help": "Sets the physical batch size used in batched processing. Setting it to -1 uses the same value as batchsize (default).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": -1,
+   "choices": [
+    -1,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048,
+    4096
+   ],
+   "metavar": null,
+   "line": 13532
+  },
+  {
+   "flags": [
+    "--benchmark"
+   ],
+   "dest": "benchmark",
+   "group": "Advanced Commands",
+   "help": "Do not start server, instead run benchmarks. If filename is provided, appends results to provided file.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": "?",
+   "default": null,
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13533
+  },
+  {
+   "flags": [
+    "--blasthreads",
+    "--batchthreads",
+    "--threadsbatch",
+    "--threads-batch"
+   ],
+   "dest": "blasthreads",
+   "group": "Advanced Commands",
+   "help": "Use a different number of threads during batching if specified. Otherwise, has the same value as --threads",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[threads]",
+   "line": 13534
+  },
+  {
+   "flags": [
+    "--chatcompletionsadapter"
+   ],
+   "dest": "chatcompletionsadapter",
+   "group": "Advanced Commands",
+   "help": "Select an optional ChatCompletions Adapter JSON file to force custom instruct tags.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "AutoGuess",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13535
+  },
+  {
+   "flags": [
+    "--cli"
+   ],
+   "dest": "cli",
+   "group": "Advanced Commands",
+   "help": "Runs interactive terminal chat without an HTTP server. With --agent, runs the agent in this terminal using a loopback HTTP server.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13536
+  },
+  {
+   "flags": [
+    "--debugmode"
+   ],
+   "dest": "debugmode",
+   "group": "Advanced Commands",
+   "help": "Shows additional debug info in the terminal. Levels: -1 (Horde-quiet, suppresses non-essential prints; auto-applied when Horde args are set), 0 (default, normal output), 1 (verbose: extra slot/cache info, larger print buffers, retains horde-debug prefix). Passing the flag without a value implies 1.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": 0,
+   "choices": null,
+   "metavar": null,
+   "line": 13537
+  },
+  {
+   "flags": [
+    "--defaultgenamt"
+   ],
+   "dest": "defaultgenamt",
+   "group": "Advanced Commands",
+   "help": "How many tokens to generate by default, if not specified. Must be smaller than context size. Usually, your frontend GUI will override this.",
+   "hidden": false,
+   "action": null,
+   "type": "check_range(int, 64, 32768)",
+   "nargs": null,
+   "default": 2048,
+   "choices": null,
+   "metavar": null,
+   "line": 13538
+  },
+  {
+   "flags": [
+    "--device",
+    "-dev"
+   ],
+   "dest": "device",
+   "group": "Advanced Commands",
+   "help": "Set llama.cpp compatible device selection override. Comma separated. Overrides normal device choices.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "<dev1,dev2,..>",
+   "line": 13539
+  },
+  {
+   "flags": [
+    "--downloaddir"
+   ],
+   "dest": "downloaddir",
+   "group": "Advanced Commands",
+   "help": "Specify a directory that models will be downloaded to or searched from, if unset uses the working directory.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[directory]",
+   "line": 13540
+  },
+  {
+   "flags": [
+    "--draftamount",
+    "--draft-max",
+    "--draft-n",
+    "--spec-draft-n-max"
+   ],
+   "dest": "draftamount",
+   "group": "Advanced Commands",
+   "help": "How many tokens to draft per chunk before verifying results",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 4,
+   "choices": null,
+   "metavar": "[tokens]",
+   "line": 13541
+  },
+  {
+   "flags": [
+    "--draftgpulayers",
+    "--gpu-layers-draft",
+    "--n-gpu-layers-draft",
+    "-ngld"
+   ],
+   "dest": "draftgpulayers",
+   "group": "Advanced Commands",
+   "help": "How many layers to offload to GPU for the draft model (default=full offload)",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 999,
+   "choices": null,
+   "metavar": "[layers]",
+   "line": 13542
+  },
+  {
+   "flags": [
+    "--draftgpusplit"
+   ],
+   "dest": "draftgpusplit",
+   "group": "Advanced Commands",
+   "help": "GPU layer distribution ratio for draft model (default=same as main). Only works if multi-GPUs selected for MAIN model and tensor_split is set!",
+   "hidden": false,
+   "action": null,
+   "type": "float",
+   "nargs": "+",
+   "default": null,
+   "choices": null,
+   "metavar": "[Ratios]",
+   "line": 13543
+  },
+  {
+   "flags": [
+    "--draftmodel",
+    "--model-draft",
+    "-md"
+   ],
+   "dest": "draftmodel",
+   "group": "Advanced Commands",
+   "help": "Load a small draft model for speculative decoding. It will be fully offloaded. Vocab must match the main model.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13544
+  },
+  {
+   "flags": [
+    "--enableguidance"
+   ],
+   "dest": "enableguidance",
+   "group": "Advanced Commands",
+   "help": "Enables the use of Classifier-Free-Guidance, which allows the use of negative prompts. Has performance and memory impact.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13545
+  },
+  {
+   "flags": [
+    "--exportconfig"
+   ],
+   "dest": "exportconfig",
+   "group": "Advanced Commands",
+   "help": "Exports the current selected arguments as a .kcpps settings file",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13546
+  },
+  {
+   "flags": [
+    "--exporttemplate"
+   ],
+   "dest": "exporttemplate",
+   "group": "Advanced Commands",
+   "help": "Exports the current selected arguments as a .kcppt template file",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13547
+  },
+  {
+   "flags": [
+    "--failsafe"
+   ],
+   "dest": "failsafe",
+   "group": "Advanced Commands",
+   "help": "Use failsafe mode, extremely old CPU compatibility mode that should work on all devices.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13548
+  },
+  {
+   "flags": [
+    "--foreground"
+   ],
+   "dest": "foreground",
+   "group": "Advanced Commands",
+   "help": "Windows only. Sends the terminal to the foreground every time a new prompt is generated. This helps avoid some idle slowdown issues.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13549
+  },
+  {
+   "flags": [
+    "--gendefaults"
+   ],
+   "dest": "gendefaults",
+   "group": "Advanced Commands",
+   "help": "Sets extra default parameters for some fields in API requests, as a JSON string.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "{\"parameter\":\"value\",...}",
+   "line": 13550
+  },
+  {
+   "flags": [
+    "--gendefaultsoverwrite"
+   ],
+   "dest": "gendefaultsoverwrite",
+   "group": "Advanced Commands",
+   "help": "Allow the gendefaults parameters to overwrite the original value in API payloads.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13551
+  },
+  {
+   "flags": [
+    "--genlimit",
+    "--promptlimit"
+   ],
+   "dest": "genlimit",
+   "group": "Advanced Commands",
+   "help": "Sets the maximum number of generated tokens, it will restrict all generations to this or lower. Also usable with --prompt or --benchmark.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[token limit]",
+   "line": 13552
+  },
+  {
+   "flags": [
+    "--highpriority"
+   ],
+   "dest": "highpriority",
+   "group": "Advanced Commands",
+   "help": "Experimental flag. If set, increases the process CPU priority, potentially speeding up generation. Use caution.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13553
+  },
+  {
+   "flags": [
+    "--ignoremissing"
+   ],
+   "dest": "ignoremissing",
+   "group": "Advanced Commands",
+   "help": "Ignores all missing non-essential files, just skipping them instead.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13554
+  },
+  {
+   "flags": [
+    "--jinja"
+   ],
+   "dest": "jinja",
+   "group": "Advanced Commands",
+   "help": "Enables using jinja chat template formatting for chat completions endpoint. Other endpoints are unaffected. Tool calls are done without jinja.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13555
+  },
+  {
+   "flags": [
+    "--jinja_kwargs",
+    "--jinja-kwargs",
+    "--jinjakwargs",
+    "--chat-template-kwargs"
+   ],
+   "dest": "jinja_kwargs",
+   "group": "Advanced Commands",
+   "help": "Set additional fields for Jinja JSON template parser, must be a valid JSON object.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "{\"parameter\":\"value\",...}",
+   "line": 13556
+  },
+  {
+   "flags": [
+    "--jinja_tools",
+    "--jinja-tools",
+    "--jinjatools"
+   ],
+   "dest": "jinja_tools",
+   "group": "Advanced Commands",
+   "help": "Enables using jinja chat template formatting for chat completions endpoint. Other endpoints are unaffected. Tool calls are done with jinja.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13557
+  },
+  {
+   "flags": [
+    "--jinjatemplate",
+    "--chat-template-file"
+   ],
+   "dest": "jinjatemplate",
+   "group": "Advanced Commands",
+   "help": "Select a custom Jinja chat template, will overwrite model jinja chat template",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13558
+  },
+  {
+   "flags": [
+    "--jinjathink"
+   ],
+   "dest": "jinjathink",
+   "group": "Advanced Commands",
+   "help": "A quick way to enable or disable thinking in the jinja template.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "default",
+   "choices": [
+    "default",
+    "true",
+    "false"
+   ],
+   "metavar": null,
+   "line": 13559
+  },
+  {
+   "flags": [
+    "--lora"
+   ],
+   "dest": "lora",
+   "group": "Advanced Commands",
+   "help": "GGUF models only, applies a lora file on top of model.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": "+",
+   "default": null,
+   "choices": null,
+   "metavar": "[lora_filename]",
+   "line": 13560
+  },
+  {
+   "flags": [
+    "--loramult"
+   ],
+   "dest": "loramult",
+   "group": "Advanced Commands",
+   "help": "Multiplier for the Text LORA model to be applied.",
+   "hidden": false,
+   "action": null,
+   "type": "float",
+   "nargs": null,
+   "default": 1.0,
+   "choices": null,
+   "metavar": "[amount]",
+   "line": 13561
+  },
+  {
+   "flags": [
+    "--lowvram",
+    "-nkvo",
+    "--no-kv-offload"
+   ],
+   "dest": "lowvram",
+   "group": "Advanced Commands",
+   "help": "If supported by the backend, do not offload KV to GPU (lowvram mode). Not recommended, will be slow.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13562
+  },
+  {
+   "flags": [
+    "--maingpu",
+    "--main-gpu",
+    "-mg"
+   ],
+   "dest": "maingpu",
+   "group": "Advanced Commands",
+   "help": "Only used in a multi-gpu setup. Sets the index of the main GPU that will be used.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": -1,
+   "choices": null,
+   "metavar": "[Device ID]",
+   "line": 13563
+  },
+  {
+   "flags": [
+    "--maxrequestsize"
+   ],
+   "dest": "maxrequestsize",
+   "group": "Advanced Commands",
+   "help": "Specify a max request payload size. Any requests to the server larger than this size will be dropped. Do not change if unsure.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 32,
+   "choices": null,
+   "metavar": "[size in MB]",
+   "line": 13564
+  },
+  {
+   "flags": [
+    "--mcpfile"
+   ],
+   "dest": "mcpfile",
+   "group": "Advanced Commands",
+   "help": "Specify path to mcp.json which contains the Cladue Desktop compatible MCP server config.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[mcp json file]",
+   "line": 13565
+  },
+  {
+   "flags": [
+    "--mmproj"
+   ],
+   "dest": "mmproj",
+   "group": "Advanced Commands",
+   "help": "Select a multimodal projector file for vision models.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13566
+  },
+  {
+   "flags": [
+    "--mmprojcpu",
+    "--no-mmproj-offload"
+   ],
+   "dest": "mmprojcpu",
+   "group": "Advanced Commands",
+   "help": "Force CLIP for Vision mmproj always on CPU.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13567
+  },
+  {
+   "flags": [
+    "--moecpu",
+    "--n-cpu-moe",
+    "-ncmoe"
+   ],
+   "dest": "moecpu",
+   "group": "Advanced Commands",
+   "help": "Keep the Mixture of Experts (MoE) weights of the first N layers in the CPU. If no value is provided, applies to all layers.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": 0,
+   "choices": null,
+   "metavar": "[layers affected]",
+   "line": 13568
+  },
+  {
+   "flags": [
+    "--ffncpu",
+    "--n-cpu-ffn",
+    "-ncffn"
+   ],
+   "dest": "ffncpu",
+   "group": "Advanced Commands",
+   "help": "Keep the dense FFN weights of the first N layers in the CPU. If no value is provided, applies to all layers.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": 0,
+   "choices": null,
+   "metavar": "[layers affected]",
+   "line": 13569
+  },
+  {
+   "flags": [
+    "--moeexperts"
+   ],
+   "dest": "moeexperts",
+   "group": "Advanced Commands",
+   "help": "How many experts to use for MoE models (default=follow gguf)",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": -1,
+   "choices": null,
+   "metavar": "[num of experts]",
+   "line": 13570
+  },
+  {
+   "flags": [
+    "--multiuser"
+   ],
+   "dest": "multiuser",
+   "group": "Advanced Commands",
+   "help": "Set maximum number of queued incoming requests allowed.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": 10,
+   "choices": null,
+   "metavar": "limit",
+   "line": 13571
+  },
+  {
+   "flags": [
+    "--multiplayer"
+   ],
+   "dest": "multiplayer",
+   "group": "Advanced Commands",
+   "help": "Hosts a shared multiplayer session that others can join.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13572
+  },
+  {
+   "flags": [
+    "--nocertify"
+   ],
+   "dest": "nocertify",
+   "group": "Advanced Commands",
+   "help": "Allows insecure SSL connections. Use this if you have cert errors and need to bypass certificate restrictions.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13573
+  },
+  {
+   "flags": [
+    "--nofastforward"
+   ],
+   "dest": "nofastforward",
+   "group": "Advanced Commands",
+   "help": "If set, do not attempt to fast forward GGUF context (always reprocess). Will also enable noshift",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13574
+  },
+  {
+   "flags": [
+    "--noflashattention",
+    "--no-flash-attn",
+    "-nofa"
+   ],
+   "dest": "noflashattention",
+   "group": "Advanced Commands",
+   "help": "Disables flash attention.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13575
+  },
+  {
+   "flags": [
+    "--noavx2"
+   ],
+   "dest": "noavx2",
+   "group": "Advanced Commands",
+   "help": "Do not use AVX2 instructions, a slower compatibility mode for older devices.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13576
+  },
+  {
+   "flags": [
+    "--nobostoken"
+   ],
+   "dest": "nobostoken",
+   "group": "Advanced Commands",
+   "help": "Prevents BOS token from being added at the start of any prompt. Usually NOT recommended for most models.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13577
+  },
+  {
+   "flags": [
+    "--nommq"
+   ],
+   "dest": "nommq",
+   "group": "Advanced Commands",
+   "help": "Disables MMQ, only used for cuda backend. This flag may be removed in future.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13578
+  },
+  {
+   "flags": [
+    "--nomodel"
+   ],
+   "dest": "nomodel",
+   "group": "Advanced Commands",
+   "help": "Allows you to launch the GUI alone, without selecting any model.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13579
+  },
+  {
+   "flags": [
+    "--noshift",
+    "--no-context-shift"
+   ],
+   "dest": "noshift",
+   "group": "Advanced Commands",
+   "help": "If set, do not attempt to Trim and Shift the GGUF context.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13580
+  },
+  {
+   "flags": [
+    "--noswa",
+    "--swa-full"
+   ],
+   "dest": "noswa",
+   "group": "Advanced Commands",
+   "help": "If set, uses full-size SWA KV Cache. Otherwise, SWA will be enabled automatically on models that support it. SWA saves memory but cannot be used with context shifting.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13581
+  },
+  {
+   "flags": [
+    "--onready"
+   ],
+   "dest": "onready",
+   "group": "Advanced Commands",
+   "help": "An optional shell command to execute after the model has been loaded.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[shell command]",
+   "line": 13582
+  },
+  {
+   "flags": [
+    "--allow-config-onready"
+   ],
+   "dest": "allow_config_onready",
+   "group": "Advanced Commands",
+   "help": "Allow .kcpps config files loaded after launch to set --onready commands. Only use with trusted configs.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13583
+  },
+  {
+   "flags": [
+    "--overridekv",
+    "--override-kv"
+   ],
+   "dest": "overridekv",
+   "group": "Advanced Commands",
+   "help": "Override metadata value by key. Separate multiple values with commas. Format is name=type:value. Types: int, float, bool, str",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[name=type:value]",
+   "line": 13584
+  },
+  {
+   "flags": [
+    "--overridenativecontext"
+   ],
+   "dest": "overridenativecontext",
+   "group": "Advanced Commands",
+   "help": "Overrides the native trained context of the loaded model with a custom value to be used for Rope scaling.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[trained context]",
+   "line": 13585
+  },
+  {
+   "flags": [
+    "--overridetensors",
+    "--override-tensor",
+    "-ot"
+   ],
+   "dest": "overridetensors",
+   "group": "Advanced Commands",
+   "help": "Override selected backend for specific tensors matching tensor_name_regex_pattern=buffer_type, same as in llama.cpp.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[tensor name pattern=buffer type]",
+   "line": 13586
+  },
+  {
+   "flags": [
+    "--parallelrequests",
+    "--continuous-batching",
+    "--contbatch"
+   ],
+   "dest": "parallelrequests",
+   "group": "Advanced Commands",
+   "help": "Allows multiple requests to be batched and executed in parallel. Only works for basic text generation requests (Experimental, No media)",
+   "hidden": false,
+   "action": null,
+   "type": "check_range(int, 0, 32)",
+   "nargs": null,
+   "default": 1,
+   "choices": null,
+   "metavar": "[slots]",
+   "line": 13587
+  },
+  {
+   "flags": [
+    "--password"
+   ],
+   "dest": "password",
+   "group": "Advanced Commands",
+   "help": "Enter a password required to use this instance. This key will be required for all text endpoints. Image endpoints are not secured. Can also be set with env var KCPP_PASSWORD",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "os.getenv('KCPP_PASSWORD', None)",
+   "choices": null,
+   "metavar": "[API key]",
+   "line": 13588
+  },
+  {
+   "flags": [
+    "--preloadstory"
+   ],
+   "dest": "preloadstory",
+   "group": "Advanced Commands",
+   "help": "Configures a prepared story json save file to be hosted on the server, which frontends (such as KoboldAI Lite) can access over the API.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[savefile]",
+   "line": 13589
+  },
+  {
+   "flags": [
+    "--prompt",
+    "-p"
+   ],
+   "dest": "prompt",
+   "group": "Advanced Commands",
+   "help": "Passing a prompt string triggers a direct inference, loading the model, outputs the response to stdout and exits. Can be used alone or with benchmark.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[prompt]",
+   "line": 13590
+  },
+  {
+   "flags": [
+    "--quantkv"
+   ],
+   "dest": "quantkv",
+   "group": "Advanced Commands",
+   "help": "Sets the KV cache data type quantization, options are f16/bf16/q8_0/q5_1/q4_0. Requires Flash Attention for full effect, otherwise only K cache is quantized.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "f16",
+   "choices": [
+    "f16",
+    "bf16",
+    "q8_0",
+    "q5_1",
+    "q4_0",
+    "0",
+    "1",
+    "2",
+    "3"
+   ],
+   "metavar": "[quantization level f16/bf16/q8_0/q5_1/q4_0]",
+   "line": 13591
+  },
+  {
+   "flags": [
+    "--quiet"
+   ],
+   "dest": "quiet",
+   "group": "Advanced Commands",
+   "help": "Enable quiet mode, which hides generation inputs and outputs in the terminal. Quiet mode is automatically enabled when running a horde worker.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13592
+  },
+  {
+   "flags": [
+    "--ratelimit"
+   ],
+   "dest": "ratelimit",
+   "group": "Advanced Commands",
+   "help": "If enabled, rate limit generative request by IP address. Each IP can only send a new request once per X seconds.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[seconds]",
+   "line": 13593
+  },
+  {
+   "flags": [
+    "--reasoningeffort"
+   ],
+   "dest": "reasoningeffort",
+   "group": "Advanced Commands",
+   "help": "A quick way to set the default reasoning effort. API values override this.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "default",
+   "choices": [
+    "default",
+    "none",
+    "low",
+    "medium",
+    "high",
+    "xhigh"
+   ],
+   "metavar": null,
+   "line": 13594
+  },
+  {
+   "flags": [
+    "--remotetunnel"
+   ],
+   "dest": "remotetunnel",
+   "group": "Advanced Commands",
+   "help": "Uses Cloudflare to create a remote tunnel, allowing you to access koboldcpp remotely over the internet even behind a firewall.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13595
+  },
+  {
+   "flags": [
+    "--ropeconfig"
+   ],
+   "dest": "ropeconfig",
+   "group": "Advanced Commands",
+   "help": "If set, uses customized RoPE scaling from configured frequency scale and frequency base (e.g. --ropeconfig 0.25 10000). Otherwise, uses NTK-Aware scaling set automatically based on context size. For linear rope, simply set the freq-scale and ignore the freq-base",
+   "hidden": false,
+   "action": null,
+   "type": "float",
+   "nargs": "+",
+   "default": [
+    0.0,
+    10000.0
+   ],
+   "choices": null,
+   "metavar": [
+    "[rope-freq-scale]",
+    "[rope-freq-base]"
+   ],
+   "line": 13596
+  },
+  {
+   "flags": [
+    "--savedatafile"
+   ],
+   "dest": "savedatafile",
+   "group": "Advanced Commands",
+   "help": "If enabled, creates or opens a persistent database file on the server, that allows users to save and load their data remotely. A new file is created if it does not exist.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[savefile]",
+   "line": 13597
+  },
+  {
+   "flags": [
+    "--singleinstance"
+   ],
+   "dest": "singleinstance",
+   "group": "Advanced Commands",
+   "help": "Allows this KoboldCpp instance to be shut down by any new instance requesting the same port, preventing duplicate servers from clashing on a port.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13598
+  },
+  {
+   "flags": [
+    "--smartcache"
+   ],
+   "dest": "smartcache",
+   "group": "Advanced Commands",
+   "help": "Enables intelligent context switching by saving KV cache snapshots to RAM. Requires fast forwarding.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": 0,
+   "choices": null,
+   "metavar": "limit",
+   "line": 13599
+  },
+  {
+   "flags": [
+    "--smartcontext"
+   ],
+   "dest": "smartcontext",
+   "group": "Advanced Commands",
+   "help": "Reserving a portion of context to try processing less frequently. Outdated. Not recommended.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13600
+  },
+  {
+   "flags": [
+    "--splitmode",
+    "-sm",
+    "--split-mode"
+   ],
+   "dest": "splitmode",
+   "group": "Advanced Commands",
+   "help": "How to split the model across multiple GPUs",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "splitmode_choices[0]",
+   "choices": [
+    "layer",
+    "row",
+    "tensor"
+   ],
+   "metavar": "[split mode]",
+   "line": 13601
+  },
+  {
+   "flags": [
+    "--ssl"
+   ],
+   "dest": "ssl",
+   "group": "Advanced Commands",
+   "help": "Allows all content to be served over SSL instead. A valid UNENCRYPTED SSL cert and key .pem files must be provided",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": "+",
+   "default": null,
+   "choices": null,
+   "metavar": [
+    "[cert_pem]",
+    "[key_pem]"
+   ],
+   "line": 13602
+  },
+  {
+   "flags": [
+    "--swapadding"
+   ],
+   "dest": "swapadding",
+   "group": "Advanced Commands",
+   "help": "How much extra to pad the SWA KV cache, this affects the rewind limit before reprocessing is forced.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": null,
+   "line": 13603
+  },
+  {
+   "flags": [
+    "--unpack"
+   ],
+   "dest": "unpack",
+   "group": "Advanced Commands",
+   "help": "Extracts the file contents of the KoboldCpp binary into a target directory.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "destination",
+   "line": 13604
+  },
+  {
+   "flags": [
+    "--usemtp"
+   ],
+   "dest": "usemtp",
+   "group": "Advanced Commands",
+   "help": "Enables MTP layers to be used for drafting (speculative decoding) if present",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13605
+  },
+  {
+   "flags": [
+    "--usemlock",
+    "--mlock"
+   ],
+   "dest": "usemlock",
+   "group": "Advanced Commands",
+   "help": "Enables mlock, preventing the RAM used to load the model from being paged out. Not usually recommended.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13606
+  },
+  {
+   "flags": [
+    "--usemmap"
+   ],
+   "dest": "usemmap",
+   "group": "Advanced Commands",
+   "help": "If set, uses mmap to load model.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13608
+  },
+  {
+   "flags": [
+    "--usedirectio",
+    "--directio",
+    "--direct-io",
+    "-dio"
+   ],
+   "dest": "usedirectio",
+   "group": "Advanced Commands",
+   "help": "Use direct I/O to load GGUF models if available. May improve cold-load times on some storage.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13609
+  },
+  {
+   "flags": [
+    "--visionmaxres"
+   ],
+   "dest": "visionmaxres",
+   "group": "Advanced Commands",
+   "help": "Clamp MMProj vision maximum allowed resolution. Allowed values are between 512 to 2048 px (default 1024).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 1024,
+   "choices": null,
+   "metavar": "[max px]",
+   "line": 13610
+  },
+  {
+   "flags": [
+    "--visionmaxtokens",
+    "--image-max-tokens"
+   ],
+   "dest": "visionmaxtokens",
+   "group": "Advanced Commands",
+   "help": "Override the maximum tokens for the MMProj embedding (default -1).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": -1,
+   "choices": null,
+   "metavar": "[tokens]",
+   "line": 13611
+  },
+  {
+   "flags": [
+    "--visionmintokens",
+    "--image-min-tokens"
+   ],
+   "dest": "visionmintokens",
+   "group": "Advanced Commands",
+   "help": "Override the minimum tokens for the MMProj embedding (default -1).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": -1,
+   "choices": null,
+   "metavar": "[tokens]",
+   "line": 13612
+  },
+  {
+   "flags": [
+    "--websearch"
+   ],
+   "dest": "websearch",
+   "group": "Advanced Commands",
+   "help": "Enable the local search engine proxy so Web Searches can be done.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13613
+  },
+  {
+   "flags": [
+    "--showgui"
+   ],
+   "dest": "showgui",
+   "group": "Advanced Commands",
+   "help": "Always show the GUI instead of launching the model right away when loading settings from a .kcpps file.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13615
+  },
+  {
+   "flags": [
+    "--skiplauncher"
+   ],
+   "dest": "skiplauncher",
+   "group": "Advanced Commands",
+   "help": "Doesn't display or use the GUI launcher. Overrides showgui.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13616
+  },
+  {
+   "flags": [
+    "--hordemodelname"
+   ],
+   "dest": "hordemodelname",
+   "group": "Horde Worker Commands",
+   "help": "Sets your AI Horde display model name.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[name]",
+   "line": 13619
+  },
+  {
+   "flags": [
+    "--hordeworkername"
+   ],
+   "dest": "hordeworkername",
+   "group": "Horde Worker Commands",
+   "help": "Sets your AI Horde worker name.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[name]",
+   "line": 13620
+  },
+  {
+   "flags": [
+    "--hordekey"
+   ],
+   "dest": "hordekey",
+   "group": "Horde Worker Commands",
+   "help": "Sets your AI Horde API key.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[apikey]",
+   "line": 13621
+  },
+  {
+   "flags": [
+    "--hordemaxctx"
+   ],
+   "dest": "hordemaxctx",
+   "group": "Horde Worker Commands",
+   "help": "Sets the maximum context length your worker will accept from an AI Horde job. If 0, matches main context limit.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[amount]",
+   "line": 13622
+  },
+  {
+   "flags": [
+    "--hordegenlen"
+   ],
+   "dest": "hordegenlen",
+   "group": "Horde Worker Commands",
+   "help": "Sets the maximum number of tokens your worker will generate from an AI horde job.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[amount]",
+   "line": 13623
+  },
+  {
+   "flags": [
+    "--sdaudiovae"
+   ],
+   "dest": "sdaudiovae",
+   "group": "Image Generation Commands",
+   "help": "Specify an image generation audio VAE for LTX2.3 video generation.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13626
+  },
+  {
+   "flags": [
+    "--sdclamped"
+   ],
+   "dest": "sdclamped",
+   "group": "Image Generation Commands",
+   "help": "If specified, limit generation steps and image size for shared use. Accepts an extra optional parameter that indicates maximum resolution (eg. 768 clamps to 768x768, min 512px, disabled if 0).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": 0,
+   "choices": null,
+   "metavar": "[maxres]",
+   "line": 13627
+  },
+  {
+   "flags": [
+    "--sdclampedsoft"
+   ],
+   "dest": "sdclampedsoft",
+   "group": "Image Generation Commands",
+   "help": "If specified, limit max image size to curb memory usage. Similar to --sdclamped, but less strict, allows trade-offs between width and height (e.g. 640 would allow 640x640, 512x768 and 768x512 images).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[maxres]",
+   "line": 13628
+  },
+  {
+   "flags": [
+    "--sdclip1",
+    "--sdclipl"
+   ],
+   "dest": "sdclip1",
+   "group": "Image Generation Commands",
+   "help": "Specify first safetensors Clip model (SD3 or Flux Clip-L, WAN or QwenImg vision). Leave blank if prebaked or unused.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13629
+  },
+  {
+   "flags": [
+    "--sdclip2",
+    "--sdclipg"
+   ],
+   "dest": "sdclip2",
+   "group": "Image Generation Commands",
+   "help": "Specify second safetensors Clip model (SD3 Clip-G). Leave blank if prebaked or unused.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13630
+  },
+  {
+   "flags": [
+    "--sdclipdevice"
+   ],
+   "dest": "sdclipdevice",
+   "group": "Image Generation Commands",
+   "help": "CLIP / T5 / LLM device for image generation. GPU index, -1 or 'main' for the main GPU, or 'CPU' (default: CPU).",
+   "hidden": false,
+   "action": null,
+   "type": "sd_get_device_number",
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": "[Device ID]",
+   "line": 13631
+  },
+  {
+   "flags": [
+    "--sdconvdirect"
+   ],
+   "dest": "sdconvdirect",
+   "group": "Image Generation Commands",
+   "help": "Enables Conv2D Direct. May improve performance or reduce memory usage. Might crash if not supported by the backend. Can be 'off' (default) to disable, 'full' to turn it on for all operations, or 'vaeonly' to enable only for the VAE.",
+   "hidden": false,
+   "action": null,
+   "type": "sd_convdirect_option",
+   "nargs": null,
+   "default": "sd_convdirect_choices[0]",
+   "choices": [
+    "off",
+    "vaeonly",
+    "full"
+   ],
+   "metavar": null,
+   "line": 13632
+  },
+  {
+   "flags": [
+    "--sdflashattention"
+   ],
+   "dest": "sdflashattention",
+   "group": "Image Generation Commands",
+   "help": "Enables Flash Attention for image generation.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13633
+  },
+  {
+   "flags": [
+    "--sdlora"
+   ],
+   "dest": "sdlora",
+   "group": "Image Generation Commands",
+   "help": "Specify image generation LoRAs safetensors models to be applied. Multiple LoRAs are accepted.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": "+",
+   "default": null,
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13635
+  },
+  {
+   "flags": [
+    "--sdloramult"
+   ],
+   "dest": "sdloramult",
+   "group": "Image Generation Commands",
+   "help": "Multipliers for the image LoRA model to be applied.",
+   "hidden": false,
+   "action": null,
+   "type": "float",
+   "nargs": "+",
+   "default": [
+    1.0
+   ],
+   "choices": null,
+   "metavar": "[amounts]",
+   "line": 13636
+  },
+  {
+   "flags": [
+    "--sdmaingpu"
+   ],
+   "dest": "sdmaingpu",
+   "group": "Image Generation Commands",
+   "help": "If specified, Image Generation weights will be placed on the selected GPU index. GPU index, -1 or 'main' for the main GPU, or 'CPU' (default: 'main')",
+   "hidden": false,
+   "action": null,
+   "type": "sd_get_device_number",
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": "[Device ID]",
+   "line": 13637
+  },
+  {
+   "flags": [
+    "--sdmodel"
+   ],
+   "dest": "sdmodel",
+   "group": "Image Generation Commands",
+   "help": "Specify an image generation safetensors or gguf model to enable image generation.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13638
+  },
+  {
+   "flags": [
+    "--sdoffloadcpu"
+   ],
+   "dest": "sdoffloadcpu",
+   "group": "Image Generation Commands",
+   "help": "Offload image weights in RAM to save VRAM, swap into VRAM when needed.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13639
+  },
+  {
+   "flags": [
+    "--sdphotomaker"
+   ],
+   "dest": "sdphotomaker",
+   "group": "Image Generation Commands",
+   "help": "PhotoMaker is a model that allows face cloning. Specify a PhotoMaker safetensors model which will be applied replacing img2img. SDXL models only. Leave blank if unused.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13640
+  },
+  {
+   "flags": [
+    "--sdquant"
+   ],
+   "dest": "sdquant",
+   "group": "Image Generation Commands",
+   "help": "If specified, loads the model quantized to save memory. 0=off, 1=q8, 2=q4",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": "?",
+   "default": 0,
+   "choices": [
+    0,
+    1,
+    2
+   ],
+   "metavar": "[quantization level 0/1/2]",
+   "line": 13641
+  },
+  {
+   "flags": [
+    "--sdllm"
+   ],
+   "dest": "sdllm",
+   "group": "Image Generation Commands",
+   "help": "Specify an image generation text encoder or LLM (.safetensors or .gguf). Leave blank if prebaked or unused.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13642
+  },
+  {
+   "flags": [
+    "--sdthreads"
+   ],
+   "dest": "sdthreads",
+   "group": "Image Generation Commands",
+   "help": "Use a different number of threads for image generation if specified. Otherwise, has the same value as --threads.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[threads]",
+   "line": 13643
+  },
+  {
+   "flags": [
+    "--sdtiledvae"
+   ],
+   "dest": "sdtiledvae",
+   "group": "Image Generation Commands",
+   "help": "Adjust the automatic VAE tiling trigger for images above this size. 0 disables vae tiling.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 512,
+   "choices": null,
+   "metavar": "[maxres]",
+   "line": 13644
+  },
+  {
+   "flags": [
+    "--sdupscaler"
+   ],
+   "dest": "sdupscaler",
+   "group": "Image Generation Commands",
+   "help": "You can use ESRGAN as an upscaling model to resize images. Leave blank if unused.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13645
+  },
+  {
+   "flags": [
+    "--sdvae"
+   ],
+   "dest": "sdvae",
+   "group": "Image Generation Commands",
+   "help": "Specify an image generation safetensors VAE which replaces the one in the model.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13647
+  },
+  {
+   "flags": [
+    "--sdvaeauto"
+   ],
+   "dest": "sdvaeauto",
+   "group": "Image Generation Commands",
+   "help": "Uses a built-in tiny VAE via TAE SD, which is very fast, and fixed bad VAEs.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13648
+  },
+  {
+   "flags": [
+    "--sdvaedevice"
+   ],
+   "dest": "sdvaedevice",
+   "group": "Image Generation Commands",
+   "help": "VAE device for image generation. GPU index, -1 or 'main' for the main GPU, or 'CPU' (default: main).",
+   "hidden": false,
+   "action": null,
+   "type": "sd_get_device_number",
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": "[Device ID]",
+   "line": 13649
+  },
+  {
+   "flags": [
+    "--sdvramlimit"
+   ],
+   "dest": "sdvramlimit",
+   "group": "Image Generation Commands",
+   "help": "If set, prevent VRAM usage from image gen from using more than this many MB.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[limit MB]",
+   "line": 13650
+  },
+  {
+   "flags": [
+    "--whispermodel"
+   ],
+   "dest": "whispermodel",
+   "group": "Whisper Transcription Commands",
+   "help": "Specify a Whisper .bin model to enable Speech-To-Text transcription.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13653
+  },
+  {
+   "flags": [
+    "--ttsmodel"
+   ],
+   "dest": "ttsmodel",
+   "group": "TTS Narration Commands",
+   "help": "Specify the TTS Text-To-Speech GGUF model.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13656
+  },
+  {
+   "flags": [
+    "--ttswavtokenizer"
+   ],
+   "dest": "ttswavtokenizer",
+   "group": "TTS Narration Commands",
+   "help": "Specify the WavTokenizer GGUF model.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13657
+  },
+  {
+   "flags": [
+    "--ttsgpu"
+   ],
+   "dest": "ttsgpu",
+   "group": "TTS Narration Commands",
+   "help": "Use the GPU for TTS.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13658
+  },
+  {
+   "flags": [
+    "--ttsmaxlen"
+   ],
+   "dest": "ttsmaxlen",
+   "group": "TTS Narration Commands",
+   "help": "Limit number of audio tokens generated with TTS.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 4096,
+   "choices": null,
+   "metavar": null,
+   "line": 13659
+  },
+  {
+   "flags": [
+    "--ttsthreads"
+   ],
+   "dest": "ttsthreads",
+   "group": "TTS Narration Commands",
+   "help": "Use a different number of threads for TTS if specified. Otherwise, has the same value as --threads.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": "[threads]",
+   "line": 13660
+  },
+  {
+   "flags": [
+    "--ttsdir"
+   ],
+   "dest": "ttsdir",
+   "group": "TTS Narration Commands",
+   "help": "Select directory containing voices for voice cloning.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[directory]",
+   "line": 13661
+  },
+  {
+   "flags": [
+    "--musicllm"
+   ],
+   "dest": "musicllm",
+   "group": "Music Gen Commands",
+   "help": "Select music LLM model (e.g acestep-5Hz-lm-0.6B)",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13664
+  },
+  {
+   "flags": [
+    "--musicembeddings"
+   ],
+   "dest": "musicembeddings",
+   "group": "Music Gen Commands",
+   "help": "Select music embedding model (e.g Qwen3-Embedding-0.6B)",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13665
+  },
+  {
+   "flags": [
+    "--musicdiffusion"
+   ],
+   "dest": "musicdiffusion",
+   "group": "Music Gen Commands",
+   "help": "Select music diffusion (DiT) model (e.g acestep-v15-turbo)",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13666
+  },
+  {
+   "flags": [
+    "--musicvae"
+   ],
+   "dest": "musicvae",
+   "group": "Music Gen Commands",
+   "help": "Select music VAE model",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13667
+  },
+  {
+   "flags": [
+    "--musiclowvram"
+   ],
+   "dest": "musiclowvram",
+   "group": "Music Gen Commands",
+   "help": "Unload music models when not in use",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13668
+  },
+  {
+   "flags": [
+    "--embeddingsmodel"
+   ],
+   "dest": "embeddingsmodel",
+   "group": "Embeddings Model Commands",
+   "help": "Specify an embeddings model to be loaded for generating embedding vectors.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13671
+  },
+  {
+   "flags": [
+    "--embeddingsmaxctx"
+   ],
+   "dest": "embeddingsmaxctx",
+   "group": "Embeddings Model Commands",
+   "help": "Overrides the default maximum supported context of an embeddings model (defaults to trained context).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 4096,
+   "choices": null,
+   "metavar": "[amount]",
+   "line": 13672
+  },
+  {
+   "flags": [
+    "--embeddingsgpu"
+   ],
+   "dest": "embeddingsgpu",
+   "group": "Embeddings Model Commands",
+   "help": "Attempts to offload layers of the embeddings model to GPU. Usually not needed.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13673
+  },
+  {
+   "flags": [
+    "--rpcmode"
+   ],
+   "dest": "rpcmode",
+   "group": "RPC Commands",
+   "help": "RPC allows GPUs to be shared over the network. connect=access a remote GPU, host=share your GPU",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "disabled",
+   "choices": [
+    "disabled",
+    "connect",
+    "host"
+   ],
+   "metavar": "[disabled/connect/host]",
+   "line": 13676
+  },
+  {
+   "flags": [
+    "--rpcport"
+   ],
+   "dest": "rpcport",
+   "group": "RPC Commands",
+   "help": "RPC host mode only. Port for RPC server to listen on (default: 5551).",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 5551,
+   "choices": null,
+   "metavar": "[portnumber]",
+   "line": 13678
+  },
+  {
+   "flags": [
+    "--rpchost"
+   ],
+   "dest": "rpchost",
+   "group": "RPC Commands",
+   "help": "RPC host mode only. IP address for RPC server to listen on. Use 0.0.0.0 for all interfaces, 127.0.0.1 for localhost only.",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "0.0.0.0",
+   "choices": null,
+   "metavar": "[IP address]",
+   "line": 13679
+  },
+  {
+   "flags": [
+    "--rpcdevice"
+   ],
+   "dest": "rpcdevice",
+   "group": "RPC Commands",
+   "help": "RPC host mode only. Set specific devices to use for RPC server. Comma separated. Overrides normal RPC device choices.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "<dev1,dev2,..>",
+   "line": 13680
+  },
+  {
+   "flags": [
+    "--rpctargets"
+   ],
+   "dest": "rpctargets",
+   "group": "RPC Commands",
+   "help": "RPC connect mode only. Specify a comma separated list of remote RPC endpoints to connect to e.g. 127.0.0.1:5551,127.0.0.1:5552",
+   "hidden": false,
+   "action": null,
+   "type": "str",
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[remotehost1:port1,remotehost2:port2]",
+   "line": 13681
+  },
+  {
+   "flags": [
+    "--admin"
+   ],
+   "dest": "admin",
+   "group": "Administration Commands",
+   "help": "Enables admin mode, allowing you to unload and reload different configurations or models.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13684
+  },
+  {
+   "flags": [
+    "--adminpassword"
+   ],
+   "dest": "adminpassword",
+   "group": "Administration Commands",
+   "help": "Require a password to access admin functions. You are strongly advised to use one for publically accessible instances! Can also be set with env var KCPP_ADMINPASSWORD",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "os.getenv('KCPP_ADMINPASSWORD', None)",
+   "choices": null,
+   "metavar": "[password]",
+   "line": 13685
+  },
+  {
+   "flags": [
+    "--admindir"
+   ],
+   "dest": "admindir",
+   "group": "Administration Commands",
+   "help": "Specify a directory to look for .kcpps configs in, which can be used to swap models.",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": "[directory]",
+   "line": 13686
+  },
+  {
+   "flags": [
+    "--adminunloadtimeout"
+   ],
+   "dest": "adminunloadtimeout",
+   "group": "Administration Commands",
+   "help": "Set an idle timeout in seconds after which KoboldCpp will automatically unload the current model.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 0,
+   "choices": null,
+   "metavar": null,
+   "line": 13687
+  },
+  {
+   "flags": [
+    "--routermode"
+   ],
+   "dest": "routermode",
+   "group": "Administration Commands",
+   "help": "Router mode uses a reverse proxy router, allowing you to easily hotswap models and configs within a single request. Requires admin mode.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13688
+  },
+  {
+   "flags": [
+    "--reqtimeout"
+   ],
+   "dest": "reqtimeout",
+   "group": "Administration Commands",
+   "help": "Timeout in seconds for HTTP requests.",
+   "hidden": false,
+   "action": null,
+   "type": "int",
+   "nargs": null,
+   "default": 600,
+   "choices": null,
+   "metavar": "[seconds]",
+   "line": 13689
+  },
+  {
+   "flags": [
+    "--autoswapmode"
+   ],
+   "dest": "autoswapmode",
+   "group": "Administration Commands",
+   "help": "Autoswap mode builds on router mode to allow switching of model types within the same config automatically. Requires admin mode and router mode. All models desired must be defined within the same config.",
+   "hidden": false,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13690
+  },
+  {
+   "flags": [
+    "--autoswapthreshold"
+   ],
+   "dest": "autoswapthreshold",
+   "group": "Administration Commands",
+   "help": "Keep model families at or below this combined file size resident in autoswap mode, in MB (default 256). Only one model family above the threshold is loaded at a time.",
+   "hidden": false,
+   "action": null,
+   "type": "check_range(int, 0, 1048576)",
+   "nargs": null,
+   "default": 256,
+   "choices": null,
+   "metavar": null,
+   "line": 13691
+  },
+  {
+   "flags": [
+    "--baseconfig"
+   ],
+   "dest": "baseconfig",
+   "group": "Administration Commands",
+   "help": "Specify a base .kcpps config to apply, if no custom base config is selected during a model swap",
+   "hidden": false,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": "",
+   "choices": null,
+   "metavar": null,
+   "line": 13692
+  },
+  {
+   "flags": [
+    "--hordeconfig"
+   ],
+   "dest": "hordeconfig",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": null,
+   "type": null,
+   "nargs": "+",
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13695
+  },
+  {
+   "flags": [
+    "--sdconfig"
+   ],
+   "dest": "sdconfig",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": null,
+   "type": null,
+   "nargs": "+",
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13696
+  },
+  {
+   "flags": [
+    "--noblas"
+   ],
+   "dest": "noblas",
+   "group": "General",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13697
+  },
+  {
+   "flags": [
+    "--nommap",
+    "--no-mmap"
+   ],
+   "dest": "nommap",
+   "group": "Advanced Commands",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13698
+  },
+  {
+   "flags": [
+    "--nopipelineparallel"
+   ],
+   "dest": "nopipelineparallel",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13699
+  },
+  {
+   "flags": [
+    "--pipelineparallel"
+   ],
+   "dest": "pipelineparallel",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13700
+  },
+  {
+   "flags": [
+    "--sdnotile"
+   ],
+   "dest": "sdnotile",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13701
+  },
+  {
+   "flags": [
+    "--sdt5xxl"
+   ],
+   "dest": "sdt5xxl",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": "[filename]",
+   "line": 13702
+  },
+  {
+   "flags": [
+    "--sdvaecpu"
+   ],
+   "dest": "sdvaecpu",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13703
+  },
+  {
+   "flags": [
+    "--sdclipgpu"
+   ],
+   "dest": "sdclipgpu",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13704
+  },
+  {
+   "flags": [
+    "--forceversion"
+   ],
+   "dest": "forceversion",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13705
+  },
+  {
+   "flags": [
+    "--sdgendefaults"
+   ],
+   "dest": "sdgendefaults",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13706
+  },
+  {
+   "flags": [
+    "--flashattention",
+    "--flash-attn",
+    "-fa"
+   ],
+   "dest": "flashattention",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13707
+  },
+  {
+   "flags": [
+    "--useswa"
+   ],
+   "dest": "useswa",
+   "group": "Deprecated Commands, DO NOT USE!",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13708
+  },
+  {
+   "flags": [
+    "--testmemory"
+   ],
+   "dest": "testmemory",
+   "group": "Internal Commands",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13711
+  },
+  {
+   "flags": [
+    "--run-bundled-agent",
+    "--run-agent"
+   ],
+   "dest": "run_bundled_agent",
+   "group": "Internal Commands",
+   "help": null,
+   "hidden": true,
+   "action": "store_true",
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13712
+  },
+  {
+   "flags": [
+    "--agent-base-url"
+   ],
+   "dest": "agent_base_url",
+   "group": "Internal Commands",
+   "help": null,
+   "hidden": true,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13713
+  },
+  {
+   "flags": [
+    "--agent-api-key"
+   ],
+   "dest": "agent_api_key",
+   "group": "Internal Commands",
+   "help": null,
+   "hidden": true,
+   "action": null,
+   "type": null,
+   "nargs": null,
+   "default": null,
+   "choices": null,
+   "metavar": null,
+   "line": 13714
+  }
+ ]
+}

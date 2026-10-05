@@ -1,0 +1,125 @@
+---
+title: "Image and video generation"
+description: Generate and edit images, and videos, with KoboldCpp. Which model files you need, how to load them, and how to use StableUI, Lite and the image APIs.
+sidebar:
+  label: "Image generation"
+  order: 2
+---
+
+KoboldCpp generates and edits images with a bundled copy of stable-diffusion.cpp. It also generates videos with some model families. Image generation runs next to the text model, or on its own.
+
+## Quick start
+
+{% steps %}
+
+1. Download an image model. A good first pick is [PicX Real](https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q5_1.gguf).
+2. In the launcher, open the **Image Gen** tab and select the file in **Image Model:**.
+3. Click **Launch**.
+4. Open `http://localhost:5001/sdui` for StableUI, the bundled image interface.
+
+{% /steps %}
+
+A template is the other way in: click **Get Help**, choose **Newbie Templates**, and pick `LowSpec-ImageGen` or `MidSpec-ImageGen`. KoboldCpp downloads the files at launch.
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --sdmodel picx_real_q5_1.gguf
+```
+
+Add `--model` with a text model if you want to chat as well.
+
+<!-- SCREENSHOT: StableUI at /sdui with a generated image -->
+
+## Using it
+
+- **StableUI** (`/sdui`): prompts, settings and a LoRA picker. It has a recovery mode for poor connections.
+- **KoboldAI Lite**: open **Settings** > **Media** and set **Image Backend** to **KCPP / Forge / A1111**. Then use **Add File** > **Generate Image**, or turn on **Autogenerate images**.
+- **Other apps**: KoboldCpp speaks the A1111/Forge API, the OpenAI images API and a ComfyUI-compatible API. Point apps such as SillyTavern at `http://localhost:5001`.
+
+| API | Endpoints |
+|---|---|
+| A1111 / Forge | `POST /sdapi/v1/txt2img`, `/sdapi/v1/img2img`, `/sdapi/v1/upscale` |
+| OpenAI | `POST /v1/images/generations`, `/v1/images/edits` |
+| ComfyUI | `POST /prompt`, `/upload/image`; `GET /view`, `/history` |
+
+Videos use the same endpoints. See [API endpoints](/docs/api/endpoints/).
+
+{% aside type="caution" %}
+The password (`--password`) does not protect the image endpoints. Anyone who can reach your KoboldCpp can generate images. On a shared or public server, limit the image size with **Clamp Resolution (Hard):** (`--sdclamped`). See [Passwords and security](/docs/api/passwords-and-security/).
+{% /aside %}
+
+## Supported models
+
+Models come as `.safetensors` or `.gguf` files.
+
+| Kind | Families |
+|---|---|
+| Images | Stable Diffusion 1.5, SDXL, SD3, Flux, Qwen Image, Z-Image, Klein, Krea2 |
+| Video | WAN 2.2, LTX2.3, Minimax H3 |
+
+Recent releases also added SDXS (small and fast, usable on a CPU), Microsoft Lens, HiDream o1, LongCat, Ernie Image, Ideogram 4 and Boogu Edit.
+
+Image models are on Hugging Face (search for the family name) and on CivitAI. The [popular templates](https://huggingface.co/koboldcpp/popular-templates) include ready setups, for example Z-Image Turbo and WAN 2.2.
+
+## Models with several files
+
+SD 1.5 and SDXL models are usually one file. Newer families such as Flux, SD3, Qwen Image and Z-Image need extra parts. Load them on the **Image Gen** tab:
+
+| Part | Launcher field | Flag |
+|---|---|---|
+| Main model (diffusion model) | **Image Model:** | `--sdmodel` |
+| Text encoder or LLM (T5, Qwen, …) | **Image LLM:** | `--sdllm` |
+| First CLIP model (Clip-L) | **Clip-1 File:** | `--sdclip1` |
+| Second CLIP model (Clip-G) | **Clip-2 File:** | `--sdclip2` |
+| VAE | **Image VAE:** | `--sdvae` |
+| Audio VAE (LTX2.3 video only) | **Audio VAE:** | `--sdaudiovae` |
+
+Leave a field empty if the model already contains that part. A template for the model fills in all fields for you.
+
+## LoRAs
+
+- **Fixed LoRAs:** list the files in **Image LoRAs:** (`--sdlora`), with their strength in **Multiplier:** (`--sdloramult`). They apply to every image.
+- **Runtime LoRAs:** tick **Runtime LoRAs** and pick a folder in **LoRA Dir:** (`--sdlora <folder>`). KoboldCpp scans the folder and one level of subfolders. You choose LoRAs per image in StableUI, or with `<lora:name:weight>` in the prompt.
+
+## Saving memory
+
+| Launcher field | Flag | Effect |
+|---|---|---|
+| **Compress Weights:** | `--sdquant` | Loads the model compressed to q8 (`1`) or q4 (`2`). A model downloaded pre-quantized loads faster. Cannot be combined with `--sdlora` on the command line. |
+| **Automatic VAE (TAE SD)** | `--sdvaeauto` | Uses a tiny built-in VAE. Faster and uses less memory, but image quality can drop. May fix a bad VAE. Not available for every model type. |
+| **Model Offload** | `--sdoffloadcpu` | Keeps image weights in RAM and moves them to VRAM when needed. |
+| **VRAM Limiter (MB):** | `--sdvramlimit` | Limits how much VRAM image generation plans for. Actual use can go somewhat higher. `0` means no limit. |
+| **VAE Tiling Threshold:** | `--sdtiledvae` | Decodes images in tiles when they have more pixels than this size squared (default `512`: above 512×512 pixels). `0` turns tiling off. |
+
+The image templates turn on **Model Offload** and keep the text encoder on the CPU. Measured on an RTX 3090 with FLUX.2 klein at 4 steps:
+
+| Setup | Peak VRAM | One 1024×1024 image |
+|---|---|---|
+| `LowSpec-ImageGen` (FLUX.2 klein 4B) | 3858 MiB | 14.2 s |
+| `LowSpec-ImageGen`, **Model Offload** off | 4514 MiB | 13.9 s |
+| `LowSpec-ImageGen`, VAE tiling off (`--sdtiledvae 0`) | 7584 MiB | 11.8 s |
+| `MidSpec-ImageGen` (FLUX.2 klein 9B) | 7238 MiB | 22.8 s |
+
+## Advanced options
+
+| Launcher field | Flag | What it does |
+|---|---|---|
+| **Clamp Resolution (Hard):** | `--sdclamped [px]` | Limits the longest image side, keeping the aspect ratio. Without a value it means 512. |
+| **(Soft):**, next to Clamp Resolution (Hard) | `--sdclampedsoft px` | Limits the image area (e.g. 640 allows 640x640, 512x768, 768x512). At `0` a default applies: 832 for SD 1.x/2.x, 1024 for others. Maximum 2048. |
+| **Upscaler:** | `--sdupscaler` | Loads an ESRGAN upscaler for `/sdapi/v1/upscale`. |
+| **PhotoMaker:** | `--sdphotomaker` | Face cloning for SDXL models. |
+| **SD Flash Attention** | `--sdflashattention` | Flash attention for image generation. Separate from the text model's setting. |
+| **Conv2D Direct:** | `--sdconvdirect` | `off` (default), `vaeonly` or `full`. May speed things up or save memory. Can crash on backends that don't support it. |
+| **ImgThreads:** | `--sdthreads` | CPU threads for images. `0` uses the text model's thread count. |
+| **ImgGPU:** | `--sdmaingpu` | GPU for the image weights. |
+| **CLIP dev:** | `--sdclipdevice` | Device for the text encoders. Default: CPU. |
+| **VAE dev:** | `--sdvaedevice` | Device for the VAE. Default: the main GPU. |
+
+Every flag is listed in the [flag reference](/docs/reference/flags/). Older guides use `--sdt5xxl`, `--sdvaecpu` and `--sdclipgpu`; their replacements are `--sdllm`, `--sdvaedevice` and `--sdclipdevice`.
+
+## Related
+
+- [Vision](/docs/features/vision/): let the text model look at images.
+- [Saving VRAM](/docs/hardware/saving-vram/)
+- [API endpoints](/docs/api/endpoints/)

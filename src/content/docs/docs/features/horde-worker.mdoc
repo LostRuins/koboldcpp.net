@@ -1,0 +1,61 @@
+---
+title: AI Horde worker
+description: Share your model with the AI Horde, a volunteer network. How to set up the built-in Horde worker in KoboldCpp and what the options do.
+sidebar:
+  order: 10
+---
+
+The [AI Horde](https://aihorde.net) is a volunteer network: people run models on their own computers and others use them over the internet. KoboldCpp has a built-in worker, so you can share your text model with the Horde while you run it.
+
+The worker only takes Horde jobs while you are not using the model yourself: it waits until there has been no local request for 20 seconds.
+
+## Set it up
+
+You need an AI Horde API key. Register at [aihorde.net/register](https://aihorde.net/register) to get one.
+
+{% steps %}
+
+1. Load your text model as usual.
+2. In the launcher, open the **Horde Worker** tab and tick **Configure for Horde**.
+3. Enter your key in **API Key (If Embedded Worker):** and a name for your worker in **Horde Worker Name:**.
+4. Click **Launch**.
+
+{% /steps %}
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --hordekey YOUR_KEY --hordeworkername my-worker
+```
+
+Both the key and the worker name are required. With only the key, KoboldCpp prints "Horde worker could not start. You need to specify a horde worker name with --hordeworkername".
+
+With a Horde worker, KoboldCpp switches to quiet mode automatically.
+
+<!-- SCREENSHOT: Horde Worker tab with Configure for Horde ticked -->
+
+{% aside type="caution" %}
+**Save Config** stores your Horde API key in plain text in the `.kcpps` file. Do not share that file. Templates (`.kcppt`) leave the key and worker name out.
+{% /aside %}
+
+## Options
+
+| Launcher field | Flag | What it does |
+|---|---|---|
+| **Horde Model Name:** | `--hordemodelname` | The model name shown on the Horde. Empty means the file name. KoboldCpp adds `koboldcpp/` in front. |
+| **Gen. Length:** | `--hordegenlen` | Most tokens your worker generates per Horde job. Default `1024`. |
+| **Max Context:** | `--hordemaxctx` | Largest context your worker accepts from a Horde job. `0` means your context size; it cannot go higher. |
+| **API Key (If Embedded Worker):** | `--hordekey` | Your AI Horde API key. |
+| **Horde Worker Name:** | `--hordeworkername` | Your worker's name on the Horde. |
+
+## Advanced
+
+- These three settings are not Horde-only. **Horde Model Name:** also renames the model in `/api/v1/model` and `/v1/models`. **Gen. Length:** and **Max Context:** are also what `/api/v1/config/max_length` and `/api/v1/config/max_context_length` report to other apps.
+- With `--parallelrequests N`, KoboldCpp starts N workers under the same name.
+- After repeated errors, the worker pauses for growing periods, and stops after too many.
+- If the worker fails with certificate (SSL) errors, `--nocertify` turns off certificate checks for all outgoing connections. This is insecure: whoever intercepts the connection can read your Horde API key. Use it only as a last resort.
+
+## Related
+
+- [KoboldAI Lite](/docs/features/lite/): Lite can also use models from the AI Horde.
+- [Config files](/docs/settings/config-files/)

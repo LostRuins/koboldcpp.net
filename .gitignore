@@ -1,4 +1,3 @@
-__pycache__/
-*.pyc
-.validation/
-.browser-profile/
+node_modules/
+dist/
+.astro/

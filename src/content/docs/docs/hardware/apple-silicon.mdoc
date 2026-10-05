@@ -1,0 +1,41 @@
+---
+title: Apple Silicon
+description: How KoboldCpp uses Metal on M-series Macs, what GPU layers mean on macOS, and the CPU-only failsafe mode.
+sidebar:
+  order: 6
+---
+
+The Mac build, `koboldcpp-mac-arm64`, is for Apple Silicon (M-series) Macs. It uses the GPU through **Metal** automatically; there is no backend to choose. For download and first start, see [macOS](/docs/install/macos/).
+
+Intel Macs have no ready-made file and must [build from source](/docs/install/from-source/#macos).
+
+## GPU layers on macOS
+
+On macOS, **GPU Layers:** `-1` (the default) puts **all** layers on the GPU. The console prints:
+
+```text
+MacOS detected: Auto GPU layers set to maximum
+```
+
+- Autofit does not switch on by itself on macOS. KoboldCpp does not check whether the model fits; pick a model and context that fit your Mac's memory. See [How much memory a model needs](/docs/models/memory/).
+- To keep part of the model off the GPU, set **GPU Layers:** to a lower number.
+- `Unable to determine GPU Memory` and `Unable to determine available RAM` in the console are expected on a Mac. When the launcher opens, it can also print `Unable to detect VRAM.`.
+- On macOS, **Use CPU** (`--usecpu`) still puts all layers on the GPU. To run on the CPU only, set **GPU Layers:** to `0` (`--gpulayers 0`), or use `--failsafe`.
+
+## Failsafe mode (CPU only)
+
+`--failsafe` switches to a CPU-only library that uses Apple's Accelerate framework instead of Metal:
+
+```sh {% title="Terminal" frame="terminal" %}
+./koboldcpp-mac-arm64 --failsafe
+```
+
+## Vision models
+
+With Metal, the vision projectors of Qwen2-VL and Gemma 3 always run on the CPU, whatever **V.Force CPU** (`--mmprojcpu`) is set to. See [Vision](/docs/features/vision/).
+
+## Related
+
+- [macOS](/docs/install/macos/)
+- [GPU layers](/docs/hardware/gpu-layers/)
+- [Saving VRAM](/docs/hardware/saving-vram/)

@@ -1,0 +1,39 @@
+---
+title: "Help and next steps"
+description: "Quick fixes for the most common KoboldCpp problems for beginners, where to ask for help, and what to try after your first chat."
+sidebar:
+  label: Help and next steps
+next:
+  link: /docs/
+  label: The wiki
+---
+
+Many problems show an error message in the console window. Keep it open and read it.
+
+## Common problems
+
+**Windows or your antivirus blocks the file.** For files from the [official releases](https://github.com/LostRuins/koboldcpp/releases/latest) this is a false alarm: the file is not signed. Click **More info**, then **Run anyway**, or allow the file in your antivirus. [More](/docs/install/windows/#smartscreen-and-antivirus-warnings)
+
+**The window closes straight away.** Start KoboldCpp from a Command Prompt (Windows) or a terminal, so the error stays on screen. On an older PC, try the `oldpc` file. [More](/docs/troubleshooting/wont-start/)
+
+**"Out of memory", or a crash while loading.** Pick a smaller model or the `LowSpec` template, and close other programs that use the graphics card. [More](/docs/troubleshooting/out-of-memory/)
+
+**Replies are very slow.** Check that **Backend:** on **Quick Launch** shows **Use CUDA** (NVIDIA) or **Use Vulkan** (AMD, Intel), not **Use CPU**. If **Use CUDA** is missing on an NVIDIA PC, you have the `nocuda` file; [download](/download/) `koboldcpp.exe` instead. [More](/docs/troubleshooting/gpu-and-speed/)
+
+**The model doesn't load.** Use one `.gguf` file, and download it again if the download was cut short. Newer model types need the latest KoboldCpp. [More](/docs/troubleshooting/model-wont-load/)
+
+**Nothing happens on macOS.** Run it from Terminal as shown in [Start KoboldCpp](/getting-started/start/), and allow it in **System Settings → Privacy & Security**. [More](/docs/install/macos/)
+
+## Ask for help
+
+Ask on the [KoboldAI Discord](https://koboldai.org/discord) or in [GitHub Discussions](https://github.com/LostRuins/koboldcpp/discussions). Found a bug? [Report it on GitHub](https://github.com/LostRuins/koboldcpp/issues). Copy the error from the console window into your message.
+
+## What to try next
+
+- [Connect SillyTavern and other apps](/docs/api/connect-apps/)
+- [Make pictures](/docs/features/image-generation/)
+- [Talk to it](/docs/features/speech-to-text/) and [hear replies read aloud](/docs/features/text-to-speech/)
+- [Let it remember more of the conversation](/docs/settings/context-size/)
+- [Update KoboldCpp](/docs/install/updating/)
+
+Everything else is in the [wiki](/docs/).

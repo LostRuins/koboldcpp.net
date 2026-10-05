@@ -1,0 +1,51 @@
+---
+/*
+ * Markdoc image node. Local images link to their full-size file, so small screens can open them larger.
+ * If a "<name>.mobile.png" sits next to "<name>.png" in src/assets/docs/, phones get that crop instead
+ * (<picture> source, so each device downloads only one of the two).
+ */
+import type { ImageMetadata } from 'astro';
+import { Image, getImage } from 'astro:assets';
+
+interface Props {
+	src: ImageMetadata | string;
+	alt: string;
+	title?: string;
+}
+
+const { src, alt, title } = Astro.props;
+
+/** File name without folder, content hash and extension ("launcher-hardware"); same in dev and build. */
+const baseName = (url: string) => url.split('?')[0].split('/').pop()!.split('.')[0];
+
+const mobileFiles = import.meta.glob<ImageMetadata>('/src/assets/docs/**/*.mobile.png', { eager: true, import: 'default' });
+const mobileByName = new Map<string, ImageMetadata>();
+for (const [path, image] of Object.entries(mobileFiles)) {
+	const name = baseName(path);
+	if (mobileByName.has(name)) throw new Error(`Duplicate mobile image name "${name}" in src/assets/docs/`);
+	mobileByName.set(name, image);
+}
+
+/** The content column shows images at most ~680 px wide; larger screenshots also get 1x and 2x versions. */
+const srcset = typeof src !== 'string' && src.width > 1360 ? { widths: [680, 1360], sizes: '(min-width: 50rem) 680px, 100vw' } : {};
+
+const mobile = typeof src === 'string' ? undefined : mobileByName.get(baseName(src.src));
+const mobileImage = mobile ? await getImage({ src: mobile, format: 'webp' }) : undefined;
+---
+
+{
+	typeof src === 'string' ? (
+		<img src={src} alt={alt} title={title} />
+	) : (
+		<a class="doc-image" href={src.src}>
+			{mobileImage ? (
+				<picture>
+					<source media="(max-width: 50rem)" srcset={mobileImage.src} width={mobile!.width} height={mobile!.height} />
+					<Image src={src} alt={alt} title={title} {...srcset} />
+				</picture>
+			) : (
+				<Image src={src} alt={alt} title={title} {...srcset} />
+			)}
+		</a>
+	)
+}

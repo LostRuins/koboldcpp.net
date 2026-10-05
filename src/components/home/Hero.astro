@@ -1,0 +1,60 @@
+---
+/* The hero: the site nav, one sentence on what KoboldCpp is, the two ways in, and two real screenshots
+   of KoboldAI Lite. Side by side on wide screens; below that the navy background stops partway down the
+   screenshots (home.css .hero::before). */
+import { Image } from 'astro:assets';
+import HomeHeader from './HomeHeader.astro';
+import liteVision from '../../assets/home/lite-vision.png';
+import liteAesthetic from '../../assets/home/lite-aesthetic.png';
+import { LATEST_URL } from '../../data/release';
+import { ROUTES } from '../../data/routes';
+---
+
+<header class="hero">
+	<HomeHeader />
+	<div class="wrap hero-body">
+		<div class="hero-copy">
+			<h1>Run AI models on your own computer</h1>
+			<p class="hero-lead">
+				KoboldCpp is one free file for Windows, Linux and macOS. Load a model, then chat, write stories or make images in
+				your browser. No install, no account.
+			</p>
+			<div class="hero-actions">
+				<a class="btn btn-light" href={ROUTES.download}>Download</a>
+				<a class="btn btn-outline" href={ROUTES.gettingStarted}>Getting started</a>
+			</div>
+			<p class="hero-meta">
+				Free and open source · Works offline · Official downloads only on <a href={LATEST_URL}>GitHub</a>
+			</p>
+		</div>
+		<figure class="showcase">
+			<div class="shots">
+				<div class="browser">
+					<div class="browser-bar" aria-hidden="true">
+						<span class="dots"><i></i><i></i><i></i></span><span class="url">localhost:5001</span>
+					</div>
+					<Image
+						src={liteVision}
+						widths={[800, 1600]}
+						sizes="(min-width: 64rem) 36rem, 86vw"
+						priority
+						alt="KoboldAI Lite in the Corpo theme: the user shares two pictures, a red fox in a snowy forest and a ginger cat asleep on a sunny windowsill, and asks to compare them. The reply says both show animals at rest, one in the wild winter outdoors and one in a cozy home."
+					/>
+				</div>
+				<Image class="shot-second" src={liteAesthetic} widths={[400, 800]} sizes="(min-width: 64rem) 14rem, 36vw" alt="KoboldAI Lite in the Aesthetic theme: a chat with Emily, a kobold character, who happily agrees to go to the lantern festival." />
+			</div>
+			<figcaption>KoboldAI Lite, the app KoboldCpp opens in your browser. Gemma 3 4B compares two pictures made with PicX Real and chats as a character.</figcaption>
+		</figure>
+	</div>
+</header>
+
+<script>
+	// Progressive enhancement only: the nav turns into the docs' solid bar once the hero has scrolled away.
+	const header = document.querySelector<HTMLElement>('[data-kc-header]');
+	const heroCopy = document.querySelector('.hero-copy');
+	if (header && heroCopy) {
+		new IntersectionObserver(([entry]) => {
+			if (entry) header.toggleAttribute('data-stuck', !entry.isIntersecting && entry.boundingClientRect.top < 0);
+		}).observe(heroCopy);
+	}
+</script>

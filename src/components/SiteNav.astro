@@ -1,0 +1,198 @@
+---
+/*
+ * The one navigation bar, rendered on the home page (inside HomeHeader, at the top of the hero) and
+ * on every docs page (inside Starlight's <header>, via the Header override). Same markup and CSS on
+ * both, so the bar is identical in position, height and content. The outer box (--sl-nav-height,
+ * --sl-nav-pad-x, the phone menu button) is Starlight's .header on docs and .kc-header on home, with
+ * equal values; inside it the bar is centred in the page's 72rem column. Both sit on navy.
+ *
+ * Contents (the mint-home nav): brand, site links (by width tier), Starlight's Pagefind search, GitHub.
+ */
+import Search from '@astrojs/starlight/components/Search.astro';
+import { NAV_LINKS, ROUTES, EXT } from '../data/routes';
+
+const path = Astro.url.pathname;
+/** "page" on the link to this page, "true" on the link to the section the page is in. */
+const currentOf = (href: string) => (href === path ? 'page' : href !== '/' && path.startsWith(href) ? 'true' : undefined);
+---
+
+<div class="kc-nav">
+	<a class="kc-brand" href={ROUTES.home} aria-label="KoboldCpp home"
+		><span class="kc-brand__mark"><img src="/favicon.png" width="32" height="32" alt="" /></span><span
+			class="kc-brand__name">KoboldCpp</span
+		></a
+	>
+	<nav class="kc-links" aria-label="Site">
+		{
+			NAV_LINKS.map((l) => (
+				<a href={l.href} class={`tier-${l.tier}`} aria-current={currentOf(l.href)}>
+					{l.label}
+				</a>
+			))
+		}
+	</nav>
+	<div class="kc-tools">
+		<Search />
+		<a class="btn btn-light kc-gh" href={EXT.repo}>GitHub</a>
+	</div>
+</div>
+
+<style>
+	/* Own typography, so the page around the bar (home body vs Starlight body) can't change it. */
+	.kc-nav {
+		display: flex;
+		align-items: center;
+		gap: var(--space-s);
+		width: min(var(--wrap), 100%);
+		height: 100%;
+		margin-inline: auto;
+		font-family: var(--font-text);
+		font-size: var(--step-0);
+		line-height: 1.5;
+		color: #fff;
+	}
+	.kc-nav :where(a, button):focus-visible {
+		outline: 3px solid var(--sky-300);
+		outline-offset: 3px;
+		border-radius: var(--radius-s);
+	}
+
+	.kc-brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.7rem;
+		flex: none;
+		margin-right: auto;
+		font-family: var(--font-display);
+		font-size: 1.6rem;
+		line-height: 1;
+		color: #fff;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.kc-brand__mark {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		background: var(--paper-3);
+		box-shadow: 0 0 0 2px oklch(1 0 0 / 0.9);
+	}
+	.kc-brand__mark img {
+		width: 32px;
+		height: 32px;
+		image-rendering: pixelated;
+	}
+
+	/* Site links, shown by width tier */
+	.kc-links {
+		display: none;
+		align-items: center;
+		gap: 0.15rem;
+	}
+	.kc-links a {
+		display: none;
+		align-items: center;
+		gap: 0.35em;
+		min-height: 44px;
+		padding-inline: 0.8rem;
+		border-radius: var(--radius-s);
+		color: oklch(0.94 0.02 250);
+		text-decoration: none;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.kc-links a:hover {
+		color: #fff;
+		background: oklch(1 0 0 / 0.1);
+	}
+	.kc-links a[aria-current] {
+		color: #fff;
+		font-weight: 700;
+	}
+
+	.kc-tools {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex: none;
+	}
+
+	/* Search (Starlight's component) as an icon button, drawn like the nav links. Explicit values,
+	   so it renders the same inside and outside Starlight pages. */
+	.kc-tools :global(button[data-open-modal]) {
+		flex: none;
+		justify-content: center;
+		width: 44px;
+		max-width: none;
+		height: 44px;
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius-s);
+		background: transparent;
+		color: oklch(0.94 0.02 250);
+		font-size: 1.25rem;
+	}
+	.kc-tools :global(button[data-open-modal]:hover) {
+		color: #fff;
+		background: oklch(1 0 0 / 0.1);
+	}
+	.kc-tools :global(button[data-open-modal] > span),
+	.kc-tools :global(button[data-open-modal] > kbd) {
+		display: none;
+	}
+
+	.kc-gh {
+		flex: none;
+		min-height: 40px;
+		padding: 0.4rem 0.95rem;
+		font-size: var(--step--1);
+	}
+
+	/* Phones: a smaller lockup, so logo + search + GitHub fit next to the menu button. */
+	@media (max-width: 29.99rem) {
+		.kc-nav {
+			gap: 0.5rem;
+		}
+		.kc-brand {
+			gap: 0.55rem;
+			font-size: 1.35rem;
+		}
+		.kc-brand__mark {
+			width: 36px;
+			height: 36px;
+		}
+		.kc-brand__mark img {
+			width: 26px;
+			height: 26px;
+		}
+		.kc-gh {
+			padding-inline: 0.75rem;
+		}
+	}
+	/* Narrowest phones: GitHub is in the menu (MENU_LINKS) instead. */
+	@media (max-width: 23.99rem) {
+		.kc-gh {
+			display: none;
+		}
+	}
+	@media (min-width: 50rem) {
+		.kc-links {
+			display: flex;
+		}
+		.kc-links a.tier-1 {
+			display: inline-flex;
+		}
+	}
+	@media (min-width: 64rem) {
+		.kc-links a.tier-2 {
+			display: inline-flex;
+		}
+	}
+	@media (min-width: 72rem) {
+		.kc-links a.tier-3 {
+			display: inline-flex;
+		}
+	}
+</style>

@@ -1,0 +1,143 @@
+---
+title: Release files and system requirements
+description: Every file in a KoboldCpp release, which system and GPU it is for, and the CPU and CUDA requirements of each build.
+sidebar:
+  order: 1
+---
+
+Each release on GitHub contains one ready-to-run file per system and GPU type. You need **one** of them. For a quick pick, see [Download KoboldCpp](/download/).
+
+All files come from the [latest release](https://github.com/LostRuins/koboldcpp/releases/latest). The **Source code** archives that GitHub adds to every release are not programs; don't download them to run KoboldCpp.
+
+<!-- GENERATED: release file table with sizes from release data -->
+
+## The files
+
+| File | System | GPU backends | CPU |
+|---|---|---|---|
+| `koboldcpp.exe` | Windows x64 | CUDA 12, Vulkan | AVX2 (old-CPU modes included) |
+| `koboldcpp-nocuda.exe` | Windows x64 | Vulkan | AVX2 (old-CPU modes included) |
+| `koboldcpp-oldpc.exe` | Windows x64 | CUDA 11, Vulkan | AVX1 (no-AVX modes included) |
+| `koboldcpp-linux-x64` | Linux x64 | CUDA 12, Vulkan | AVX2 (old-CPU modes included) |
+| `koboldcpp-linux-x64-nocuda` | Linux x64 | Vulkan | AVX2 (old-CPU modes included) |
+| `koboldcpp-linux-x64-oldpc` | Linux x64 | CUDA 11, Vulkan | AVX1 (no-AVX modes included) |
+| `koboldcpp-mac-arm64` | macOS, Apple Silicon | Metal | not applicable |
+
+Every file can also run on the CPU alone.
+
+- **Main builds** (`koboldcpp.exe`, `koboldcpp-linux-x64`): for NVIDIA graphics cards on newer PCs.
+- **nocuda builds**: the same without CUDA, and much smaller. For AMD or Intel graphics, no graphics card, or when you don't need CUDA. AMD users should try the **Vulkan** backend in this build first.
+- **oldpc builds**: CUDA 11 and AVX1, for older processors and older NVIDIA cards, or when the main build crashes. They are also the only builds with GPU support (Vulkan) on processors without AVX.
+- **Mac build**: for Apple Silicon (M-series) Macs. Intel Macs have no ready-made file; see [macOS](/docs/install/macos/).
+
+There are no ready-made files for Windows on ARM or Linux on ARM. On ARM Linux, [build from source](/docs/install/from-source/).
+
+## System requirements
+
+KoboldCpp has no fixed RAM or VRAM minimum; what you need depends on the model. The launcher's newbie templates give a rough guide: LowSpec recommends 6 GB VRAM, MidSpec 12 GB, HighSpec 24 GB. See [Choose a model](/getting-started/model/).
+
+More: [How much memory a model needs](/docs/models/memory/).
+
+### Processor
+
+The main and nocuda builds run at full speed on processors with **AVX2**. For older processors, every x64 build includes slower compatibility modes, and KoboldCpp usually switches to them automatically when it detects that your CPU lacks AVX2 or AVX.
+
+See [Advanced: processor modes](#processor-avx2-avx-no-avx).
+
+### Operating system
+
+- **Windows:** x64. Windows 7 is not recommended; see [Windows 7](/docs/install/windows/#advanced-windows-7).
+- **Linux:** x64 with glibc 2.29 or newer, for example Ubuntu 20.04 or newer. `ldd --version` shows your glibc version.
+- **macOS:** Apple Silicon only, macOS 14 (Sonoma) or newer.
+
+## Advanced: processor modes {% #processor-avx2-avx-no-avx %}
+
+You can pick a mode yourself, in the launcher's backend list or with a flag:
+
+| Launcher backend | Flag | CPU needs | In builds |
+|---|---|---|---|
+| **Use CUDA** | `--usecuda` | AVX2 (main), AVX1 (oldpc) | main, oldpc |
+| **Use Vulkan** | `--usevulkan` | AVX2 | main, nocuda |
+| **Use CPU** | `--usecpu` | AVX2 | main, nocuda |
+| **Use CPU (Old CPU)** | `--noavx2` | AVX1 | all x64 builds |
+| **Use Vulkan (Old CPU)** | `--usevulkan --noavx2` | AVX1 | all x64 builds |
+| **Use Vulkan (Older CPU)** | `--usevulkan --failsafe` | SSE3 and SSSE3 | oldpc only |
+| **Failsafe Mode (Older CPU)** | `--failsafe` | any x86-64 CPU | all x64 builds |
+
+The launcher only lists backends that your build contains.
+
+- `--noavx2` is a slower compatibility mode for processors without AVX2.
+- `--failsafe` is an extremely slow mode that runs on any x86-64 processor. It implies `--noavx2`. Without `--usevulkan` it uses no GPU.
+- On a processor with no AVX at all that should still use a graphics card, use an oldpc build and select **Use Vulkan (Older CPU)** yourself. The launcher may pick **Use Vulkan (Old CPU)**, which needs AVX.
+
+More: [Old PCs and CPU-only](/docs/hardware/old-and-cpu-only/).
+
+## Advanced: CUDA versions and NVIDIA cards
+
+| Build | CUDA toolkit | Minimum NVIDIA driver | Compute capability compiled |
+|---|---|---|---|
+| Main (`koboldcpp.exe`, `koboldcpp-linux-x64`) | 12.1 | 531.14 (Windows), 530.30.02 (Linux) | 5.0, 6.1, 7.5, 8.0 |
+| oldpc (`koboldcpp-oldpc.exe`, `koboldcpp-linux-x64-oldpc`) | 11.4 | 472.50 (Windows), 470.42.01 (Linux) | 3.5, 5.0, 6.1, 7.5 |
+
+- The code is compiled as PTX, so newer cards compile it on first launch. That first start prints "Initializing CUDA/HIP, please wait, the following step may take a few minutes (only for first launch)".
+- Kepler cards with compute capability 3.5 or higher (for example K40 and K80) are only covered by the oldpc builds. Compute capability 3.0 cards are not covered by any build; try Vulkan instead.
+- If `nvidia-smi` reports "CUDA Version: 11.x" or "12.0", use the oldpc build, or update the driver.
+
+## Advanced: the Mac build
+
+`koboldcpp-mac-arm64` uses Metal. It also contains a CPU-only fallback that uses Accelerate without Metal; turn it on with `--failsafe`. See [macOS](/docs/install/macos/).
+
+## Advanced: rolling builds
+
+[Rolling builds](https://github.com/LostRuins/koboldcpp/releases/tag/rolling) are experimental pre-release builds that are updated automatically. They use the same file names as a normal release.
+
+- They may be unstable, and sometimes don't start at all.
+- They can support a new model architecture before the next release does.
+- For stability and proper support, use the official releases.
+
+## Advanced: ROCm build for AMD on Linux
+
+An official ROCm build for AMD graphics cards on Linux, `koboldcpp-linux-x64-rocm`, is published under the [rocm-rolling](https://github.com/LostRuins/koboldcpp/releases/tag/rocm-rolling) tag. The official short link is `https://koboldai.org/cpplinuxrocm`.
+
+- It is very experimental.
+- It needs x64 Linux with glibc from Ubuntu 22.04 or newer.
+- It brings its own ROCm 7 libraries. You don't need to install ROCm; the normal `amdgpu` kernel driver is enough.
+- It is updated separately from the releases and can lag behind them: the file tested for these docs reported version 1.121 while the latest release was 1.122.1.
+- Support is limited, because the maintainers don't have AMD devices themselves.
+- There is no official ROCm build for Windows.
+
+It is built for the Radeon RX 9000 series (gfx1200, gfx1201), RX 7000 series (gfx1100 to gfx1102), RX 6600 to RX 6950 XT (gfx1030 to gfx1032) and RX 5600/5700 (gfx1010), for older cards (RX 400/500 series: gfx803, Vega: gfx900, Radeon VII: gfx906) and for Instinct datacenter cards (gfx906, gfx908, gfx90a, gfx942).
+
+To use ROCm, set **Backend:** to **Use hipBLAS (ROCm)**, or pass `--usecuda`.
+
+For most AMD users, the **Vulkan** backend in the nocuda build is the recommended start. If generation is slow with Vulkan, try the ROCm build; see [GPU backends: ROCm](/docs/hardware/backends/#rocm).
+
+<!-- TODO verify: whether /dev/kfd needs the render group on some distributions (it was mode 0666 on the test system) -->
+
+## Advanced: old file names
+
+Scripts that download older file names no longer work. The files were renamed and the old names were removed in v1.94:
+
+| Old name | Current name |
+|---|---|
+| `koboldcpp_cu12.exe` | `koboldcpp.exe` |
+| `koboldcpp_nocuda.exe` | `koboldcpp-nocuda.exe` |
+| `koboldcpp_oldcpu.exe` | `koboldcpp-oldpc.exe` |
+| `koboldcpp-linux-x64-cuda1210` | `koboldcpp-linux-x64` |
+| `koboldcpp-linux-x64-cuda1150` | `koboldcpp-linux-x64-oldpc` |
+
+To always get the newest file, download from this address, with the file name at the end:
+
+```text
+https://github.com/LostRuins/koboldcpp/releases/latest/download/<file name>
+```
+
+## Other tools
+
+The release notes link [conversion and quantization tools](https://kcpptools.concedo.workers.dev/) for making GGUF files.
+
+## Related
+
+- [Windows](/docs/install/windows/), [Linux](/docs/install/linux/), [macOS](/docs/install/macos/)
+- [Updating](/docs/install/updating/)
+- [Staying safe](/docs/install/staying-safe/)

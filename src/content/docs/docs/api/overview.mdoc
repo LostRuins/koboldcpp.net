@@ -1,0 +1,105 @@
+---
+title: "API overview: KoboldAI, OpenAI and Ollama APIs"
+description: The APIs KoboldCpp serves on one port - KoboldAI, OpenAI, Anthropic, Ollama, A1111/Forge, ComfyUI, XTTS and Whisper - and where to find the API docs.
+sidebar:
+  label: "API overview"
+  order: 2
+---
+
+KoboldCpp serves several APIs at once, all on the same port (5001 by default). Many apps built for other servers, such as OpenAI, Ollama or Automatic1111, can use KoboldCpp once you point them to its address. Not every feature of those servers is supported.
+
+## API families
+
+| API | Base path | Use it for |
+|---|---|---|
+| KoboldAI (native) | `/api/v1/`, `/api/extra/` | Text generation with full sampler control, plus KoboldCpp extras such as token counting, abort and multiplayer. KoboldAI Lite uses this API. |
+| OpenAI | `/v1/` | Completions, chat completions (with tools and images), embeddings, audio and images |
+| OpenAI Responses | `/v1/responses` | Apps built for the OpenAI Responses API |
+| Anthropic Messages | `/v1/messages` | Apps built for the Anthropic API, with images and tool calls |
+| Ollama | `/api/generate`, `/api/chat`, `/api/embed`, `/api/tags` | Ollama apps; run KoboldCpp on port 11434 so they find it |
+| A1111 / Forge | `/sdapi/v1/` | Image generation, upscaling and image captioning |
+| ComfyUI | `/prompt`, `/view`, `/history` | Apps that send image jobs to ComfyUI |
+| XTTS | `/tts_to_audio`, `/speakers_list` | Apps built for an XTTS text-to-speech server |
+| OpenAI audio (Whisper) | `/v1/audio/transcriptions`, `/v1/audio/speech` | Speech-to-text and text-to-speech |
+
+Each family needs the matching model loaded. Text endpoints need a text model, image endpoints an image model, and so on. [Endpoints](/docs/api/endpoints/) lists every path and what it needs.
+
+## API documentation
+
+- **On your instance:** open `http://localhost:5001/api` for interactive API docs.
+- **Online:** [lite.koboldai.net/koboldcpp_api](https://lite.koboldai.net/koboldcpp_api) has the same docs.
+
+Both cover the KoboldAI, OpenAI, Anthropic and A1111 endpoints. The Ollama, ComfyUI and XTTS emulation is not in them; see [Endpoints](/docs/api/endpoints/).
+
+## First requests
+
+Two examples with `curl`. They use Linux and macOS shell quoting.
+
+KoboldAI API:
+
+```sh {% title="Terminal" frame="terminal" %}
+curl http://localhost:5001/api/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Once upon a time", "max_length": 50}'
+```
+
+The reply text is in `results[0].text`.
+
+OpenAI chat completions:
+
+```sh {% title="Terminal" frame="terminal" %}
+curl http://localhost:5001/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "Hello!"}], "max_tokens": 50}'
+```
+
+On Windows, Command Prompt needs the command on one line, with the inner quotes escaped. In PowerShell, type `curl.exe` instead of `curl`.
+
+```bat {% title="Command Prompt" frame="terminal" %}
+curl http://localhost:5001/api/v1/generate -H "Content-Type: application/json" -d "{\"prompt\": \"Once upon a time\", \"max_length\": 50}"
+```
+
+If you set a password, add `-H "Authorization: Bearer <password>"`. See [Passwords and security](/docs/api/passwords-and-security/).
+
+## What is loaded
+
+| Path | Shows |
+|---|---|
+| `GET /api/extra/version` | Which features are available: `llm`, `txt2img`, `vision`, `audio`, `transcribe`, `tts`, `embeddings`, `music`, `websearch`, `multiplayer`, `jinja`, `mcp`, `admin`, `router`, `protected` and more |
+| `GET /v1/models` | The loaded text model; in router mode also the files you can switch to |
+| `GET /props` | Chat template, context size (`n_ctx`) and whether vision and audio input work |
+| `GET /api/extra/true_max_context_length` | The context size the server allocated |
+| `GET /api/extra/perf` | Speed of the last request and the queue length |
+
+## Chat formatting
+
+The chat-style APIs (OpenAI chat, Responses, Anthropic, Ollama chat) send messages, and KoboldCpp turns them into the prompt format the model expects.
+
+- By default, KoboldCpp guesses the format from the model's chat template (**Chat Adapter:** on the **Loaded Files** tab, `--chatcompletionsadapter`, default `AutoGuess`). The console prints `Chat completion heuristic: <name>`.
+- **Use Jinja** (`--jinja`) renders the model's own chat template instead. Try it if chat replies look badly formatted with a newer model.
+- For tool calls with Jinja, also tick **Jinja for Tools** (`--jinjatools`).
+
+## Advanced: server-side defaults
+
+These apply to every request from every app:
+
+| Launcher (**Context** tab) | Flag | Effect |
+|---|---|---|
+| **Default Gen Amt:** | `--defaultgenamt` | Reply length when the request sets none (default 2048, at most half the context) |
+| **Prompt Limit:** | `--genlimit` | Hard cap on reply length; longer requests are cut to it |
+| **Default Params:** | `--gendefaults` | JSON with default values for fields the request leaves out, using the native KoboldAI and A1111 field names, e.g. `{"rep_pen": 1.1}`. For the reply length, use **Default Gen Amt:** instead. |
+| **Override** | `--gendefaultsoverwrite` | Makes **Default Params:** overwrite values the request did send |
+
+## Advanced: routing details
+
+- Most paths are matched by their ending; a few, such as `/props` and `/prompt`, must match exactly. The query string and a trailing slash don't change which endpoint answers: `http://localhost:5001/api/v1/generate/` works the same as without the slash.
+- Paths starting with `/lcpp/` are mapped to the root, so `/lcpp/v1/models` answers like `/v1/models`. This is how the bundled llama.cpp WebUI at `/lcpp/` reaches the API.
+- An unknown GET path returns 404 with a short HTML page that links to `/api`. An unknown POST path returns 404.
+- `POST /mcp` is a JSON-RPC proxy to the MCP servers from **MCP JSON:** (`--mcpfile`). See [Web search and MCP](/docs/features/web-search-and-mcp/).
+- Admin mode adds `/api/admin/` endpoints for swapping models. See [Admin mode](/docs/settings/admin-mode/).
+
+## Go deeper
+
+- [Endpoints](/docs/api/endpoints/)
+- [Streaming and multiple users](/docs/api/streaming/)
+- [Connect other apps](/docs/api/connect-apps/)

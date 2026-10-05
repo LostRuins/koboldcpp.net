@@ -1,0 +1,75 @@
+---
+title: RPC (GPUs over the network)
+description: Share a GPU from one computer and use it from KoboldCpp on another with RPC host and connect mode, and keep the RPC port off the internet.
+sidebar:
+  order: 7
+---
+
+RPC lets KoboldCpp use GPUs in other computers over the network. One computer shares its devices (**host**); the computer that loads the model uses them (**connect**).
+
+{% aside type="danger" title="Keep RPC on a trusted network" %}
+The RPC server does not ask for a password. By default it listens on all network interfaces (`0.0.0.0`). Don't expose the RPC port to the internet. Run hosts only on a network you trust, and set `--rpchost` to a specific address where you can.
+{% /aside %}
+
+## Settings
+
+The settings are on the **Network** tab, under **RPC Mode:**.
+
+| Setting | Launcher | Flag | Default |
+|---|---|---|---|
+| Mode: `disabled`, `connect` or `host` | **RPC Mode:** | `--rpcmode` | `disabled` |
+| Host: listen address | **RPC Host IP:** | `--rpchost` | `0.0.0.0` (all interfaces) |
+| Host: port | **RPC Host Port:** | `--rpcport` | `5551` |
+| Host: devices to share | **RPC Devices:** | `--rpcdevice` | automatic |
+| Connect: hosts to use | **RPC Endpoints:** | `--rpctargets` | none |
+
+## Share a GPU (host)
+
+On the computer with the GPU to share (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --rpcmode host --rpchost 192.168.1.20 --rpcport 5551
+```
+
+Use the computer's own network address for `--rpchost`, or `127.0.0.1` to test on one machine.
+
+- Host mode needs no model and starts no web interface or API. It only runs the RPC server and prints "Starting RPC server on …".
+- It shares all discrete GPUs by default. Without one, it shares other accelerators such as integrated graphics, and without those, the CPU.
+- `--rpcdevice` shares specific devices by name, for example `Vulkan0`. CPU names are rejected; KoboldCpp then falls back to the automatic choice.
+- The host prints "Note: It's not advised to expose RPC server to the open internet."
+
+## Use a remote GPU (connect)
+
+On the computer that loads the model, list the hosts in `--rpctargets`, separated by commas:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --rpcmode connect --rpctargets 192.168.1.20:5551,192.168.1.21:5551 --model mymodel.gguf --gpulayers 99
+```
+
+- `--rpctargets` only works with `--rpcmode connect`. Otherwise KoboldCpp exits with "Error: rpctargets can only be used in connect mode".
+- `--rpctargets` and `--rpcport` can't be used together.
+- In connect mode, **GPU Layers:** is kept even with **Use CPU** (`--usecpu`).
+- The connection is made when the text model loads. Other models that use the GPU, such as embedding models, can then use the remote devices too.
+
+When it works, the host prints `Accepted client connection`, and the connecting KoboldCpp lists the remote device as `RPC0` with its address:
+
+```text
+llama_prepare_model_devices: using device RPC0 (192.168.1.20:5551) (unknown id) - 23873 MiB free
+load_tensors: offloaded 37/37 layers to GPU
+```
+
+In a test with an RTX 3090 shared over `127.0.0.1` and a connecting KoboldCpp without its own GPU (`--usecpu`), all layers of Qwen3-VL-8B went to `RPC0`, with or without `--gpulayers 99`.
+
+<!-- TODO measure: speed over a real LAN (host and connect on different computers) -->
+
+## Compatibility
+
+KoboldCpp's RPC is compatible with llama.cpp's: a llama.cpp `rpc-server` can serve KoboldCpp, and a KoboldCpp host can serve llama.cpp. This compatibility was a breaking change at the time, so older KoboldCpp versions don't work with newer ones. Use the same KoboldCpp release on all computers.
+
+<!-- TODO measure on GPU: interoperability of the current llama.cpp rpc-server with KoboldCpp connect mode -->
+
+## Related
+
+- [Multiple GPUs](/docs/hardware/multi-gpu/)
+- [GPU layers](/docs/hardware/gpu-layers/)
+- [Remote access](/docs/api/remote-access/)

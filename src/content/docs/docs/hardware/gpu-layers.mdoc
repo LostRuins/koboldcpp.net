@@ -1,0 +1,112 @@
+---
+title: "GPU layers: how many to offload"
+description: How KoboldCpp decides how much of a model goes on the GPU, what autofit does, and when to set GPU layers yourself.
+sidebar:
+  label: "GPU layers"
+  order: 2
+---
+
+A model is made of layers. **GPU Layers:** sets how many of them run on the graphics card. The rest runs on the processor from system memory, which is slower.
+
+**GPU Layers:** is on the **Quick Launch** and **Hardware** tabs. It appears only when **Backend:** is a GPU backend (**Use CUDA**, **Use Vulkan** or **Use hipBLAS (ROCm)**), and always on macOS. With **Use CPU** it is hidden. See [GPU backends](/docs/hardware/backends/).
+
+| Setting | Launcher | Flag |
+|---|---|---|
+| Automatic (default) | **GPU Layers:** `-1` or empty | `--gpulayers -1` |
+| A fixed number | **GPU Layers:** `N` | `--gpulayers N` |
+| No GPU | **GPU Layers:** `0` | `--gpulayers 0` |
+
+`--gpu-layers`, `--n-gpu-layers` and `-ngl` are other names for `--gpulayers`.
+
+Next to the field, the launcher shows the model's layer count in yellow, for example "(Auto) (N Total Layers)".
+
+## Automatic: autofit
+
+Leave **GPU Layers:** at `-1` unless you have a reason to change it. With a GPU backend, KoboldCpp then uses llama.cpp's **autofit**: it calculates what fits in your VRAM and puts as much of the model on the GPU as possible. The console shows:
+
+```text
+Auto Recommended GPU Layers: <N>
+GPU layers is default: Will enable AutoFit for increased estimation accuracy.
+Autofit Success: 1, Autofit Result: -c <context> -ngl <layers>
+```
+
+Examples at the default context:
+
+| Model | GPU | Autofit Result | VRAM used |
+|---|---|---|---|
+| Qwen3-VL-8B Q4_K_S (4.80 GB file) | Radeon RX 7600 XT, 16 GB | `-c 16512 -ngl -1` | 6813 MiB |
+| Qwen3-VL-8B Q4_K_S | RTX 3090, 24 GB | `-c 16512 -ngl -1` | 7192 MiB |
+| Qwen3-32B Q4_K_M (19.8 GB file) | RTX 3090, 24 GB | `-c 16512 -ngl 64` | 22842 MiB |
+| Qwen3-32B Q4_K_M | 2x RTX 3090 | `-c 16512 -ngl -1` | 11828 + 11888 MiB |
+
+Qwen3-32B has 65 layers (64 plus the output layer), so `-ngl 64` on one RTX 3090 leaves one layer on the CPU.
+
+- The number after `-ngl` is the number of GPU layers autofit chose; `-1` means all layers. The number after `-c` is the context size plus 128 tokens of headroom. With several GPUs, `-ts` shows the split autofit chose. If the model fits without changes, as in the 2x RTX 3090 example, the line has no `-ts`.
+- "Auto Recommended GPU Layers" is KoboldCpp's own rough estimate, printed before autofit runs. It is used only if autofit fails (`Autofit Success: 0`).
+- Autofit takes the context size, other loaded models, the vision projector and a draft model into account.
+- It keeps 1024 MB of VRAM free on each GPU as a safety margin.
+
+`-1` means something different in two cases:
+
+- **No GPU backend** (CPU selected, or no GPU found): `-1` becomes `0`. The console prints "No GPU backend found, or could not automatically determine GPU layers. You may prefer to set layers manually."
+- **macOS:** `-1` puts all layers on the GPU. See [Apple Silicon](/docs/hardware/apple-silicon/).
+
+Autofit does not switch on by itself when you also set **Tensor Split:** (`--tensor_split`), **Override Tensors:** (`--overridetensors`), **MoE CPU Layers:** (`--moecpu`) or **FFN CPU Layers:** (`--ffncpu`). Then only the rough estimate is used, so set **GPU Layers:** yourself.
+
+## Setting layers yourself
+
+A number other than `-1` turns autofit off and puts exactly that many layers on the GPU.
+
+{% steps %}
+
+1. Start with the automatic setting and note the number after `-ngl` in the "Autofit Result" line.
+2. Set **GPU Layers:** to a number. A number at least as high as the model's layer count puts the whole model on the GPU.
+3. If loading fails with an out-of-memory error, reduce the number by a few layers and try again.
+
+{% /steps %}
+
+The launcher's tooltip warns: "The auto estimation is often inaccurate! Please set layers yourself for best results!"
+
+- `0` runs everything on the CPU. If you set no backend, it also skips automatic backend selection, so the CPU backend loads even when a GPU is present.
+- `--gpulayers` without a number means **1** layer, not automatic.
+- With **Use CPU** (`--usecpu`), a layer count is ignored (except on macOS and in [RPC](/docs/hardware/rpc/) connect mode) and KoboldCpp prints "WARNING: GPU layers is set, but a GPU backend was not selected! GPU will not be used!".
+
+## Force AutoFit
+
+**Force AutoFit** on the **Quick Launch** and **Hardware** tabs (`--autofit`) runs autofit no matter what else is set. It hides the **GPU Layers:** field.
+
+- It overrides your layer count and tensor split.
+- It ignores **MoE CPU Layers:**, **FFN CPU Layers:** and **Override Tensors:**, and says so in the console.
+- The launcher marks it as experimental and "Not recommended for multi model setups".
+
+## Advanced: autofit padding
+
+**Autofit Padding (MB):** on the **Hardware** tab (`--autofitpadding`) sets how much VRAM autofit keeps free on the first GPU. The default is 1024.
+
+{% aside type="caution" title="Only works with Force AutoFit" %}
+The padding is only used when **Force AutoFit** (`--autofit`) is on. When autofit switches on automatically because **GPU Layers:** is `-1`, the padding is reset to 1024 MB.
+{% /aside %}
+
+For example (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --autofit --autofitpadding 2048
+```
+
+The console then shows the reserved amount: "Autofit Reserve Space: N MB". It includes other loaded models on top of the padding.
+
+## Advanced: the rough estimate
+
+The fallback estimate is a simple formula based on the file size, the context size, the batch size and the model's layer and head counts.
+
+- It keeps at least 1.25 GiB of VRAM free, or 0.5 GiB plus what other programs use, whichever is more.
+- It warns when other programs use more than 2.5 GiB of VRAM.
+- With several GPUs, it uses the VRAM of the **smallest** one.
+- For split GGUF files it is less accurate and says so.
+- An estimate of 2 layers or fewer becomes 0.
+
+## Related
+
+- [How much memory a model needs](/docs/models/memory/)
+- [Saving VRAM](/docs/hardware/saving-vram/)
+- [Multiple GPUs](/docs/hardware/multi-gpu/)

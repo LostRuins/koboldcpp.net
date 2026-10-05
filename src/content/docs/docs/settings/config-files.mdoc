@@ -1,0 +1,128 @@
+---
+title: Config files (.kcpps)
+description: Save KoboldCpp launcher settings to a .kcpps file, load them again, and override single settings from the command line.
+sidebar:
+  order: 3
+---
+
+A `.kcpps` file stores all launcher settings: model, backend, context size, network and everything else. Save one to reuse your setup, move it to a new KoboldCpp version, or start KoboldCpp without the launcher.
+
+## Save and load in the launcher
+
+- **Save Config** writes all current settings to a `.kcpps` file.
+- **Load Config** fills the launcher with the settings from a `.kcpps` file (or a `.kcppt` [template](/docs/settings/templates/)). It does not launch; check the settings, then click **Launch**.
+
+Selecting a `.kcpps` file in a model field (for example with **Browse** next to **GGUF Text Model:**) loads it as a config too.
+
+The launcher does not remember settings between runs. To keep them, use **Save Config**.
+
+### Old config files
+
+An old config with `"flashattention": false` or `"useswa": false` turns flash attention or SWA off, although both are on by default now. After updating, load the config, tick **Use FlashAttention** and **Allow SWA**, and save it again.
+
+## Start with a config
+
+These start KoboldCpp with the saved settings, without the launcher:
+
+- **Drag the file onto the KoboldCpp exe.**
+- **Command line:** `--config`.
+
+{% tabs syncKey="os" %}
+{% tabitem label="Windows" %}
+
+```sh {% title="Command Prompt" frame="terminal" %}
+C:\mystuff\koboldcpp.exe --config mysettings.kcpps
+```
+
+{% /tabitem %}
+{% tabitem label="Linux" %}
+
+```sh {% title="Terminal" frame="terminal" %}
+./koboldcpp-linux-x64 --config mysettings.kcpps
+```
+
+{% /tabitem %}
+{% tabitem label="macOS" %}
+
+```sh {% title="Terminal" frame="terminal" %}
+./koboldcpp-mac-arm64 --config mysettings.kcpps
+```
+
+{% /tabitem %}
+{% /tabs %}
+
+The file name also works without `--config`: `koboldcpp.exe mysettings.kcpps`. `--config` also accepts an `http://` or `https://` URL that ends in `.kcpps` or `.kcppt`; KoboldCpp downloads the file first.
+
+The examples below write `koboldcpp` for your KoboldCpp file.
+
+To open a config in the launcher and change it before launching, add `--showgui`:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --config mysettings.kcpps --showgui
+```
+
+On Windows, **Register** on the **Extra** tab makes `.kcpps` files open with KoboldCpp. Opening a file starts KoboldCpp with it right away; the file's **Edit** action opens it in the launcher instead.
+
+## Change one setting from the command line
+
+Flags after `--config` override the value in the file. The terminal confirms each one with `Overriding Config Value: <name>`.
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --config mysettings.kcpps --contextsize 4096
+```
+
+{% aside type="caution" title="Only the exact flag name overrides" %}
+The override works only when you write the flag exactly as the setting is named in the file, with two dashes (`--contextsize`). Short or alternative spellings (`-c`, `--ctx-size`) and the `--flag=value` form are ignored without a warning, and the value from the file stays.
+{% /aside %}
+
+Tested with a config saved with context size 2048:
+
+| Added to `--config` | Context size used |
+|---|---|
+| `--contextsize 4096` | 4096 |
+| `--ctx-size 4096` | 2048 |
+| `-c 4096` | 2048 |
+| `--contextsize=4096` | 2048 |
+
+Other rules:
+
+- `--model` overrides the model in the file.
+- `--port 5001` does not override a different port saved in the file, because 5001 is the default. Change the port in the file, or in the launcher with `--showgui`.
+- `--help` says other arguments are ignored when you use `--config`. The rule above is what actually happens.
+
+## Create a config from the command line
+
+`--exportconfig` writes the given flags to a `.kcpps` file and exits without loading anything. `.kcpps` is added to the name if missing.
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --contextsize 8192 --exportconfig mysettings
+```
+
+The file stores the flags as given. Values KoboldCpp works out at launch, such as automatic GPU layers or the automatically chosen backend, are not in it.
+
+## What is stored
+
+A `.kcpps` file is plain JSON. It has one entry per command-line setting, named like the flag without dashes, for example `contextsize`, `gpulayers` or `model_param` (the model).
+
+- **Passwords are stored as plain text.** This includes **Password:** and **Admin Password:**. Don't share `.kcpps` files that contain them. To share a setup, export a [template](/docs/settings/templates/) instead. It removes the passwords and resets most PC-specific settings, but local file paths stay in it, so check the file before you share it.
+- These are never stored: `--config`, `--exportconfig`, `--exporttemplate`, `--analyze`, `--unpack`, `--version` and `--allow-config-onready`.
+
+## Advanced
+
+### Shell commands in configs
+
+`--onready` runs a shell command after the model has loaded. A config file can contain one, so KoboldCpp ignores `onready` from a config unless you also pass `--allow-config-onready` on the command line. Only use that flag with configs you trust. A config cannot turn it on by itself.
+
+### Errors
+
+| Message | Cause |
+|---|---|
+| `Specified kcpp config file invalid or not found.` | The file does not exist, or the URL could not be downloaded. |
+| A long Python error mentioning `json` | The file exists but is not valid JSON, usually after a hand edit. |
+| `The selected config file seems to be invalid.` (Load Config) | The file is missing, nearly empty, or larger than 50 MB. |
+
+## Related
+
+- [Templates (.kcppt)](/docs/settings/templates/)
+- [Command line](/docs/settings/command-line/)
+- [Admin mode](/docs/settings/admin-mode/): switch between configs while KoboldCpp runs
