@@ -1,0 +1,26 @@
+---
+/* The site links in the phone menu: the home page's menu and the footer of the docs sidebar menu. */
+import { MENU_LINKS } from '../data/routes';
+---
+
+<nav class="kc-menu-links" aria-label="Site">
+	{MENU_LINKS.map((l) => <a href={l.href}>{l.label}</a>)}
+</nav>
+
+<style>
+	.kc-menu-links {
+		display: grid;
+		gap: 0.25rem;
+		padding-block: 0.75rem;
+	}
+	.kc-menu-links a {
+		padding: 0.5rem 0.75rem;
+		border-radius: var(--radius-s);
+		color: var(--ink);
+		text-decoration: none;
+		font-weight: 600;
+	}
+	.kc-menu-links a:hover {
+		background: var(--navy-100);
+	}
+</style>

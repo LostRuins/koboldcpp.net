@@ -1,0 +1,98 @@
+---
+title: "Connect SillyTavern and other apps"
+description: KoboldAI Lite is built in. To use KoboldCpp from SillyTavern or other apps, pick the right address - KoboldAI API, OpenAI-compatible /v1 or Ollama.
+sidebar:
+  label: "Connect other apps"
+  order: 1
+---
+
+KoboldCpp has its own chat interface, KoboldAI Lite, at `http://localhost:5001`. You do not need another app. Connect one only if you prefer its interface or features.
+
+## Which address to use
+
+Start KoboldCpp with a model first. Then enter the address that matches the connection type you pick in the app:
+
+| Connection type in the app | Address |
+|---|---|
+| KoboldAI or KoboldCpp | `http://localhost:5001` |
+| OpenAI-compatible | `http://localhost:5001/v1` |
+| Ollama | `http://localhost:11434` (start KoboldCpp on port 11434, [see below](#ollama-apps)) |
+
+- If an app asks for the full KoboldAI API address, use `http://localhost:5001/api`.
+- `localhost` only works on the PC that runs KoboldCpp. For a phone or another PC, see [Remote access](/docs/api/remote-access/).
+- If you changed **Port:** on the **Network** tab (`--port`), use your port in place of `5001`.
+
+When KoboldCpp is ready, the console shows the addresses:
+
+```text {% title="Console" frame="terminal" %}
+Starting Kobold API on port 5001 at http://localhost:5001/api/
+Starting OpenAI Compatible API on port 5001 at http://localhost:5001/v1/
+Starting llama.cpp secondary WebUI at http://localhost:5001/lcpp/
+```
+
+## API key
+
+- **No password set:** if the app requires an API key, enter any text.
+- **Password set:** enter your password as the API key. See [Passwords and security](/docs/api/passwords-and-security/).
+
+## Model name
+
+OpenAI-style apps often ask for a model name. KoboldCpp ignores it and always uses the model it has loaded, so any name works. `http://localhost:5001/v1/models` lists the loaded model.
+
+The exception is router mode, where the model name selects which model to load. See [Admin mode](/docs/settings/admin-mode/).
+
+## Reply length
+
+Set the response length (max tokens) in the app. If the app does not send one, KoboldCpp uses **Default Gen Amt:** on the **Context** tab (`--defaultgenamt`, default 2048).
+
+## SillyTavern
+
+SillyTavern has its own connection type for KoboldCpp:
+
+{% steps %}
+
+1. In SillyTavern, click **API Connections** (the plug icon in the top bar).
+2. Set **API** to **Text Completion** and **API Type** to **KoboldCpp**.
+3. Enter `http://localhost:5001` in **API URL**.
+4. If you set a password, enter it in **koboldcpp API key (optional)**.
+5. Click **Connect**.
+
+{% /steps %}
+
+KoboldCpp understands the SillyTavern-specific sampler fields, such as banned strings.
+
+SillyTavern can also use KoboldCpp for images when an image model is loaded, through the A1111/Forge or ComfyUI APIs. Use the same `http://localhost:5001` address. See [Image generation](/docs/features/image-generation/).
+
+## Ollama apps
+
+Apps that only speak the Ollama API look for it on port 11434.
+
+{% steps %}
+
+1. On the **Network** tab, set **Port:** to `11434`. On the command line, add `--port 11434`.
+2. Launch. The console prints `Ollama Emulation is now available at port 11434.`
+3. In the app, use `http://localhost:11434`.
+
+{% /steps %}
+
+If Ollama itself is running, it already uses port 11434 and KoboldCpp cannot start on it. Close Ollama first.
+
+## Anthropic-API apps
+
+KoboldCpp serves the Anthropic Messages API at `/v1/messages`. With a password, the app must send it as `Authorization: Bearer <password>`. KoboldCpp does not accept the `x-api-key` header that Anthropic clients normally use. Configure such apps to send a Bearer token. If an app can't, run KoboldCpp without a password only where no one else can reach it, for example with **Host:** set to `127.0.0.1`.
+
+## Other apps and tools
+
+- **KoboldAI Lite online:** the hosted copy at [lite.koboldai.net](https://lite.koboldai.net) can connect to your local KoboldCpp.
+- **KoboldAI United and KoboldAI Client:** enter the KoboldAI API address.
+- **Bundled interfaces:** besides KoboldAI Lite, KoboldCpp serves the llama.cpp WebUI at `/lcpp/`, the image interface at `/sdui` and the music and speech interface at `/musicui`. The last two only generate when the matching model is loaded. See [KoboldAI Lite](/docs/features/lite/).
+- **KoboldCpp Agent:** the bundled coding agent connects to `http://127.0.0.1:5001/v1` by default. See [Agent](/docs/features/agent/).
+- **GPTLocalhost:** a Microsoft Word add-in that uses KoboldCpp.
+- **Speech-to-text clients:** KoboldCpp accepts WAV, MP3 and FLAC audio. WebM recordings are not supported. See [Speech-to-text](/docs/features/speech-to-text/).
+
+## Go deeper
+
+- [API overview](/docs/api/overview/)
+- [Passwords and security](/docs/api/passwords-and-security/)
+- [Remote access](/docs/api/remote-access/)
+- [Streaming and multiple users](/docs/api/streaming/)

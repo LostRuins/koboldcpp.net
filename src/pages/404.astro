@@ -1,0 +1,23 @@
+---
+/* Site-wide 404 in the docs chrome. Lives outside the docs collection so it is not in
+   llms.txt / llms-full.txt or the search index. */
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+---
+
+<StarlightPage
+	frontmatter={{
+		title: 'Page not found',
+		template: 'splash',
+		editUrl: false,
+		pagefind: false,
+		head: [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex' } }],
+		hero: {
+			title: 'Page not found',
+			tagline: 'This page does not exist yet, or it has moved.',
+			actions: [
+				{ text: 'Back to the home page', link: '/', variant: 'primary' },
+				{ text: 'Download KoboldCpp from GitHub', link: 'https://github.com/LostRuins/koboldcpp/releases/latest', variant: 'secondary' },
+			],
+		},
+	}}
+/>

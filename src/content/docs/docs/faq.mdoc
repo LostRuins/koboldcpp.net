@@ -1,0 +1,277 @@
+---
+title: "Frequently asked questions (FAQ)"
+description: Short answers to common KoboldCpp questions about downloads, models, memory, performance, features and the API, with links to the details.
+sidebar:
+  order: 90
+---
+
+Short answers, each with a link to the page that explains more. For error messages, see [Troubleshooting](/docs/troubleshooting/wont-start/).
+
+## General
+
+### What is KoboldCpp?
+
+A program for running AI models (GGUF files) on your own computer. It is a single file with no installation, builds on llama.cpp, and includes the KoboldAI Lite web interface. Besides text, it can generate images, video and music, transcribe speech and speak text. See the [beginner guide](/getting-started/).
+
+### Is it free?
+
+Yes. KoboldCpp and KoboldAI Lite are open source under AGPL-3.0; the included llama.cpp, GGML and stable-diffusion.cpp parts are under MIT. You don't need an account to run it.
+
+### Where is the official download?
+
+Only on GitHub: the [official releases](https://github.com/LostRuins/koboldcpp/releases/latest). Files from other sites are not official. See [Staying safe](/docs/install/staying-safe/).
+
+### Are my chats private?
+
+KoboldCpp runs fully offline and sends your chats nowhere. KoboldAI Lite stores your stories in your browser. Some things use the internet by design:
+
+- Model files you give as a URL are downloaded.
+- **Enable WebSearch** (`--websearch`) searches the web.
+- **Remote Tunnel** (`--remotetunnel`) makes KoboldCpp reachable over the internet.
+- MCP tools (`--mcpfile`) send the model's tool calls to the MCP servers you set up.
+- AI Horde and other apps you connect have their own privacy rules.
+- In KoboldAI Lite, **Share** with **Web URL** uploads the story to a public pastebin.
+
+The console shows your prompts and replies. **Quiet Mode** (`--quiet`) hides them.
+
+## Download & setup
+
+### Which file do I download?
+
+| Your PC | Windows | Linux |
+|---|---|---|
+| NVIDIA graphics card | `koboldcpp.exe` | `koboldcpp-linux-x64` |
+| AMD, Intel or no graphics card | `koboldcpp-nocuda.exe` | `koboldcpp-linux-x64-nocuda` |
+| Older processor or older NVIDIA card | `koboldcpp-oldpc.exe` | `koboldcpp-linux-x64-oldpc` |
+
+Apple Silicon Macs: `koboldcpp-mac-arm64`. See [Download KoboldCpp](/download/)
+
+### Do I need a graphics card?
+
+No. KoboldCpp runs on the processor alone. A graphics card makes it much faster, and it can hold part of a model that doesn't fit completely.
+
+### Which model should I start with?
+
+- Qwen3-VL-8B (Q4_K_S): the recommended all-rounder.
+- Gemma3-4B: lightweight and fast.
+- L3-8B-Stheno-v3.2: for creative writing and roleplay.
+
+Or click **Get Help** in the launcher and load a **Newbie Template**, which downloads a model for you. See [Choose a model](/getting-started/model/).
+
+### Which quant do I download? Do I need all the files?
+
+You need one `.gguf` file, not the whole repository. If the quant is split into parts (`-00001-of-00003.gguf`), download all parts and select the first. Start with **Q4_K_M** or **Q4_K_S**. A lower quant is smaller, at some cost in quality. See [Choosing a quant](/docs/models/gguf-and-quantization/).
+
+### What's the difference between GGUF and GGML?
+
+GGUF is the current format for text models. GGML (`.bin`) is the old format: it still loads, but some newer features don't work and its context is limited to 16k.
+
+### Can I use safetensors or PyTorch models?
+
+Not for text models; convert them to GGUF first. Image models can be `.safetensors` or `.gguf`.
+
+### Where do models downloaded from a URL go?
+
+Into the current working directory. When you double-click KoboldCpp, that is its own folder. **Download Dir:** on the **Loaded Files** tab (`--downloaddir`) sets a different folder.
+
+### How do I update?
+
+Download the new file from the releases and use it instead of the old one. The launcher's **Update** button only opens the releases page. Save your settings with **Save Config** to keep them. See [Updating](/docs/install/updating/).
+
+### Does it run on Android?
+
+Yes, in Termux. KoboldCpp is compiled on the phone by an official setup script. See [Android (Termux)](/docs/install/android/).
+
+### Does it run on Windows 7?
+
+Not recommended. Use `koboldcpp-oldpc.exe`; the main builds need Windows 8 or newer. See [Windows 7](/docs/install/windows/#advanced-windows-7).
+
+### My processor has no AVX2. Can I still use it?
+
+Yes. KoboldCpp detects this and switches to a slower compatibility mode. You can also pick **Use CPU (Old CPU)** or **Use Vulkan (Old CPU)** (`--noavx2`), or for processors without AVX, **Failsafe Mode (Older CPU)** (`--failsafe`). The `oldpc` files add CUDA 11 for AVX1 processors and **Use Vulkan (Older CPU)** for graphics cards on processors without AVX. See [Processor requirements](/docs/install/releases/#processor-avx2-avx-no-avx).
+
+### Can I run it without a model?
+
+Yes. `--nomodel` (**Allow Launch Without Models** on the **Loaded Files** tab) starts KoboldCpp without loading a model. KoboldAI Lite can then connect to AI Horde or other online providers.
+
+## Running & performance
+
+### Which port does it use?
+
+5001, so the chat is at `http://localhost:5001`. Change it with **Port:** on the **Network** tab or `--port`.
+
+### How do I use the command line?
+
+Pass the model and options after the file name, for example `koboldcpp.exe --model mymodel.gguf --contextsize 8192`. With a model, the launcher is skipped. `--help` lists all flags. Many llama.cpp short forms also work, such as `-m`, `-c`, `-ngl` and `-t`. See [Command line](/docs/settings/command-line/).
+
+### How many GPU layers should I use?
+
+Leave **GPU Layers:** at `-1`. KoboldCpp then fits as many layers into your VRAM as possible. A number you enter yourself turns this off. **Force AutoFit** (`--autofit`) forces the automatic fit even over manual settings. See [GPU layers](/docs/hardware/gpu-layers/).
+
+### How much RAM or VRAM do I need?
+
+Roughly the model's file size, plus memory for the context, plus some spare room. It depends on the model, the quant and the context size, so there is no fixed table. See [Memory](/docs/models/memory/).
+
+### How many threads should I use?
+
+The default works for most PCs: about half of your processor's threads, minus one, and at most 8 when the system reports an Intel processor. With the whole model on the graphics card, the thread count matters little.
+
+### How do I make it faster?
+
+- NVIDIA: **Use CUDA**.
+- AMD and Intel graphics: **Use Vulkan**. On Linux, an official ROCm build also exists for AMD.
+- Apple Silicon: the Mac build uses Metal automatically.
+- Put as many layers on the graphics card as fit, and keep **Use FlashAttention** on.
+
+See [GPU not used or slow](/docs/troubleshooting/gpu-and-speed/).
+
+### Can I use several graphics cards?
+
+Yes, with CUDA and with Vulkan. **Tensor Split:** (`--tensor_split`) sets the share per card, and **SplitMode:** (`--splitmode`) is `layer` (default) or `tensor`. See [Multiple GPUs](/docs/hardware/multi-gpu/).
+
+### What's the difference between row and layer split?
+
+Row split no longer exists. `--splitmode row` now uses tensor split and prints a warning. The choices are `layer` and `tensor`.
+
+### How do I get a longer context?
+
+Set **Context Size:** in the launcher or `--contextsize` (default 16384, up to 524288 on the command line; the launcher slider goes to 262144). GGUF models set their RoPE scaling automatically. More context needs more memory. See [Context size](/docs/settings/context-size/).
+
+### What are ContextShift and FastForwarding?
+
+Both avoid processing the whole prompt again. FastForwarding reuses the part of the prompt that didn't change; ContextShift drops the oldest text when the context is full. Both are on by default (`--noshift` and `--nofastforward` turn them off; turning off FastForwarding also turns off ContextShift). On models with SWA, ContextShift is off while SWA is on.
+
+### What is SWA?
+
+Sliding window attention: a much smaller context cache for models that support it, such as Gemma 3. It is on by default and turns ContextShift off. **Allow SWA** off (`--noswa`) disables it. The old `--useswa` flag does nothing.
+
+### What is flash attention?
+
+A faster, more memory-efficient way of computing attention. It is on by default; **Use FlashAttention** off (`--noflashattention`) disables it. The old `--flashattention` flag does nothing.
+
+### What does quantized KV cache do?
+
+It stores the context in lower precision to save memory: **Quantize KV Cache:** (`--quantkv`) with `f16` (default), `bf16`, `q8_0`, `q5_1` or `q4_0`. Keep flash attention on; without it, only part of the cache is quantized. The old numbers `1` and `2` still mean `q8_0` and `q4_0`.
+
+### What are mmap and mlock?
+
+**Use MMAP** (`--usemmap`, off by default) lets the system read the model file from disk as needed. **Use mlock** (`--usemlock`, off) keeps the model from being moved out of RAM. Both can be combined.
+
+### What does lowvram do?
+
+`--lowvram` keeps the context cache in system RAM instead of VRAM. It works with CUDA and Vulkan, but is slow and not recommended. It is a flag of its own, no longer an option of `--usecuda`.
+
+### What is MMQ?
+
+A CUDA method for quantized matrix multiplication, on by default (**Use MMQ**). `--nommq` turns it off.
+
+### What is the `--foreground` flag?
+
+Windows only. **Keep Foreground** (`--foreground`) brings the console to the front for every new request, which avoids slowdowns when the window is in the background.
+
+### What does `--multiuser` do?
+
+It queues requests from several users, up to 10 by default. `--multiuser 0` turns the queue off, so extra requests get a "Server is busy" error. With an image, Whisper, TTS or embeddings model loaded, or with **Parallel Requests:** above 1, a queue stays on.
+
+### What are .kcpps and .kcppt files?
+
+A `.kcpps` file is a saved launcher configuration (**Save Config**). A `.kcppt` file is a template to share: it leaves out settings specific to your PC and can contain model download links. Load either with **Load Config** or `--config`. See [Config files](/docs/settings/config-files/) and [Templates](/docs/settings/templates/).
+
+### Can I benchmark my PC?
+
+Yes. **Run Benchmark** on the **Hardware** tab, or `--benchmark`. With a file name, `--benchmark results.csv` appends the results to that file.
+
+## Features
+
+### Which interfaces are included?
+
+| Address | Interface |
+|---|---|
+| `/` | KoboldAI Lite |
+| `/lcpp/` | llama.cpp web UI |
+| `/sdui` | StableUI (generating needs an image model) |
+| `/musicui` | Music UI (generating needs a music or TTS model) |
+| `/noscript` | UI without JavaScript |
+| `/api` | API documentation |
+
+See [KoboldAI Lite](/docs/features/lite/).
+
+### Can it generate images?
+
+Yes. Load an image model on the **Image Gen** tab or with `--sdmodel` (`.safetensors` or `.gguf`). Some model families need extra files. See [Image generation](/docs/features/image-generation/).
+
+### What else can it do?
+
+| Feature | Flag | Page |
+|---|---|---|
+| Speech to text (Whisper) | `--whispermodel` | [Speech to text](/docs/features/speech-to-text/) |
+| Text to speech | `--ttsmodel` | [Text to speech](/docs/features/text-to-speech/) |
+| Music | `--musicllm` and others | [Music](/docs/features/music/) |
+| Vision and audio input | `--mmproj` | [Vision](/docs/features/vision/) |
+| Embeddings | `--embeddingsmodel` | [Embeddings](/docs/features/embeddings/) |
+| Web search, MCP tools | `--websearch`, `--mcpfile` | [Web search and MCP](/docs/features/web-search-and-mcp/) |
+
+### Can I switch models without restarting?
+
+Yes, with admin mode: **Enable Model Administration** (`--admin`) with a folder of configs (`--admindir`). Router mode (`--routermode`) switches by the model name in each request, autoswap mode (`--autoswapmode`) by request type, and `--adminunloadtimeout` unloads the model when idle. Set an admin password (`--adminpassword`) when you enable admin mode. See [Admin mode](/docs/settings/admin-mode/).
+
+### What is the KoboldCpp Agent?
+
+A coding agent for the terminal, new in v1.122. Start it with **Launch KoboldCpp Agent** on the **Admin** tab or `--agent`. It needs a context of at least 28672 tokens, which KoboldCpp sets automatically; 12 GB of VRAM or more is recommended. See [Agent](/docs/features/agent/).
+
+### Can I chat in the terminal?
+
+Yes. `--cli` starts an interactive chat in the terminal without a web server. `--prompt "your text"` runs one prompt, prints the reply and exits.
+
+### Can I see what's inside a model file?
+
+Yes. `--analyze mymodel.gguf`, or **Analyze Model** on the **Extra** tab, prints the metadata and tensors of a GGUF or safetensors file.
+
+### Can I share my model on AI Horde?
+
+Yes, with the built-in Horde worker on the **Horde Worker** tab. See [Horde worker](/docs/features/horde-worker/).
+
+### Which old flags no longer work?
+
+| Flag | Status |
+|---|---|
+| `--useclblast` | Removed (CLBlast was replaced by Vulkan); KoboldCpp exits with `unrecognized arguments`. Use `--usevulkan` |
+| `--usemirostat`, `--unbantokens`, `--stream`, `--psutil_set_threads` | Removed; KoboldCpp exits with `unrecognized arguments` |
+| `--flashattention`, `--useswa`, `--nommap` | Accepted, but do nothing; both features are on by default, mmap is off |
+| `--noblas` | Still works, same as `--usecpu` |
+| `--sdt5xxl`, `--sdvaecpu`, `--sdclipgpu` | Deprecated; use `--sdllm`, `--sdvaedevice`, `--sdclipdevice` |
+
+Full list: [Deprecated flags](/docs/reference/deprecated-flags/).
+
+## API
+
+### Is there an OpenAI-compatible API?
+
+Yes, at `http://localhost:5001/v1`. KoboldCpp also speaks the KoboldAI API (`/api`), and emulates the Ollama, Anthropic, A1111/Forge and ComfyUI APIs. See [API overview](/docs/api/overview/).
+
+### How do I connect SillyTavern or another app?
+
+Point the app at `http://localhost:5001` for the KoboldAI API, or `http://localhost:5001/v1` for the OpenAI API. See [Connect apps](/docs/api/connect-apps/).
+
+### How do I control the reply length over the API?
+
+Send `max_tokens` (OpenAI) or `max_length` (KoboldAI) in the request. If an app sends none, KoboldCpp uses **Default Gen Amt:** (`--defaultgenamt`, 2048, at most half the context).
+
+### Does it support streaming?
+
+Yes. KoboldAI Lite streams replies by default (SSE). Over the API, the KoboldAI API streams at `/api/extra/generate/stream`, the OpenAI and Anthropic endpoints with `"stream": true`, and the Ollama endpoints by default. See [Streaming](/docs/api/streaming/).
+
+### How do I use KoboldCpp from another device?
+
+- Same network: open `http://<PC-IP>:5001` on the other device.
+- Over the internet: turn on **Remote Tunnel** (`--remotetunnel`) for a public `trycloudflare.com` link.
+
+Set a password first. See [Remote access](/docs/api/remote-access/).
+
+### How do I secure a public instance?
+
+- Set a password (**Password:**, `--password`). Image generation and the `/tts_to_audio` endpoint are not password-protected, so anyone who can reach the server can use them. On shared servers, limit image generation with `--sdclamped`.
+- With admin mode on, set `--adminpassword`.
+- Limit requests with `--maxrequestsize`, `--ratelimit` and `--genlimit`.
+
+See [Passwords and security](/docs/api/passwords-and-security/).

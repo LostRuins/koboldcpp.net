@@ -1,0 +1,27 @@
+---
+/* The whole start in three steps, each linking to its page in the beginner guide. */
+import { ROUTES } from '../../data/routes';
+---
+
+<section class="section" aria-labelledby="steps-title">
+	<div class="wrap">
+		<h2 id="steps-title">Start in three steps</h2>
+		<ol class="steps">
+			<li>
+				<h3><a href={ROUTES.download}>Download KoboldCpp</a></h3>
+				<p>One file from the official GitHub releases. There is no installer.</p>
+			</li>
+			<li>
+				<h3><a href="/getting-started/model/">Choose a model</a></h3>
+				<p>Pick a ready-made template in the launcher, or download one model file.</p>
+			</li>
+			<li>
+				<h3><a href="/getting-started/chat/">Launch and chat</a></h3>
+				<p>Click Launch. KoboldAI Lite opens in your browser, ready to chat.</p>
+			</li>
+		</ol>
+		<p class="steps-more">
+			New to this? The <a href={ROUTES.gettingStarted}>beginner guide</a> shows every click, with screenshots.
+		</p>
+	</div>
+</section>

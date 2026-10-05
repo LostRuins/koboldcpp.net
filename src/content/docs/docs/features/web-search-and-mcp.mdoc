@@ -1,0 +1,97 @@
+---
+title: Web search and MCP tools
+description: Let the model search the web, and connect MCP servers so it can call tools. Setup in the launcher and in KoboldAI Lite, the mcp.json format and safety.
+sidebar:
+  order: 8
+---
+
+Two features give the model information and abilities beyond its own knowledge:
+
+- **Web search:** KoboldCpp searches the web, and KoboldAI Lite adds the results to the prompt.
+- **MCP tools:** KoboldCpp connects to MCP servers, which offer tools the model can call, such as reading files or querying services.
+
+## Web search
+
+{% steps %}
+
+1. In the launcher, open the **Network** tab and tick **Enable WebSearch** (`--websearch`).
+2. Click **Launch**.
+3. In KoboldAI Lite, open **Settings** > **Tools** and tick **Enable Websearch** under **KoboldCpp Classic Websearch**.
+
+{% /steps %}
+
+Lite then searches the web for relevant information in instruct mode. A search button above the input box turns it on and off.
+
+How it works:
+
+- KoboldCpp searches DuckDuckGo and uses the top 3 results.
+- Queries are cut to 500 bytes.
+
+Apps can use the endpoint directly: `POST /api/extra/websearch` with `{"q": "your query"}`. It needs the password when one is set. Without `--websearch`, it returns an empty list.
+
+## MCP tools
+
+MCP (Model Context Protocol) servers are small programs or web services that offer tools. KoboldCpp connects to them and offers their tools to KoboldAI Lite and other clients, which let the model call them.
+
+{% aside type="danger" %}
+A `command` MCP server is a program that runs on your computer with the same access as KoboldCpp. Only add servers you trust.
+{% /aside %}
+
+{% steps %}
+
+1. Write an `mcp.json` file (see below).
+2. In the launcher, open the **Loaded Files** tab and select it in **MCP JSON:** (`--mcpfile`).
+3. Click **Launch**.
+4. In KoboldAI Lite, open **Settings** > **Tools** and tick **Enable Toolcalling** and **Include KoboldCpp MCP Bridge** under **MCP Tool Calling**.
+
+{% /steps %}
+
+Lite calls tools only in **Instruct Mode**. It works without **Use Jinja** (`--jinja`); KoboldCpp then uses its own universal tool calling. With **Jinja for Tools** (`--jinjatools`), the model's chat template handles tool calls instead.
+
+Use a model that is good at tool calling, for example [Qwen3-VL-8B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct-GGUF).
+
+### The mcp.json format
+
+KoboldCpp reads the format from Claude Desktop (`mcpServers`) and from VS Code (`servers`). Each server is either a command that KoboldCpp starts, or a URL.
+
+In this example, `files` gives the model read and write access to a folder named `sandbox` next to `mcp.json` (create it first). It needs [Node.js](https://nodejs.org) for `npx`. `my-web-tool` shows the URL form; replace it with a real server or remove it.
+
+```json {% title="mcp.json" %}
+{
+  "mcpServers": {
+    "files": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "sandbox"],
+      "env": {}
+    },
+    "my-web-tool": {
+      "url": "https://example.com/mcp",
+      "headers": {}
+    }
+  }
+}
+```
+
+- `command` servers start in the folder that contains `mcp.json`.
+- If one server fails to connect, the others still load.
+- `--mcpfile` also accepts a URL to a JSON file.
+
+### Where the tools are available
+
+KoboldCpp serves all connected tools at `POST /mcp` (JSON-RPC: `initialize`, `tools/list`, `tools/call`). With `--password` set, `/mcp` needs the password.
+
+- **KoboldAI Lite** uses them through **Include KoboldCpp MCP Bridge**. Lite can also connect to other MCP servers itself under **MCP Server URLs**.
+- The [KoboldCpp Agent](/docs/features/agent/) adds them to its own tools.
+- The llama.cpp web UI at `/lcpp/` has its own MCP support.
+
+## Advanced
+
+- `--nocertify` turns off certificate checks for all outgoing connections, not only web search. This is insecure: others can intercept or change the traffic. Use it only as a last resort if searches fail with certificate errors.
+- `--mcpfile` alone counts as a model, so KoboldCpp can start with only MCP tools and no text model.
+- In Lite, **Automatically Execute Tools** runs tool calls without asking first.
+
+## Related
+
+- [KoboldCpp Agent](/docs/features/agent/)
+- [KoboldAI Lite](/docs/features/lite/)
+- [Passwords and security](/docs/api/passwords-and-security/)

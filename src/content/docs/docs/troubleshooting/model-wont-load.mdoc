@@ -1,0 +1,144 @@
+---
+title: Model won't load
+description: Fixes for "Could not load text model", unknown model architecture, non-GGUF files, broken downloads, mismatched mmproj files and access violations.
+sidebar:
+  order: 2
+---
+
+KoboldCpp starts, but loading the model fails. The last error line is usually generic; the real cause is printed a few lines above it.
+
+If loading stops with an "out of memory" or allocation error, see [Out of memory](/docs/troubleshooting/out-of-memory/).
+
+## "Could not load text model"
+
+```text
+Could not load text model: C:\models\mymodel.gguf
+```
+
+Sometimes also `failed to load model`. This is the final message for any load failure.
+
+{% steps %}
+
+1. Scroll up in the console and find the first error above this line.
+2. Look it up in the sections below or in [Out of memory](/docs/troubleshooting/out-of-memory/).
+
+{% /steps %}
+
+## "unknown model architecture"
+
+```text
+llama_model_load: error loading model: unknown model architecture: '<name>'
+```
+
+Older versions print `error loading model architecture:` instead. Your KoboldCpp does not know this model's architecture, usually because the model is newer.
+
+{% steps %}
+
+1. [Update KoboldCpp](/docs/install/updating/) to the latest release.
+2. If the latest release does not support it yet, wait for the next release, or try a [rolling build](/docs/install/releases/#advanced-rolling-builds). Rolling builds are updated automatically and can support a new model earlier, but may be unstable.
+
+{% /steps %}
+
+## "does not seem to be a GGUF file"
+
+```text
+WARNING: Selected Text Model does not seem to be a GGUF file! Are you sure you picked the right file?
+```
+
+The file name does not end in `.gguf`. KoboldCpp runs text models only as GGUF files (and legacy GGML `.bin` files). It cannot load `.safetensors` or PyTorch text models.
+
+{% steps %}
+
+1. Download the GGUF version of the model. Search for the model name plus "GGUF" on Hugging Face.
+2. Download one single `.gguf` file, not the whole repository. If the quant is split into parts (`-00001-of-00003.gguf`), download all parts and select the first. See [Choose a model](/getting-started/model/).
+
+{% /steps %}
+
+A model that exists only as safetensors must be converted to GGUF first. See [GGUF and quantization](/docs/models/gguf-and-quantization/).
+
+## "all download methods failed"
+
+```text
+Could not find suitable download software, or all download methods failed. Please install aria2, curl, or wget.
+```
+
+KoboldCpp could not download a model file from a template or URL. The lines above it, such as `curl failed: …`, show why.
+
+{% steps %}
+
+1. Check your internet connection.
+2. On Linux, install `curl`, `wget` or `aria2`.
+3. Launch again. Files that finished downloading are reused.
+
+{% /steps %}
+
+## The download is broken or incomplete
+
+```text
+llama_model_load: error loading model: read error: Input/output error
+error: failed to read GGUF file
+```
+
+The file is damaged: the download stopped early, or the disk has read errors.
+
+{% steps %}
+
+1. Compare the file size with the size on the download page.
+2. Download the model again. If KoboldCpp downloaded it from a URL, delete that file first; otherwise KoboldCpp reuses it and prints `already exists, using existing file.`
+3. If a fresh copy fails with `Input/output error` too, check the drive for errors, or move the model to another drive.
+
+{% /steps %}
+
+`--analyze mymodel.gguf` prints the file's metadata and tensors, which shows whether KoboldCpp can read it. In the launcher: **Analyze Model** on the **Extra** tab.
+
+## The vision file (mmproj) fails to load
+
+```text
+error: failed to load mmproj model!
+```
+
+Loading can also crash without this message. A vision or audio projector (mmproj) works only with the model it was made for. For example, a Qwen mmproj cannot work with a Gemma model.
+
+{% steps %}
+
+1. Use the mmproj made for your exact base model and size. A Gemma3 12B model needs the Gemma3 12B mmproj.
+2. Ready-made projectors for popular models are in the [koboldcpp/mmproj](https://huggingface.co/koboldcpp/mmproj/tree/main) repository.
+
+{% /steps %}
+
+See [Vision and audio input](/docs/features/vision/).
+
+## Access violation while loading (Windows)
+
+```text
+OSError: exception: access violation reading 0x…
+```
+
+This has several causes, among them a graphics driver problem (reported with AMD cards on Vulkan), an unstable overclock, and non-ASCII characters in a path.
+
+{% steps %}
+
+1. Update your graphics driver.
+2. Try another backend. With an AMD card, try **Use Vulkan (Old CPU)**; otherwise try **Use CPU** to rule out the graphics card.
+3. Lower **Context Size:** and try a small model to see if it loads at all.
+4. Use folder and file names with plain ASCII characters. For image models, this can include your Windows user name; see [OS-specific problems](/docs/troubleshooting/os-specific/#windows-a-user-name-or-folder-with-accented-letters).
+5. If you overclock your CPU, GPU or RAM, test at stock speeds.
+
+{% /steps %}
+
+## Advanced: old GGML (.bin) models
+
+GGML is the format before GGUF. KoboldCpp still loads it, but with limits:
+
+```text
+Warning: Your model may be an OUTDATED format (ver 3). Please reconvert it for better results!
+Warning: Only GGUF models can use max context above 16k. Max context lowered to 16k.
+```
+
+Get a current GGUF version of the model instead. If a GGML model is detected as the wrong type, download a fresh copy; the file may be damaged or badly converted.
+
+## Related
+
+- [Out of memory](/docs/troubleshooting/out-of-memory/)
+- [Choose a model](/getting-started/model/)
+- [Updating](/docs/install/updating/)

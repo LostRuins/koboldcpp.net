@@ -1,0 +1,63 @@
+---
+title: "Staying safe: download only from GitHub"
+description: Where to get KoboldCpp safely, how to check a downloaded file, and why antivirus may flag the Windows exe.
+sidebar:
+  label: "Staying safe"
+  order: 9
+---
+
+Download KoboldCpp only from the official GitHub releases: [github.com/LostRuins/koboldcpp/releases/latest](https://github.com/LostRuins/koboldcpp/releases/latest).
+
+{% aside type="caution" title="Official downloads only" %}
+"You should **ONLY** trust official downloads from the release binaries on the official github at https://github.com/LostRuins/koboldcpp/releases/latest"
+{% /aside %}
+
+## Other download sites
+
+The official downloads are on GitHub. Files from any other site are not official and may contain malware. If you got KoboldCpp somewhere else, don't run that file; download it again from the [official releases](https://github.com/LostRuins/koboldcpp/releases/latest).
+
+## Official sources
+
+| What | Where |
+|---|---|
+| Project | [github.com/LostRuins/koboldcpp](https://github.com/LostRuins/koboldcpp) |
+| Downloads | [Latest release](https://github.com/LostRuins/koboldcpp/releases/latest) |
+| Experimental builds | [rolling](https://github.com/LostRuins/koboldcpp/releases/tag/rolling) and [rocm-rolling](https://github.com/LostRuins/koboldcpp/releases/tag/rocm-rolling) tags on GitHub |
+| Colab notebook | [colab.research.google.com/github/LostRuins/koboldcpp/…/colab.ipynb](https://colab.research.google.com/github/LostRuins/koboldcpp/blob/concedo/colab.ipynb) |
+| Docker image | [hub.docker.com/r/koboldai/koboldcpp](https://hub.docker.com/r/koboldai/koboldcpp) |
+| Android setup script | `raw.githubusercontent.com/LostRuins/koboldcpp/concedo/android_install.sh` |
+| Short links | `koboldai.org`, for example `koboldai.org/cpplinuxrocm`, `koboldai.org/colabcpp`, `koboldai.org/runpodcpp`, `koboldai.org/discord` |
+
+This site links to these sources for every download and hosts no files itself.
+
+## Why antivirus may flag KoboldCpp
+
+Some antivirus programs report KoboldCpp's Windows exe as a trojan or "suspicious". For a file from the official releases, this is a false positive:
+
+- The exe is a self-extracting bundle that unpacks libraries into a temporary folder when it starts, which heuristic and machine-learning scanners can flag.
+- The files are not code-signed. The maintainers don't buy signing certificates.
+
+What to do:
+
+1. Check that the file came from the [official releases](https://github.com/LostRuins/koboldcpp/releases/latest), for example by [comparing its checksum](#check-a-downloaded-file).
+2. Add it to your antivirus exceptions, and report the false positive to your antivirus vendor.
+3. If the file was quarantined or damaged, download it again.
+
+On Windows, SmartScreen can show "Windows protected your PC"; see [Windows](/docs/install/windows/#smartscreen-and-antivirus-warnings). On macOS, Gatekeeper blocks unsigned files until you allow them; see [macOS](/docs/install/macos/).
+
+## Check a downloaded file
+
+The release page shows a SHA-256 checksum (`sha256:…`) next to each file. In a terminal, in the folder with your file, compute its checksum (use your file name) and compare the two:
+
+| System | Command |
+|---|---|
+| Windows (PowerShell) | `Get-FileHash koboldcpp.exe` |
+| Linux | `sha256sum koboldcpp-linux-x64` |
+| macOS | `shasum -a 256 koboldcpp-mac-arm64` |
+
+Letter case doesn't matter. If the checksums differ, the file is damaged or not the official one; delete it and download it again from the [official releases](https://github.com/LostRuins/koboldcpp/releases/latest).
+
+## Related
+
+- [Release files and system requirements](/docs/install/releases/)
+- [Download KoboldCpp](/download/)

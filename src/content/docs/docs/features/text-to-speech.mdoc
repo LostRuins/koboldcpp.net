@@ -1,0 +1,79 @@
+---
+title: "Text-to-speech (TTS)"
+description: Let KoboldCpp read text aloud with Qwen3TTS, Kokoro, OuteTTS and other voice models. Loading, narration in Lite, voice cloning and the speech API.
+sidebar:
+  label: "Text-to-speech"
+  order: 4
+---
+
+KoboldCpp turns text into spoken audio. KoboldAI Lite can narrate the AI's replies, and apps can use the speech API.
+
+## Quick start
+
+Started with a `Chatbot` newbie template? It already loads a TTS model. Skip to step 4.
+
+{% steps %}
+
+1. Download a TTS model (`.gguf` file) from [huggingface.co/koboldcpp/tts](https://huggingface.co/koboldcpp/tts/tree/main). A good first pick is [Kokoro_no_espeak_Q4.gguf](https://huggingface.co/koboldcpp/tts/resolve/main/Kokoro_no_espeak_Q4.gguf), the one the `LowSpec-Chatbot` template uses.
+2. In the launcher, open the **Audio** tab and select the file in **TTS Model (Text-To-Speech):**. Qwen3TTS and OuteTTS need a second file in **WavTokenizer Model (Required for some models):** (see below).
+3. Click **Launch**.
+4. In KoboldAI Lite, open **Settings** > **Media** and set **Text to speech** under **Audio Output** to **KoboldCpp TTS API**. Pick a **Voice**.
+
+{% /steps %}
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --ttsmodel tts-model.gguf
+```
+
+## Supported engines
+
+KoboldCpp reads the engine from the model file.
+
+| Engine | Notes |
+|---|---|
+| **Qwen3TTS** | 0.6B and 1.7B sizes. Built-in voices, voice cloning and voice design. Needs its tokenizer file in **WavTokenizer Model (Required for some models):** (`--ttswavtokenizer`). Without it, loading fails. |
+| **Kokoro** | Runs on the CPU. |
+| **OuteTTS** | Needs a WavTokenizer file in **WavTokenizer Model (Required for some models):** (`--ttswavtokenizer`). Without it, loading fails. |
+| **Parler**, **Dia** | Run on the CPU. |
+
+## Voices
+
+- **Built-in voices:** Qwen3TTS voices come with KoboldCpp. The voice list also has `random` and `instruct`.
+- **Voice design (Qwen3TTS):** describe the voice in square brackets at the start of the text, for example `[A depressed woman is crying] I can't believe it.`
+- **Voice cloning (Qwen3TTS):** put short `.wav` or `.mp3` recordings in a folder and select it in **TTS Voices Dir:** (`--ttsdir`). Each file becomes a voice named after the file. Only Qwen3TTS clones from these recordings, and only with a model file that includes a speaker encoder. Without one, or with a voice design description in the text, you get a normal voice instead.
+
+## Using it
+
+- **KoboldAI Lite:** **Settings** > **Media** > **Audio Output**. Besides the voice, you set **Narration triggered for**, **Narrate only dialog** and **Narration streaming**.
+- **MusicUI** (`http://localhost:5001/musicui`) has a TTS tab.
+- **Other apps:** use the OpenAI speech API or the XTTS API.
+
+| Endpoint | Format |
+|---|---|
+| `POST /api/extra/tts` | KoboldCpp |
+| `POST /v1/audio/speech` | OpenAI |
+| `POST /tts_to_audio` | XTTS |
+| `GET /v1/audio/voices`, `/speakers_list` | Voice lists |
+
+The audio comes back as WAV. Set `"response_format": "mp3"` for MP3. Qwen3TTS speaks several languages. Set `"language"` in the request on any of the endpoints above (default `en`).
+
+{% aside type="caution" %}
+The password (`--password`) protects `/api/extra/tts` and `/v1/audio/speech`, but not the XTTS endpoint `/tts_to_audio`. On a shared server, anyone who can reach KoboldCpp can use it. See [Passwords and security](/docs/api/passwords-and-security/).
+{% /aside %}
+
+## Advanced options
+
+| Launcher field | Flag | What it does |
+|---|---|---|
+| **TTS Use GPU** | `--ttsgpu` | Runs OuteTTS and Qwen3TTS on the GPU. Kokoro, Parler and Dia always run on the CPU. |
+| **TTS Threads:** | `--ttsthreads` | CPU threads for TTS. `0` uses the text model's thread count. |
+| **TTS Max Tokens:** | `--ttsmaxlen` | For OuteTTS, the maximum audio tokens. For Kokoro, Parler and Dia, the maximum number of input words. Default and maximum `4096`. |
+| **TTS Voices Dir:** | `--ttsdir` | Folder with voice recordings for cloning. |
+
+## Related
+
+- [Speech-to-text](/docs/features/speech-to-text/)
+- [Music](/docs/features/music/)
+- [API endpoints](/docs/api/endpoints/)

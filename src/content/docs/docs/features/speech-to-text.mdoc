@@ -1,0 +1,78 @@
+---
+title: "Speech-to-text with Whisper"
+description: Turn speech into text with a Whisper model in KoboldCpp. Where to get the model, how to load it, voice input in Lite, and the transcription API.
+sidebar:
+  label: "Speech-to-text"
+  order: 3
+---
+
+KoboldCpp turns spoken audio into text with Whisper. You can talk to the AI in KoboldAI Lite, or send audio files to the transcription API.
+
+## Quick start
+
+Started with a `Chatbot` newbie template? It already loads a Whisper model. Skip to step 4.
+
+{% steps %}
+
+1. Download a Whisper model (`.bin` file) from [huggingface.co/koboldcpp/whisper](https://huggingface.co/koboldcpp/whisper/tree/main). A good first pick is [whisper-base.en-q5_1.bin](https://huggingface.co/koboldcpp/whisper/resolve/main/whisper-base.en-q5_1.bin), the one the `LowSpec-Chatbot` template uses.
+2. In the launcher, open the **Audio** tab and select the file in **Whisper Model (Speech-To-Text):**.
+3. Click **Launch**.
+4. In KoboldAI Lite, open **Settings** > **Media** and set **Voice Input** under **Audio Input**.
+
+{% /steps %}
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --whispermodel whisper-model.bin
+```
+
+## Voice input in Lite
+
+**Settings** > **Media** > **Audio Input** > **Voice Input** has these modes:
+
+| Mode | How it works |
+|---|---|
+| **Detect Voice** | Hands-free: Lite detects when you speak. |
+| **Push-To-Talk** | Lite records while you hold the voice button. |
+| **Toggle-To-Talk** | The voice button switches recording on and off. |
+
+The same section has **Suppress Non-Speech**, **Language** and **Delay**. The **Add File** menu also has a **Microphone** option.
+
+Browsers allow the microphone only on HTTPS or on the PC itself (`localhost`). From another device, use the **Remote Tunnel** link or [HTTPS](/docs/api/passwords-and-security/#https-ssl).
+
+<!-- SCREENSHOT: Lite Settings, Media tab, Audio Input section -->
+
+## Audio formats
+
+Whisper in KoboldCpp reads **WAV**, **MP3** and **FLAC**. Convert other formats, such as WebM or OGG, before you send them. Some apps send WebM by default.
+
+## API
+
+| Endpoint | Format |
+|---|---|
+| `POST /api/extra/transcribe` | KoboldCpp |
+| `POST /v1/audio/transcriptions` | OpenAI |
+
+Send the audio as base64 in `audio_data`, or as a multipart `file` upload. The answer is `{"text": "..."}`.
+
+Optional fields:
+
+| Field | Meaning |
+|---|---|
+| `language` (or `langcode`) | Language code. Default `auto`. |
+| `prompt` | Text that guides the transcription. |
+| `suppress_non_speech` | Ignore sounds that are not speech. |
+
+A multipart upload reads only `language` and `prompt`. Use JSON for `langcode` and `suppress_non_speech`.
+
+With `--password` set, these endpoints need the password.
+
+## Without a Whisper model
+
+If no Whisper model is loaded but the text model has an audio-capable mmproj, KoboldCpp transcribes with the text model instead. See [Vision and audio input](/docs/features/vision/).
+
+## Related
+
+- [Text-to-speech](/docs/features/text-to-speech/)
+- [API endpoints](/docs/api/endpoints/)

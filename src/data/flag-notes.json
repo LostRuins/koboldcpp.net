@@ -1,0 +1,1038 @@
+{
+ "usecuda": {
+  "summary": "Runs the model on an NVIDIA GPU with CUDA (or an AMD GPU with hipBLAS/ROCm in ROCm builds).",
+  "details": "With no number, all GPUs are used. A number from `0` to `3` uses only that GPU, unless `--tensor_split` is also set; then all GPUs stay in use. If your build has no CUDA library, KoboldCpp falls back to the CPU without an error; check the `Initializing dynamic library:` line in the terminal.",
+  "launcher": "Quick Launch → Backend (Use CUDA / Use hipBLAS (ROCm)) and GPU ID",
+  "level": "beginner"
+ },
+ "usevulkan": {
+  "summary": "Runs the model on a GPU through Vulkan, which works with NVIDIA, AMD and Intel GPUs.",
+  "details": "With no IDs, all devices are used; give one or more device IDs (e.g. `--usevulkan 0`) to pick specific GPUs. If the `GGML_VK_VISIBLE_DEVICES` environment variable is set, it wins over the IDs. If your build has no Vulkan library, KoboldCpp falls back to the CPU without an error.",
+  "launcher": "Quick Launch → Backend (Use Vulkan) and GPU ID",
+  "level": "beginner"
+ },
+ "usecpu": {
+  "summary": "Runs the model on the CPU only, without any GPU acceleration.",
+  "details": "Any positive `--gpulayers` value is ignored with a warning. On macOS this flag does not stop Metal GPU offload.",
+  "launcher": "Quick Launch → Backend (Use CPU)",
+  "level": "beginner"
+ },
+ "model": {
+  "summary": "The text model (GGUF file) to load.",
+  "details": "You can also pass the file as the first plain argument: `koboldcpp model.gguf`. An `https://` URL ending in `.gguf` is downloaded first (all parts of a split Hugging Face model are fetched); an existing file with the same name is reused. Extra URLs after the first are only downloaded, never loaded.",
+  "launcher": "Quick Launch → GGUF Text Model",
+  "level": "beginner"
+ },
+ "config": {
+  "summary": "Loads all settings from a saved `.kcpps` config file (or `.kcppt` template), from disk or a URL.",
+  "details": "The help text is wrong: other flags are not ignored. A flag overrides the config value only when written exactly as `--<name>` (e.g. `--contextsize 4096` or `--quiet`); short aliases like `-c` and the `--flag=value` form are silently ignored. An explicit `--port 5001` does not override the config's port, because 5001 is the default.",
+  "launcher": "Bottom bar → Load Config",
+  "level": "beginner"
+ },
+ "contextsize": {
+  "summary": "How many tokens of conversation the model can keep in memory at once (default 16384).",
+  "details": "Larger values use more RAM/VRAM. Allowed range is 256 to 524288; the launcher slider stops at 262144. Requests can never use more context than this, and the terminal may show a slightly larger number because of internal padding.",
+  "launcher": "Quick Launch → Context Size",
+  "level": "beginner"
+ },
+ "gpulayers": {
+  "summary": "How many model layers to put on the GPU; more layers is faster but needs more VRAM.",
+  "details": "`-1` (default) estimates the layers when a GPU backend is found, or becomes `0` when none is. It also turns on autofit, unless `--tensor_split`, `--overridetensors`, `--moecpu` or `--ffncpu` is set. On macOS, `-1` puts all layers on the GPU and does not turn on autofit. `0` keeps everything on the CPU and also skips automatic backend detection. `--gpulayers` with no number means 1 layer.",
+  "launcher": "Quick Launch → GPU Layers",
+  "level": "beginner"
+ },
+ "host": {
+  "summary": "The network address KoboldCpp listens on.",
+  "details": "By default it listens on all interfaces, so other devices on your network can reach it. Use `--host 127.0.0.1` to allow only this computer. In router mode (`--routermode` or `--autoswapmode`) KoboldCpp listens on all interfaces whatever `--host` says, so use a firewall to keep it private. If you do expose it, set `--password`.",
+  "launcher": "Network → Host",
+  "level": "beginner"
+ },
+ "launch": {
+  "summary": "Opens the web UI in your browser once the model has loaded.",
+  "details": "Off by default on the command line, but ticked by default in the launcher. Cannot be combined with `--cli`.",
+  "launcher": "Quick Launch → Launch Browser",
+  "level": "beginner"
+ },
+ "tensor_split": {
+  "summary": "Sets how the model is divided across several GPUs, as a list of proportions such as `7 3`.",
+  "details": "With a split set, `--usecuda N` no longer limits KoboldCpp to one GPU. Setting a split stops autofit from turning on automatically, and a forced `--autofit` ignores it. Up to 16 values are used.",
+  "launcher": "Hardware → Tensor Split",
+  "level": "advanced"
+ },
+ "threads": {
+  "summary": "How many CPU threads to use for generation.",
+  "details": "The default is about half your CPU threads minus one (1 to 3 on small CPUs), capped at 8 on CPUs that report as Intel and at 64 overall; `0` or a negative value means automatic. It is also the default for `--blasthreads`, `--sdthreads` and `--ttsthreads`.",
+  "launcher": "Hardware → Threads",
+  "level": "beginner"
+ },
+ "port": {
+  "summary": "The port the web UI and API listen on (default 5001).",
+  "details": "You can also pass it as a plain argument after the model: `koboldcpp model.gguf 5002`. If the port is already in use, the model loads fully and then startup fails. A config file's port wins over an explicit `--port 5001`.",
+  "launcher": "Network → Port",
+  "level": "beginner"
+ },
+ "version": {
+  "summary": "Prints the KoboldCpp version and exits.",
+  "details": "Only works as the sole argument; combined with other flags it is ignored and KoboldCpp starts normally.",
+  "launcher": null,
+  "level": "beginner"
+ },
+ "agent": {
+  "summary": "Starts the bundled KoboldCpp Agent, a terminal-based assistant, in a new terminal window.",
+  "details": "Alone it opens only the agent, which connects to `http://127.0.0.1:5001/v1`. With a model it also starts the server and raises the context to at least 28672, `--defaultgenamt` to at least 8192, and turns on `--jinja` and `--jinja_tools`. Add `--cli` to run the agent in the current terminal.",
+  "launcher": "Admin → Launch KoboldCpp Agent",
+  "level": "advanced"
+ },
+ "analyze": {
+  "summary": "Prints the metadata, weight types and tensor names of a GGUF or safetensors file, then exits.",
+  "details": "Takes a file path; nothing is loaded or served.",
+  "launcher": "Extra → Analyze Model",
+  "level": "advanced"
+ },
+ "autofit": {
+  "summary": "Forces autofit, which works out the best way to split the model between GPU and CPU.",
+  "details": "Autofit is already on by default when `--gpulayers` is `-1` and a GPU backend is used, unless `--tensor_split`, `--overridetensors`, `--moecpu` or `--ffncpu` is set or you are on macOS. Forcing it overrides `--gpulayers` (even `0`) and discards `--tensor_split`, `--overridetensors`, `--moecpu` and `--ffncpu`. If fitting fails, the normal layer estimate is used.",
+  "launcher": "Quick Launch → Force AutoFit",
+  "level": "advanced"
+ },
+ "autofitpadding": {
+  "summary": "How much VRAM, in MB, autofit keeps free as a safety margin (default 1024).",
+  "details": "Only applies when `--autofit` is set explicitly; the automatic autofit always uses 1024. Raise it if loading fails with out-of-memory errors.",
+  "launcher": "Hardware → Autofit Padding (MB)",
+  "level": "advanced"
+ },
+ "batchsize": {
+  "summary": "How many prompt tokens are processed at once (default 512); larger is faster but uses more memory.",
+  "details": "Only the listed values are accepted. `-1` processes one token at a time but keeps GPU offload. Old non-llama model formats are capped at 256.",
+  "launcher": "Hardware → Batch Size",
+  "level": "advanced"
+ },
+ "ubatchsize": {
+  "summary": "The physical batch size actually sent to the backend in one step.",
+  "details": "`-1` (default) uses the same value as `--batchsize`; larger values are lowered to the batch size.",
+  "launcher": "Hardware → Physical Batch Size",
+  "level": "advanced"
+ },
+ "benchmark": {
+  "summary": "Runs a speed benchmark instead of starting the server, then exits.",
+  "details": "It fills the whole context with a synthetic prompt and generates `--genlimit` tokens (100 if unset), then prints processing and generation speed. Give a filename to append the results as a CSV row. Needs a model; cannot be combined with `--cli`.",
+  "launcher": "Hardware → Run Benchmark",
+  "level": "advanced"
+ },
+ "blasthreads": {
+  "summary": "How many CPU threads to use while processing the prompt.",
+  "details": "`0` (default) uses the same value as `--threads`.",
+  "launcher": "Hardware → Batch Threads",
+  "level": "advanced"
+ },
+ "chatcompletionsadapter": {
+  "summary": "Sets the instruct format (chat tags) used for chat-style API requests.",
+  "details": "The default `AutoGuess` detects the format from the model's chat template and falls back to Alpaca if nothing matches. You can give a JSON file path or the name of a bundled adapter such as `ChatML` or `Llama-3`. With `--jinja`, the model's own template is used instead.",
+  "launcher": "Loaded Files → Chat Adapter",
+  "level": "advanced"
+ },
+ "cli": {
+  "summary": "Chat with the model directly in the terminal, without starting the web server.",
+  "details": "Type `/quit` or `/exit` to leave. `--prompt` becomes the system prompt, and `--jinja` is not used. Cannot be combined with `--launch`, `--nomodel`, `--admin` or `--benchmark`.",
+  "launcher": "Hardware → CLI Terminal Only",
+  "level": "advanced"
+ },
+ "debugmode": {
+  "summary": "Prints extra diagnostic information in the terminal, including full request inputs.",
+  "details": "The flag alone means `1`; use `1` rather than higher values. It also turns off `--quiet`. KoboldCpp sets `-1` (fewer messages) automatically when Horde worker flags are used.",
+  "launcher": "Hardware → Debug Mode",
+  "level": "advanced"
+ },
+ "defaultgenamt": {
+  "summary": "How many tokens to generate when a request does not say how many (default 2048).",
+  "details": "Most frontends send their own length, so this mainly affects bare API calls. The value is silently lowered to half the context size (e.g. 256 with `--contextsize 512`); the help's \"must be smaller than context size\" is outdated. Allowed range is 64 to 32768.",
+  "launcher": "Context → Default Gen Amt",
+  "level": "advanced"
+ },
+ "device": {
+  "summary": "Chooses exactly which backend devices to use, by llama.cpp device name, comma-separated.",
+  "details": "CPU devices and unknown names are rejected, and one bad name cancels the whole override; loading then continues normally. `none` means no override. Only the text, TTS and embeddings models use it.",
+  "launcher": "Hardware → Device Override",
+  "level": "advanced"
+ },
+ "downloaddir": {
+  "summary": "The folder where models given as URLs are downloaded.",
+  "details": "If a file with the same name is already there, it is reused instead of downloaded again. It does not change where local file paths are looked up. Unset means the current working directory.",
+  "launcher": "Loaded Files → Download Dir",
+  "level": "advanced"
+ },
+ "draftamount": {
+  "summary": "How many tokens the draft model (or MTP) guesses ahead per step in speculative decoding (default 4).",
+  "details": "`0` or less turns speculative decoding off.",
+  "launcher": "Loaded Files → Draft Amount",
+  "level": "advanced"
+ },
+ "draftgpulayers": {
+  "summary": "How many layers of the draft model go on the GPU (default 999, meaning all).",
+  "launcher": "Loaded Files → Layers (Draft Model row)",
+  "level": "advanced"
+ },
+ "draftgpusplit": {
+  "summary": "How the draft model is divided across several GPUs, as a list of proportions.",
+  "details": "Without it the draft model gets llama.cpp's default split, not the main model's ratios as the help says. It works without `--tensor_split`, but the GPUs must be visible: `--usecuda N` without `--tensor_split` hides all other GPUs.",
+  "launcher": "Loaded Files → Splits (Draft Model row)",
+  "level": "advanced"
+ },
+ "draftmodel": {
+  "summary": "Loads a small draft model for speculative decoding, which can speed up generation.",
+  "details": "The draft model must use the same vocabulary as the main model; a large mismatch turns drafting off. A missing or broken draft file does not stop startup, it only prints an error. It takes priority over `--usemtp` and turns off `--parallelrequests` batching.",
+  "launcher": "Loaded Files → Draft Model",
+  "level": "advanced"
+ },
+ "enableguidance": {
+  "summary": "Enables classifier-free guidance, so requests can use a negative prompt.",
+  "details": "Creates a second context, which roughly doubles the memory used for context. It only takes effect for requests with a `negative_prompt` and a `guidance_scale` other than 1. It turns off `--parallelrequests` batching.",
+  "launcher": "Context → Enable Guidance",
+  "level": "advanced"
+ },
+ "exportconfig": {
+  "summary": "Saves the given flags as a `.kcpps` config file and exits without loading anything.",
+  "details": "`.kcpps` is added to the name if missing. Values worked out at load time, such as automatic GPU layers or backend, are not saved.",
+  "launcher": "Bottom bar → Save Config",
+  "level": "advanced"
+ },
+ "exporttemplate": {
+  "summary": "Saves the given flags as a shareable `.kcppt` launch template and exits.",
+  "details": "The backend, GPU layers, threads, main GPU, GPU splits, passwords, SSL and Horde worker name and key are reset, and the backend is auto-detected when the template is loaded. Other machine-specific settings are kept, such as `--device`, `--blasthreads`, `--draftgpulayers`, `--noavx2` and `--failsafe`; check them before sharing. Unlike the launcher button, the command line does not embed the chat adapter or preload story files.",
+  "launcher": "Extra → Generate LaunchTemplate",
+  "level": "advanced"
+ },
+ "failsafe": {
+  "summary": "Compatibility mode for very old CPUs; much slower.",
+  "details": "Selected automatically when the CPU has neither AVX nor AVX2. It implies `--noavx2` and prevents CUDA from loading. Add `--usecpu` to make sure it runs on the CPU; otherwise a GPU backend can still be selected automatically.",
+  "launcher": "Quick Launch → Backend (Failsafe Mode (Older CPU))",
+  "level": "advanced"
+ },
+ "foreground": {
+  "summary": "On Windows, brings the terminal window to the front on each new generation to avoid idle slowdowns.",
+  "details": "Does nothing on Linux and macOS.",
+  "launcher": "Hardware → Keep Foreground",
+  "level": "advanced"
+ },
+ "gendefaults": {
+  "summary": "Default values, as a JSON object, that are added to API requests when the request leaves them out.",
+  "details": "Example: `--gendefaults '{\"max_length\":512}'`. It applies to text, image, audio and embeddings requests; key names must match that endpoint's request fields. If the JSON cannot be parsed, a warning is printed on every request and no defaults apply.",
+  "launcher": "Context → Default Params",
+  "level": "advanced"
+ },
+ "gendefaultsoverwrite": {
+  "summary": "Makes `--gendefaults` values replace the values sent in requests, not only fill in missing ones.",
+  "launcher": "Context → Override (next to Default Params)",
+  "level": "advanced"
+ },
+ "genlimit": {
+  "summary": "A hard upper limit on generated tokens for every request.",
+  "details": "Despite the `--promptlimit` alias and the **Prompt Limit** label, it limits output, not the prompt. `0` means no limit. It also sets the length for `--prompt` and `--benchmark`.",
+  "launcher": "Context → Prompt Limit",
+  "level": "advanced"
+ },
+ "highpriority": {
+  "summary": "Tries to raise KoboldCpp's CPU priority.",
+  "details": "On Windows it sets the process to realtime priority. On Linux it currently lowers the process priority slightly (nice 0 to 1) instead of raising it, and its request for higher thread priority fails unless you have the privileges for it.",
+  "launcher": "Hardware → High Priority",
+  "level": "advanced"
+ },
+ "ignoremissing": {
+  "summary": "Skips missing files with a warning instead of stopping.",
+  "details": "Covers the config file and the model files (text, LoRA, mmproj, image, Whisper, TTS, embeddings, music). A missing text model is skipped too; if nothing is left to load, KoboldCpp exits instead of starting.",
+  "launcher": null,
+  "level": "advanced"
+ },
+ "jinja": {
+  "summary": "Formats chat requests with the model's own chat template instead of KoboldCpp's adapter tags.",
+  "details": "Applies to chat-style endpoints (OpenAI chat, Ollama chat, Anthropic Messages); other endpoints are unaffected. Requests with tools fall back to the adapter unless `--jinja_tools` is set. Turned on automatically by `--jinja_tools`, `--jinja_kwargs` and `--jinjathink`.",
+  "launcher": "Quick Launch → Use Jinja",
+  "level": "advanced"
+ },
+ "jinja_kwargs": {
+  "summary": "Extra variables, as a JSON object, passed to the Jinja chat template.",
+  "details": "Example: `{\"enable_thinking\":false}`. A request's own `chat_template_kwargs` override these. Setting it turns on `--jinja`.",
+  "launcher": "Context → Jinja Kwargs",
+  "level": "advanced"
+ },
+ "jinja_tools": {
+  "summary": "Uses the Jinja chat template also for requests that include tool calls.",
+  "details": "Turns on `--jinja`. For OpenAI chat requests with tools, the temperature defaults to 0.5 and is capped at 1.0.",
+  "launcher": "Context → Jinja for Tools",
+  "level": "advanced"
+ },
+ "jinjatemplate": {
+  "summary": "Replaces the model's built-in chat template with your own Jinja template file (or URL).",
+  "details": "It does not turn on `--jinja`; without it, the template only affects the automatic chat-format detection. A missing file is skipped without an error.",
+  "launcher": "Loaded Files → Jinja Template",
+  "level": "advanced"
+ },
+ "jinjathink": {
+  "summary": "Turns thinking on (`true`) or off (`false`) for reasoning models that support it in their chat template.",
+  "details": "`true` or `false` also turns on `--jinja`. `default` leaves the model's behaviour unchanged. A request's `chat_template_kwargs` can override it.",
+  "launcher": "Context → Jinja Thinking",
+  "level": "advanced"
+ },
+ "lora": {
+  "summary": "Applies a LoRA adapter file on top of the text model.",
+  "details": "Only one LoRA is applied; a second value is checked as a base file but not used. If the LoRA cannot be applied, the whole model load fails.",
+  "launcher": "Loaded Files → Text Lora",
+  "level": "advanced"
+ },
+ "loramult": {
+  "summary": "How strongly the text LoRA is applied (default 1.0).",
+  "details": "Has no effect without `--lora`.",
+  "launcher": "Loaded Files → Multiplier (next to Text Lora)",
+  "level": "advanced"
+ },
+ "lowvram": {
+  "summary": "Keeps the context (KV cache) in system RAM instead of VRAM.",
+  "details": "Saves VRAM but makes generation much slower; try fewer `--gpulayers` or `--quantkv` first.",
+  "launcher": "Hardware → No KV offload",
+  "level": "advanced"
+ },
+ "maingpu": {
+  "summary": "Chooses which GPU is the main one in a multi-GPU setup. Has no effect on GGUF text models in this version.",
+  "details": "`-1` (default) means automatic. To keep a GGUF model on one GPU, use `--usecuda N` without `--tensor_split`.",
+  "launcher": "Hardware → Main GPU",
+  "level": "advanced"
+ },
+ "maxrequestsize": {
+  "summary": "The largest request body the server accepts, in MB (default 32).",
+  "details": "Larger requests get an HTTP 500 \"Payload is too big\" error. Raise it only if you send very large images or files.",
+  "launcher": "Network → Max Req. Size (MB)",
+  "level": "advanced"
+ },
+ "mcpfile": {
+  "summary": "Loads an `mcp.json` file so models can use tools from MCP servers.",
+  "details": "Accepts the Claude Desktop format (`mcpServers`) and the VS Code format (`servers`), from a path or URL. KoboldCpp serves the tools at `/mcp`. The server can start with only this flag, without a text model.",
+  "launcher": "Loaded Files → MCP JSON",
+  "level": "advanced"
+ },
+ "mmproj": {
+  "summary": "Loads the multimodal projector file that lets a vision (or audio) model understand images (or sound).",
+  "details": "The projector must match the text model, which must be a GGUF. A missing file stops startup unless `--ignoremissing` is set.",
+  "launcher": "Loaded Files → Mmproj File",
+  "level": "beginner"
+ },
+ "mmprojcpu": {
+  "summary": "Keeps the multimodal projector on the CPU to save VRAM.",
+  "launcher": "Loaded Files → V.Force CPU",
+  "level": "advanced"
+ },
+ "moecpu": {
+  "summary": "Keeps the expert weights of the first N layers of a Mixture-of-Experts model in system RAM, to fit large MoE models on a small GPU.",
+  "details": "The flag alone applies to all layers. It only has an effect when a GPU is used. Setting it stops autofit from turning on automatically, and a forced `--autofit` ignores it.",
+  "launcher": "Context → MoE CPU Layers",
+  "level": "advanced"
+ },
+ "ffncpu": {
+  "summary": "Keeps the dense feed-forward weights of the first N layers in system RAM instead of VRAM.",
+  "details": "The flag alone applies to all layers. Like `--moecpu`, it only has an effect when a GPU is used and stops autofit from turning on automatically.",
+  "launcher": "Context → FFN CPU Layers",
+  "level": "advanced"
+ },
+ "moeexperts": {
+  "summary": "How many experts a Mixture-of-Experts model uses per token.",
+  "details": "`-1` or `0` uses the model's own setting. Changing it trades quality against speed.",
+  "launcher": "Context → MoE Experts",
+  "level": "advanced"
+ },
+ "multiuser": {
+  "summary": "Sets how many generation requests the server accepts at once: one running, the rest waiting in line (default 10).",
+  "details": "Requests are processed one at a time unless `--parallelrequests` is set. `N` allows N−1 waiting requests, and `1` behaves like 10. `0` turns queuing off so a busy server answers 503, but only for a text-only server: with an image, Whisper, TTS or embeddings model, or with `--parallelrequests`, queuing stays on.",
+  "launcher": "Network → Multiuser Queue",
+  "level": "advanced"
+ },
+ "multiplayer": {
+  "summary": "Hosts a shared story session that several people can join from KoboldAI Lite.",
+  "details": "If `--password` is set, joining needs it.",
+  "launcher": "Network → Shared Multiplayer",
+  "level": "advanced"
+ },
+ "nocertify": {
+  "summary": "Turns off certificate checks for KoboldCpp's own outgoing HTTPS connections.",
+  "details": "Affects KoboldCpp's own HTTPS requests, such as web search and MCP servers; it has nothing to do with `--ssl`. Model and config downloads run through aria2, curl or wget, which still check certificates. It removes protection against tampered connections, so use it only when a connection fails with certificate errors.",
+  "launcher": "Network → NoCertify Mode (Insecure)",
+  "level": "advanced"
+ },
+ "nofastforward": {
+  "summary": "Reprocesses the whole prompt on every request instead of reusing the part that has not changed.",
+  "details": "This also disables context shifting and SmartCache. Makes most requests slower.",
+  "launcher": "Context → Use FastForwarding (unticked)",
+  "level": "advanced"
+ },
+ "noflashattention": {
+  "summary": "Turns off flash attention, which is on by default.",
+  "details": "Use it if your GPU or backend crashes or misbehaves with flash attention. With flash attention off, `--quantkv` compresses only half of the cache (the K part), except `bf16`, which compresses both.",
+  "launcher": "Quick Launch → Use FlashAttention (unticked)",
+  "level": "advanced"
+ },
+ "noavx2": {
+  "summary": "Uses a slower build for older CPUs without AVX2.",
+  "details": "Normally detected automatically. It prevents CUDA from loading. Add `--usecpu` for CPU only; otherwise a GPU backend such as Vulkan can still be selected automatically.",
+  "launcher": "Quick Launch → Backend (Use CPU (Old CPU) / Use Vulkan (Old CPU))",
+  "level": "advanced"
+ },
+ "nobostoken": {
+  "summary": "Stops KoboldCpp from adding the beginning-of-sequence (BOS) token to prompts.",
+  "details": "Most models need the BOS token; leave this off unless a model's instructions say otherwise.",
+  "launcher": "Context → No BOS Token",
+  "level": "advanced"
+ },
+ "nommq": {
+  "summary": "Turns off MMQ matrix kernels on CUDA.",
+  "details": "MMQ is on by default. Only affects CUDA/hipBLAS.",
+  "launcher": "Quick Launch → Use MMQ (unticked)",
+  "level": "advanced"
+ },
+ "nomodel": {
+  "summary": "Lets the server and the KoboldAI Lite web UI start without a model. Models you do set are still loaded.",
+  "details": "The help says \"GUI\", but it means the web UI; the launcher is not shown. Useful with `--admin` to pick a model later. Cannot be combined with `--cli`.",
+  "launcher": "Loaded Files → Allow Launch Without Models",
+  "level": "advanced"
+ },
+ "noshift": {
+  "summary": "Turns off context shifting, which lets long chats continue without reprocessing the whole prompt.",
+  "details": "Context shifting is on by default. It is turned off automatically for models using SWA (unless `--noswa`), for models using MRoPE such as Qwen2-VL and Qwen3-VL, and when `--parallelrequests` is above 1.",
+  "launcher": "Quick Launch → Use ContextShift (unticked)",
+  "level": "advanced"
+ },
+ "noswa": {
+  "summary": "Uses a full-size context cache on models with sliding-window attention (SWA), such as Gemma.",
+  "details": "SWA is on by default and saves a lot of memory, but disables context shifting. With `--noswa` the cache is much larger and context shifting works again.",
+  "launcher": "Context → Allow SWA (unticked)",
+  "level": "advanced"
+ },
+ "onready": {
+  "summary": "Runs a shell command once all models have loaded.",
+  "details": "It runs about one second after loading, possibly before the server accepts connections, so poll the port if the command needs the server. A value from a config file is ignored unless `--allow-config-onready` is set.",
+  "launcher": null,
+  "level": "advanced"
+ },
+ "allow_config_onready": {
+  "summary": "Allows `.kcpps` config files to set an `--onready` shell command.",
+  "details": "Without it, `onready` values in configs are dropped, both at launch and on admin model swaps. Only use it with configs you trust, since the command runs with your user's permissions. A config cannot turn this on itself.",
+  "launcher": null,
+  "level": "advanced"
+ },
+ "overridekv": {
+  "summary": "Overrides metadata values in the GGUF model, in the form `name=type:value`.",
+  "details": "Types are `int`, `float`, `bool` and `str`; separate several overrides with commas (up to 16). Example: `tokenizer.ggml.add_bos_token=bool:false`.",
+  "launcher": "Context → Override KV",
+  "level": "advanced"
+ },
+ "overridenativecontext": {
+  "summary": "Tells KoboldCpp the model's trained context length, so automatic RoPE scaling is calculated from that value.",
+  "details": "`0` (default) uses the model's own value. Takes priority over `--ropeconfig`.",
+  "launcher": "Context → Override Native Context (with Custom RoPE Config ticked)",
+  "level": "advanced"
+ },
+ "overridetensors": {
+  "summary": "Places specific model tensors on a chosen device, using llama.cpp's `pattern=buffer type` syntax.",
+  "details": "Only has an effect when a GPU is used. Unknown buffer types are rejected. Setting it stops autofit from turning on automatically, and a forced `--autofit` ignores it.",
+  "launcher": "Context → Override Tensors",
+  "level": "advanced"
+ },
+ "parallelrequests": {
+  "summary": "Processes up to N text requests at the same time (continuous batching); experimental.",
+  "details": "`0` and `1` mean off; the maximum is 32. It turns off context shifting. Requests that use media, grammar, tools, many advanced samplers, or a negative prompt still run one at a time, and `--smartcache` or `--draftmodel` disable batching.",
+  "launcher": "Network → Parallel Requests",
+  "level": "advanced"
+ },
+ "password": {
+  "summary": "Requires an API key for text generation and most other endpoints.",
+  "details": "Clients send it as `Authorization: Bearer <password>`; it can also be set with the `KCPP_PASSWORD` environment variable. Image generation and the `/tts_to_audio` endpoint stay open, and admin functions need `--adminpassword`. Always set it before exposing KoboldCpp with `--host`, `--remotetunnel` or on a shared network.",
+  "launcher": "Network → Password",
+  "level": "beginner"
+ },
+ "preloadstory": {
+  "summary": "Serves a saved story file that KoboldAI Lite can load from the server.",
+  "launcher": "Loaded Files → Preload Story",
+  "level": "advanced"
+ },
+ "prompt": {
+  "summary": "Generates one reply to the given prompt, prints it and exits, without starting the server.",
+  "details": "The prompt is sent as raw text with no chat template, using fixed settings (low temperature) and `--genlimit` tokens (100 if unset). With `--cli` it becomes the system prompt; with `--benchmark` it replaces the benchmark text.",
+  "launcher": null,
+  "level": "advanced"
+ },
+ "quantkv": {
+  "summary": "Compresses the context (KV) cache to save memory, which allows longer contexts.",
+  "details": "Options are `f16` (default), `bf16`, `q8_0`, `q5_1` and `q4_0`. Without flash attention only part of the cache is compressed (except `bf16`). The numeric values are legacy: `1` = q8_0, `2` = q4_0, `3` = bf16.",
+  "launcher": "Context → Quantize KV Cache",
+  "level": "advanced"
+ },
+ "quiet": {
+  "summary": "Hides prompts and generated text from the terminal output.",
+  "details": "Useful for privacy on shared servers. `--debugmode` turns it off.",
+  "launcher": "Quick Launch → Quiet Mode",
+  "level": "advanced"
+ },
+ "ratelimit": {
+  "summary": "Limits each IP address to one generation request every N seconds.",
+  "details": "Faster requests get an HTTP 503 error. `0` (default) means no limit.",
+  "launcher": "Network → IP Rate Limiter (s)",
+  "level": "advanced"
+ },
+ "reasoningeffort": {
+  "summary": "Sets a default reasoning effort for thinking models; values sent in requests override it.",
+  "details": "On a normal command-line launch this flag currently has no effect; it only works through the launcher (`--showgui`). Use `--gendefaults '{\"reasoning_effort\":\"low\"}'` instead. `xhigh` sets no thinking limit.",
+  "launcher": "Context → Think Effort",
+  "level": "advanced"
+ },
+ "remotetunnel": {
+  "summary": "Creates a public Cloudflare URL so you can reach KoboldCpp from anywhere, even behind a firewall.",
+  "details": "KoboldCpp downloads `cloudflared` and prints a `trycloudflare.com` link. Anyone with the link can use your instance, so set `--password`; image generation stays open even then. It is skipped with `--prompt`, `--benchmark` and `--cli`.",
+  "launcher": "Quick Launch → Remote Tunnel",
+  "level": "beginner"
+ },
+ "ropeconfig": {
+  "summary": "Sets custom RoPE scaling (frequency scale and base) to stretch a model beyond its trained context.",
+  "details": "By default KoboldCpp scales automatically, and GGUF models with their own RoPE settings keep them. The custom values only apply if the scale is above 0; to change only the base, use scale `1.0`. `--overridenativecontext` takes priority.",
+  "launcher": "Context → RoPE Scale and Base (with Custom RoPE Config and Manual Rope Scale ticked)",
+  "level": "advanced"
+ },
+ "savedatafile": {
+  "summary": "Creates or opens a file on the server where KoboldAI Lite users can save and load their stories.",
+  "details": "`.jsondb` is added to the name if missing. It holds 12 slots of up to 10 MB each. If `--password` is set, saving and loading need it.",
+  "launcher": "Loaded Files → SaveData File",
+  "level": "advanced"
+ },
+ "singleinstance": {
+  "summary": "Lets a new KoboldCpp started on the same port shut this one down, so two servers never clash.",
+  "details": "Both the old and the new instance need the flag. Don't combine it with `--remotetunnel`.",
+  "launcher": "Admin → SingleInstance Mode",
+  "level": "advanced"
+ },
+ "smartcache": {
+  "summary": "Saves snapshots of the context cache in RAM so switching between chats needs less reprocessing.",
+  "details": "The flag alone or `1` keeps 5 snapshots; a higher number sets how many. It needs fast forwarding and turns off `--parallelrequests` batching. It turns on automatically for recurrent and hybrid models while fast forwarding and context shifting are on.",
+  "launcher": "Context → Use SmartCache",
+  "level": "advanced"
+ },
+ "smartcontext": {
+  "summary": "Outdated method that reserves part of the context to reprocess less often.",
+  "details": "Has no effect while context shifting is on; use context shifting instead.",
+  "launcher": "Context → Use SmartContext",
+  "level": "advanced"
+ },
+ "splitmode": {
+  "summary": "How the model is split across several GPUs: by `layer` (default) or by `tensor`.",
+  "details": "`row` was removed and now uses `tensor` with a warning.",
+  "launcher": "Hardware → SplitMode",
+  "level": "advanced"
+ },
+ "ssl": {
+  "summary": "Serves KoboldCpp over HTTPS using your certificate and key files.",
+  "details": "Give two unencrypted PEM files: `--ssl cert.pem key.pem`. If a file is missing, KoboldCpp prints a warning and keeps running over plain HTTP. The `SSL configuration is valid` line only means both files exist; a file with an invalid certificate or key can still stop KoboldCpp from starting.",
+  "launcher": "Network → SSL Cert and SSL Key",
+  "level": "advanced"
+ },
+ "swapadding": {
+  "summary": "Adds extra room to the sliding-window (SWA) cache so you can edit or regenerate further back before a full reprocess.",
+  "details": "Uses more memory. Ignored with `--noswa`.",
+  "launcher": "Context → SWA Padding Tokens",
+  "level": "advanced"
+ },
+ "unpack": {
+  "summary": "Extracts the files bundled inside the KoboldCpp executable into a folder, then exits.",
+  "details": "The target folder must be empty or not exist yet.",
+  "launcher": "Extra → Unpack KoboldCpp To Folder",
+  "level": "advanced"
+ },
+ "usemtp": {
+  "summary": "Uses the model's built-in multi-token prediction (MTP) layers for speculative decoding, if it has them.",
+  "details": "`--draftmodel` takes priority if both are set. Turns off `--parallelrequests` batching.",
+  "launcher": "Loaded Files → Use MTP",
+  "level": "advanced"
+ },
+ "usemlock": {
+  "summary": "Locks the model in RAM so the operating system cannot swap it to disk.",
+  "details": "Ignored when `--usedirectio` is set.",
+  "launcher": "Hardware → Use mlock",
+  "level": "advanced"
+ },
+ "usemmap": {
+  "summary": "Loads the model with memory mapping (mmap), which is off by default in KoboldCpp.",
+  "details": "llama.cpp uses mmap by default; KoboldCpp does not. Cannot be combined with `--usedirectio`.",
+  "launcher": "Quick Launch → Use MMAP",
+  "level": "advanced"
+ },
+ "usedirectio": {
+  "summary": "Loads the model with direct I/O, which can speed up the first load on some drives.",
+  "details": "Only has an effect on Linux, and falls back to normal loading if direct I/O is not possible. Cannot be combined with `--usemmap`.",
+  "launcher": "Hardware → Direct I/O",
+  "level": "advanced"
+ },
+ "visionmaxres": {
+  "summary": "The largest image resolution passed to a vision model, in pixels (default 1024).",
+  "details": "Values outside 512 to 2048 are clamped.",
+  "launcher": "Loaded Files → Vision MaxRes",
+  "level": "advanced"
+ },
+ "visionmaxtokens": {
+  "summary": "Overrides the maximum number of tokens an image may use in a vision model.",
+  "details": "`-1` uses the model's default. If you set only this value, the minimum is set to the same number. The actual token count still depends on the model's image processing, and some vision models ignore these limits.",
+  "launcher": "Loaded Files → V.Min/Max Tok (second box)",
+  "level": "advanced"
+ },
+ "visionmintokens": {
+  "summary": "Overrides the minimum number of tokens an image uses in a vision model.",
+  "details": "`-1` uses the model's default. If you set only this value, the maximum is set to the same number.",
+  "launcher": "Loaded Files → V.Min/Max Tok (first box)",
+  "level": "advanced"
+ },
+ "websearch": {
+  "summary": "Enables the built-in web search proxy used by KoboldAI Lite's web search option.",
+  "details": "Searches go through DuckDuckGo. If `--password` is set, the search endpoint needs it.",
+  "launcher": "Network → Enable WebSearch",
+  "level": "advanced"
+ },
+ "showgui": {
+  "summary": "Opens the full launcher, pre-filled with your command-line flags or config, instead of starting right away.",
+  "details": "Works with any flags, not only with `.kcpps` files. Handy for adjusting a saved config visually.",
+  "launcher": null,
+  "level": "advanced"
+ },
+ "skiplauncher": {
+  "summary": "Asks KoboldCpp not to show the graphical launcher.",
+  "details": "Any command-line flag already skips the full launcher. Without a model, a file picker still appears on a desktop, and on a system without a display KoboldCpp exits with an error. Pass a model flag such as `--model` with it, or `--nomodel` to start without one.",
+  "launcher": null,
+  "level": "advanced"
+ },
+ "hordemodelname": {
+  "summary": "The model name your AI Horde worker advertises.",
+  "details": "It also renames the model in KoboldCpp's own APIs (`/api/v1/model`, `/v1/models`). Setting a Horde model name, worker name or API key reduces terminal output.",
+  "launcher": "Horde Worker → Horde Model Name",
+  "level": "advanced"
+ },
+ "hordeworkername": {
+  "summary": "The name of your AI Horde worker.",
+  "details": "The worker only starts when both this and `--hordekey` are set.",
+  "launcher": "Horde Worker → Horde Worker Name",
+  "level": "advanced"
+ },
+ "hordekey": {
+  "summary": "Your AI Horde API key, used to run KoboldCpp as a Horde worker.",
+  "details": "The worker only takes Horde jobs after 20 seconds without local requests. The key is stored in plain text in saved `.kcpps` files, so do not share those.",
+  "launcher": "Horde Worker → API Key (If Embedded Worker)",
+  "level": "advanced"
+ },
+ "hordemaxctx": {
+  "summary": "The largest context your Horde worker accepts from a job.",
+  "details": "`0` uses `--contextsize`; it can never exceed it. It also changes the value reported by `/api/v1/config/max_context_length`.",
+  "launcher": "Horde Worker → Max Context",
+  "level": "advanced"
+ },
+ "hordegenlen": {
+  "summary": "The most tokens your Horde worker generates per job.",
+  "details": "`0` means 1024. It also changes the value reported by `/api/v1/config/max_length`.",
+  "launcher": "Horde Worker → Gen. Length",
+  "level": "advanced"
+ },
+ "sdaudiovae": {
+  "summary": "The audio VAE file for LTX 2.3 video generation.",
+  "launcher": "Image Gen → Audio VAE",
+  "level": "advanced"
+ },
+ "sdclamped": {
+  "summary": "Limits the longest side of generated images, for shared instances.",
+  "details": "The flag alone means 512; the other side is scaled to keep the aspect ratio. The help is wrong on two points: it does not limit steps, and the minimum is 64 px, not 512.",
+  "launcher": "Image Gen → Clamp Resolution (Hard)",
+  "level": "advanced"
+ },
+ "sdclampedsoft": {
+  "summary": "Limits the total pixel area of generated images to save memory, while allowing any aspect ratio.",
+  "details": "`640` allows 640×640 or the same area in other shapes. `0` still applies a model default (832 for SD1.x/2.x, 1024 for others); the maximum is 2048.",
+  "launcher": "Image Gen → (Soft), next to Clamp Resolution (Hard)",
+  "level": "advanced"
+ },
+ "sdclip1": {
+  "summary": "The first separate encoder file for image models that ship without one built in: Clip-L for SD3 or Flux, or the vision encoder for WAN or Qwen-Image.",
+  "details": ".gguf files work too, not only safetensors.",
+  "launcher": "Image Gen → Clip-1 File",
+  "level": "advanced"
+ },
+ "sdclip2": {
+  "summary": "The second separate text-encoder file for image models that need one (e.g. Clip-G for SD3).",
+  "details": "Some other model families also use this slot. .gguf files work too.",
+  "launcher": "Image Gen → Clip-2 File",
+  "level": "advanced"
+ },
+ "sdclipdevice": {
+  "summary": "Where the image model's text encoders run: `CPU` (default), `main` GPU or a GPU number.",
+  "details": "Unrecognised values silently mean the main GPU.",
+  "launcher": "Image Gen → CLIP dev",
+  "level": "advanced"
+ },
+ "sdconvdirect": {
+  "summary": "Enables direct 2D convolution for image generation, which may speed it up or save memory.",
+  "details": "`off` (default), `vaeonly` or `full`. May crash on backends that do not support it.",
+  "launcher": "Image Gen → Conv2D Direct",
+  "level": "advanced"
+ },
+ "sdflashattention": {
+  "summary": "Enables flash attention for image generation.",
+  "details": "Independent of the text model's flash attention setting.",
+  "launcher": "Image Gen → SD Flash Attention",
+  "level": "advanced"
+ },
+ "sdlora": {
+  "summary": "Image-generation LoRA files to apply, or a folder of LoRAs to choose from per request.",
+  "details": "With a folder, LoRAs are picked in the prompt with `<lora:name:weight>`. Up to 10 files are applied; a file with a non-zero multiplier is fixed and cannot be changed per request. Cannot be combined with `--sdquant` on the command line.",
+  "launcher": "Image Gen → Image LoRAs",
+  "level": "advanced"
+ },
+ "sdloramult": {
+  "summary": "Strength of each image LoRA, in the same order as `--sdlora`.",
+  "details": "Missing entries reuse the first multiplier. A multiplier of `0` leaves that LoRA adjustable per request.",
+  "launcher": "Image Gen → Multiplier",
+  "level": "advanced"
+ },
+ "sdmaingpu": {
+  "summary": "Which GPU holds the image model: `main` (default), a GPU number, or `CPU`.",
+  "details": "Unrecognised values silently mean the main GPU.",
+  "launcher": "Image Gen → ImgGPU",
+  "level": "advanced"
+ },
+ "sdmodel": {
+  "summary": "The image generation model (safetensors or GGUF) to load; this is what turns image generation on.",
+  "details": "The server can start with only this flag, without a text model. A missing file stops startup unless `--ignoremissing` is set.",
+  "launcher": "Image Gen → Image Model",
+  "level": "beginner"
+ },
+ "sdoffloadcpu": {
+  "summary": "Keeps image model weights in system RAM and moves them to VRAM only when needed, to save VRAM.",
+  "launcher": "Image Gen → Model Offload",
+  "level": "advanced"
+ },
+ "sdphotomaker": {
+  "summary": "Loads a PhotoMaker model for face cloning with SDXL models; input images are then used as face references instead of for img2img.",
+  "launcher": "Image Gen → PhotoMaker",
+  "level": "advanced"
+ },
+ "sdquant": {
+  "summary": "Compresses the image model while loading to save memory: `1` = q8, `2` = q4.",
+  "details": "The flag alone means `2`. Loading a model that is already quantized is faster. Cannot be combined with `--sdlora` on the command line.",
+  "launcher": "Image Gen → Compress Weights",
+  "level": "advanced"
+ },
+ "sdllm": {
+  "summary": "The text encoder or LLM file needed by image models such as Flux, Qwen-Image or Z-Image.",
+  "details": "The terminal labels it `T5-XXL` even when it is an LLM.",
+  "launcher": "Image Gen → Image LLM",
+  "level": "advanced"
+ },
+ "sdthreads": {
+  "summary": "How many CPU threads image generation uses.",
+  "details": "`0` uses the same value as `--threads`.",
+  "launcher": "Image Gen → ImgThreads",
+  "level": "advanced"
+ },
+ "sdtiledvae": {
+  "summary": "Decodes images larger than this size (default 512) in tiles to save memory.",
+  "details": "Tiling starts when width × height is larger than this value squared. `0` disables tiling. `--sdvaeauto` always disables it.",
+  "launcher": "Image Gen → VAE Tiling Threshold",
+  "level": "advanced"
+ },
+ "sdupscaler": {
+  "summary": "Loads an ESRGAN upscaler model for enlarging generated images.",
+  "details": "Needs `--sdmodel`.",
+  "launcher": "Image Gen → Upscaler",
+  "level": "advanced"
+ },
+ "sdvae": {
+  "summary": "Replaces the image model's built-in VAE with a separate VAE file.",
+  "details": ".gguf files work too. Cannot be combined with `--sdvaeauto`.",
+  "launcher": "Image Gen → Image VAE",
+  "level": "advanced"
+ },
+ "sdvaeauto": {
+  "summary": "Uses a small built-in VAE (TAESD) that decodes images much faster and can replace a broken VAE.",
+  "details": "Disables VAE tiling. Cannot be combined with `--sdvae`.",
+  "launcher": "Image Gen → Automatic VAE (TAE SD)",
+  "level": "advanced"
+ },
+ "sdvaedevice": {
+  "summary": "Where the image VAE runs: `main` GPU (default), a GPU number, or `CPU`.",
+  "launcher": "Image Gen → VAE dev",
+  "level": "advanced"
+ },
+ "sdvramlimit": {
+  "summary": "Caps how much VRAM image generation may use, in MB.",
+  "details": "`0` (default) means no limit.",
+  "launcher": "Image Gen → VRAM Limiter (MB)",
+  "level": "advanced"
+ },
+ "whispermodel": {
+  "summary": "Loads a Whisper model to turn speech into text.",
+  "details": "The server can start with only this flag, without a text model.",
+  "launcher": "Audio → Whisper Model (Speech-To-Text)",
+  "level": "beginner"
+ },
+ "ttsmodel": {
+  "summary": "Loads a text-to-speech (TTS) model so KoboldCpp can read text aloud.",
+  "details": "The model type is detected automatically. OuteTTS models also need `--ttswavtokenizer`. The server can start with only this flag.",
+  "launcher": "Audio → TTS Model (Text-To-Speech)",
+  "level": "beginner"
+ },
+ "ttswavtokenizer": {
+  "summary": "The WavTokenizer file that some TTS models need.",
+  "details": "Required for OuteTTS models.",
+  "launcher": "Audio → WavTokenizer Model (Required for some models)",
+  "level": "beginner"
+ },
+ "ttsgpu": {
+  "summary": "Runs the TTS model on the GPU.",
+  "details": "Only OuteTTS and Qwen3-TTS models use the GPU; other TTS models such as Kokoro always run on the CPU.",
+  "launcher": "Audio → TTS Use GPU",
+  "level": "advanced"
+ },
+ "ttsmaxlen": {
+  "summary": "Limits how much audio TTS generates (default and maximum 4096).",
+  "details": "For OuteTTS it limits audio tokens. For Kokoro-style models it limits the input to the first N words. Qwen3-TTS models ignore it.",
+  "launcher": "Audio → TTS Max Tokens",
+  "level": "advanced"
+ },
+ "ttsthreads": {
+  "summary": "How many CPU threads TTS uses.",
+  "details": "`0` uses the same value as `--threads`. Qwen3-TTS models ignore it.",
+  "launcher": "Audio → TTS Threads",
+  "level": "advanced"
+ },
+ "ttsdir": {
+  "summary": "A folder of `.wav` and `.mp3` voice samples for voice cloning.",
+  "details": "Only files directly in the folder are loaded, each as a voice named after its file. Needs `--ttsmodel`.",
+  "launcher": "Audio → TTS Voices Dir",
+  "level": "advanced"
+ },
+ "musicllm": {
+  "summary": "The music planner language model (e.g. ACE-Step LM) for music generation.",
+  "details": "Alone it loads in an LLM-only mode. Combined with `--musicdiffusion`, `--musicembeddings` and `--musicvae`, it plans full songs. With embeddings or VAE but no diffusion model, nothing is loaded.",
+  "launcher": "Audio → MusicLLM",
+  "level": "advanced"
+ },
+ "musicembeddings": {
+  "summary": "The embedding model required for music generation.",
+  "details": "Required with `--musicdiffusion`; without a diffusion model it is not loaded.",
+  "launcher": "Audio → MusicEmbeds",
+  "level": "advanced"
+ },
+ "musicdiffusion": {
+  "summary": "The music diffusion model; this is what turns full music generation on.",
+  "details": "Also needs `--musicembeddings` and `--musicvae`, or KoboldCpp exits with an error.",
+  "launcher": "Audio → MusicDiffuser",
+  "level": "advanced"
+ },
+ "musicvae": {
+  "summary": "The VAE model required for music generation.",
+  "details": "Required with `--musicdiffusion`.",
+  "launcher": "Audio → MusicVAE",
+  "level": "advanced"
+ },
+ "musiclowvram": {
+  "summary": "Unloads the music models between uses and loads them only when needed, to save VRAM.",
+  "launcher": "Audio → Music Low VRAM",
+  "level": "advanced"
+ },
+ "embeddingsmodel": {
+  "summary": "Loads an embeddings model (GGUF) for creating embedding vectors, e.g. for search or memory features.",
+  "details": "The server can start with only this flag, without a text model.",
+  "launcher": "Loaded Files → Embeds Model",
+  "level": "advanced"
+ },
+ "embeddingsmaxctx": {
+  "summary": "The longest input the embeddings model accepts (default 4096).",
+  "details": "The value is capped at the model's trained context; the help's \"defaults to trained context\" is wrong. `0` uses `--contextsize`, and a negative value uses the trained context.",
+  "launcher": "Loaded Files → ECtx",
+  "level": "advanced"
+ },
+ "embeddingsgpu": {
+  "summary": "Puts the embeddings model on the GPU.",
+  "details": "Usually not needed.",
+  "launcher": "Loaded Files → GPU (next to Embeds Model)",
+  "level": "advanced"
+ },
+ "rpcmode": {
+  "summary": "Shares GPUs over the network: `host` offers this machine's devices, `connect` uses remote ones.",
+  "details": "In `host` mode no model is loaded and no web API starts; if no GPU is found, the CPU is shared. In `connect` mode, list the remote machines with `--rpctargets`. RPC has no authentication, so use it only on a trusted network.",
+  "launcher": "Network → RPC Mode",
+  "level": "advanced"
+ },
+ "rpcport": {
+  "summary": "The port the RPC server listens on in `host` mode (default 5551).",
+  "details": "Cannot be combined with `--rpctargets`.",
+  "launcher": "Network → RPC Host Port",
+  "level": "advanced"
+ },
+ "rpchost": {
+  "summary": "The address the RPC server listens on in `host` mode (default `0.0.0.0`, all interfaces).",
+  "details": "RPC has no authentication. Use `127.0.0.1` or a private network address, and never expose the RPC port to the internet.",
+  "launcher": "Network → RPC Host IP",
+  "level": "advanced"
+ },
+ "rpcdevice": {
+  "summary": "Which devices to share in RPC `host` mode, comma-separated.",
+  "details": "CPU and unknown device names are ignored with an error message, and the devices are then chosen automatically.",
+  "launcher": "Network → RPC Devices",
+  "level": "advanced"
+ },
+ "rpctargets": {
+  "summary": "The remote RPC servers to use, as `host:port` pairs separated by commas.",
+  "details": "Requires `--rpcmode connect`; otherwise KoboldCpp exits with an error.",
+  "launcher": "Network → RPC Endpoints",
+  "level": "advanced"
+ },
+ "admin": {
+  "summary": "Enables admin mode, so you can unload the model or switch to other configs and models without restarting KoboldCpp.",
+  "details": "Switch targets come from `--admindir` (the program's folder if unset). Always set `--adminpassword` too.",
+  "launcher": "Admin → Enable Model Administration",
+  "level": "advanced"
+ },
+ "adminpassword": {
+  "summary": "The password required for admin functions such as switching or unloading models.",
+  "details": "Clients send it as `Authorization: Bearer <password>`; it also works in place of the normal `--password`. It can be set with the `KCPP_ADMINPASSWORD` environment variable and is stored in plain text in launcher-saved config files. Use a different value from `--password` for any instance others can reach.",
+  "launcher": "Admin → Admin Password",
+  "level": "advanced"
+ },
+ "admindir": {
+  "summary": "The folder admin mode offers configs and models from.",
+  "details": "Lists `.kcpps`, `.kcppt` and `.gguf` files, including one subfolder level. A plain `.gguf` is loaded with default settings or with `--baseconfig`.",
+  "launcher": "Admin → Config Directory (Required)",
+  "level": "advanced"
+ },
+ "adminunloadtimeout": {
+  "summary": "Unloads the model automatically after this many idle seconds.",
+  "details": "Only works with `--admin` (or `--routermode`). `0` (default) disables it. In router mode the next request reloads the model.",
+  "launcher": "Admin → Auto Unload Timeout",
+  "level": "advanced"
+ },
+ "routermode": {
+  "summary": "Puts a proxy in front of KoboldCpp so a request's `model` field can switch to any model or config in `--admindir`.",
+  "details": "The proxy uses `--port` and the real server moves to a port between 15001 and 15010. It turns on `--admin` automatically.",
+  "launcher": "Admin → Router Mode",
+  "level": "advanced"
+ },
+ "reqtimeout": {
+  "summary": "How long, in seconds, the router-mode proxy waits for the server (default 600).",
+  "details": "Despite the help text, it only applies with `--routermode`, not to normal requests.",
+  "launcher": "Network → Request Timeout (s)",
+  "level": "advanced"
+ },
+ "autoswapmode": {
+  "summary": "Loads the right kind of model (text, image, speech, TTS, embeddings, music) automatically for each request, from one config.",
+  "details": "It turns on `--routermode` and `--admin`. It starts with nothing loaded; small model types (see `--autoswapthreshold`) stay loaded alongside the active one.",
+  "launcher": "Admin → Autoswap Mode",
+  "level": "advanced"
+ },
+ "autoswapthreshold": {
+  "summary": "In autoswap mode, model types whose files total at most this many MB stay loaded (default 256).",
+  "details": "`0` keeps only the currently needed type loaded.",
+  "launcher": "Admin → Autoswap Threshold (MB)",
+  "level": "advanced"
+ },
+ "baseconfig": {
+  "summary": "A `.kcpps` config applied first when admin mode switches models, with the chosen config or model layered on top. A base config named in the switch request replaces it.",
+  "details": "Only used with `--admin`. It is not applied when unloading or returning to the initial model. The path is relative to the working directory.",
+  "launcher": "Admin → Base config .kcpps (Optional, for reloading)",
+  "level": "advanced"
+ },
+ "hordeconfig": {
+  "summary": "Deprecated: sets several Horde worker options at once.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--hordemodelname`, `--hordegenlen`, `--hordemaxctx`, `--hordekey` and `--hordeworkername`. Still works and overrides those flags; the key and worker name are only taken when all five values are given."
+ },
+ "sdconfig": {
+  "summary": "Deprecated: sets the image model and some image options at once.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--sdmodel`, `--sdclamped`, `--sdthreads` and `--sdquant`. Still works."
+ },
+ "noblas": {
+  "summary": "Deprecated: runs on the CPU only.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--usecpu`. Still works."
+ },
+ "nommap": {
+  "summary": "Deprecated: turned off memory mapping.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "Nothing needed: mmap is now off by default; use `--usemmap` to turn it on. Has no effect."
+ },
+ "nopipelineparallel": {
+  "summary": "Deprecated: turned off pipeline parallelism across GPUs.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "Nothing: pipeline parallelism is now automatic. Has no effect."
+ },
+ "pipelineparallel": {
+  "summary": "Deprecated: turned on pipeline parallelism across GPUs.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "Nothing: pipeline parallelism is now automatic. Has no effect."
+ },
+ "sdnotile": {
+  "summary": "Deprecated: turned off VAE tiling for image generation.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--sdtiledvae 0`. Has no effect on the command line; only old `.kcpps` files that lack `sdtiledvae` still apply it."
+ },
+ "sdt5xxl": {
+  "summary": "Deprecated: the T5-XXL text encoder for image models.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--sdllm`. Still works when `--sdllm` is not set."
+ },
+ "sdvaecpu": {
+  "summary": "Deprecated: ran the image VAE on the CPU.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--sdvaedevice CPU`. Still works when `--sdvaedevice` is not set."
+ },
+ "sdclipgpu": {
+  "summary": "Deprecated: ran the image text encoders on the GPU.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--sdclipdevice main`. Still works when `--sdclipdevice` is not set."
+ },
+ "forceversion": {
+  "summary": "Deprecated: forced a model format version.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "Nothing. Has no effect."
+ },
+ "sdgendefaults": {
+  "summary": "Deprecated: default parameters for image generation requests.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "`--gendefaults`. The command-line flag has no effect; in an old config without `gendefaults`, its value is carried over."
+ },
+ "flashattention": {
+  "summary": "Deprecated: turned on flash attention.",
+  "details": "The `-fa` alias is still accepted, so llama.cpp-style command lines do not fail.",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "Nothing needed: flash attention is on by default; use `--noflashattention` to turn it off. Has no effect on the command line, but an old `.kcpps` with `flashattention` set to false turns flash attention off."
+ },
+ "useswa": {
+  "summary": "Deprecated: turned on sliding-window attention (SWA).",
+  "launcher": null,
+  "level": "advanced",
+  "replacedBy": "Nothing needed: SWA is on by default; use `--noswa` to turn it off. Has no effect on the command line, but an old `.kcpps` with `useswa` set to false turns SWA off."
+ },
+ "testmemory": {
+  "summary": "Internal; used by KoboldCpp itself."
+ },
+ "run_bundled_agent": {
+  "summary": "Internal; used by KoboldCpp itself."
+ },
+ "agent_base_url": {
+  "summary": "Internal; used by KoboldCpp itself."
+ },
+ "agent_api_key": {
+  "summary": "Internal; used by KoboldCpp itself."
+ }
+}

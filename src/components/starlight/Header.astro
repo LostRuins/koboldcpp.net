@@ -1,0 +1,12 @@
+---
+/* Replaces Starlight's Header with the shared SiteNav, so the docs bar is the same as the home bar.
+   Starlight's <header class="header"> around it provides the box and the sidebar menu button. Pages
+   without a sidebar (Links, 404) get no Starlight menu, so they get the home page's (SiteMenu). */
+import SiteNav from '../SiteNav.astro';
+import SiteMenu from '../SiteMenu.astro';
+
+const { hasSidebar } = Astro.locals.starlightRoute;
+---
+
+<SiteNav />
+{!hasSidebar && <SiteMenu />}

@@ -1,0 +1,86 @@
+---
+/*
+ * The phone menu where Starlight has none: on the home page and on pages without a sidebar (Links, 404).
+ * A button in the exact place and style of Starlight's sidebar button, opening the same site links the
+ * docs menu shows (MENU_LINKS). The parent header must be positioned and leave room on the right.
+ */
+import SiteMenuLinks from './SiteMenuLinks.astro';
+---
+
+<button popovertarget="kc-site-menu" class="kc-menu-button">
+	<svg class="open-menu" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"
+		><path d="M3 8h18a1 1 0 1 0 0-2H3a1 1 0 0 0 0 2Zm18 8H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Zm0-5H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Z"
+		></path></svg
+	>
+	<svg class="close-menu" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"
+		><path
+			d="m13.41 12 6.3-6.29a1 1 0 1 0-1.42-1.42L12 10.59l-6.29-6.3a1 1 0 0 0-1.42 1.42l6.3 6.29-6.3 6.29a1 1 0 0 0 .33 1.64 1 1 0 0 0 1.09-.22l6.29-6.3 6.29 6.3a1 1 0 0 0 1.64-.33 1 1 0 0 0-.22-1.09L13.41 12Z"
+		></path></svg
+	>
+	<span class="sr-only">Menu</span>
+</button>
+<div id="kc-site-menu" popover class="kc-menu">
+	<SiteMenuLinks />
+</div>
+
+<style>
+	/* Mirrors Starlight's MobileMenuToggle button (light theme). Absolute, not fixed: on the home page
+	   the bar scrolls with the hero until it sticks. */
+	.kc-menu-button {
+		position: absolute;
+		top: calc((var(--sl-nav-height) - var(--sl-menu-button-size)) / 2);
+		inset-inline-end: var(--sl-nav-pad-x);
+		display: flex;
+		border: 0;
+		border-radius: 50%;
+		width: var(--sl-menu-button-size);
+		height: var(--sl-menu-button-size);
+		padding: 0.5rem;
+		background-color: var(--sl-color-black);
+		color: var(--sl-color-white);
+		box-shadow: var(--sl-shadow-md);
+		cursor: pointer;
+	}
+	.kc-menu-button svg {
+		width: 1em;
+		height: 1em;
+		font-size: 1rem;
+	}
+	.kc-menu-button:has(~ :popover-open) {
+		background-color: var(--sl-color-gray-5);
+		box-shadow: none;
+	}
+	.kc-menu-button:has(~ :popover-open) .open-menu,
+	.kc-menu-button:not(:has(~ :popover-open)) .close-menu {
+		display: none;
+	}
+
+	/* Mirrors Starlight's mobile sidebar pane. */
+	.kc-menu {
+		border: unset;
+		padding: 1rem var(--sl-nav-pad-x) 0;
+		height: unset;
+		color: unset;
+		position: fixed;
+		z-index: var(--sl-z-index-menu);
+		inset-block: var(--sl-nav-height) 0;
+		inset-inline-start: 0;
+		width: 100%;
+		margin: 0;
+		background-color: var(--sl-color-black);
+		overflow-y: auto;
+	}
+
+	@media (min-width: 50rem) {
+		.kc-menu-button,
+		.kc-menu {
+			display: none;
+		}
+	}
+</style>
+
+<style is:global>
+	body:has(#kc-site-menu:popover-open) {
+		overflow: hidden;
+	}
+</style>

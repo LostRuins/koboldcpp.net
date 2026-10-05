@@ -1,0 +1,13 @@
+# Cloudflare Pages response headers.
+
+# The llms files repeat the docs for AI tools; keep them out of search results (not robots.txt: that would hide this header).
+/llms.txt
+  X-Robots-Tag: noindex
+/llms-full.txt
+  X-Robots-Tag: noindex
+/llms-small.txt
+  X-Robots-Tag: noindex
+
+# File names in /_astro/ contain a content hash, so they never change.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable

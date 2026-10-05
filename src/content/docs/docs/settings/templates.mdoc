@@ -1,0 +1,94 @@
+---
+title: Templates (.kcppt)
+description: Use ready-made KoboldCpp templates that download their models for you, load them from the launcher or command line, and create your own.
+sidebar:
+  order: 4
+---
+
+A `.kcppt` template holds launcher settings plus download links for the models. When you launch it, KoboldCpp downloads the files it needs and starts with those settings. Templates are the quickest way to a working setup, including for images, voice and music.
+
+A template is a [config file](/docs/settings/config-files/) meant for sharing. Most settings that depend on your PC are reset, so it works on other computers:
+
+- The backend is chosen automatically for your hardware.
+- GPU layers, threads, main GPU and tensor split are set to automatic.
+- Passwords, SSL and Horde credentials are removed. **Use MMAP**, **Use mlock** and **Direct I/O** are turned off.
+- Local file paths, **Download Dir:** and **Device Override** stay as they are. Check them before you share the template.
+
+## Load a template from the launcher
+
+{% steps %}
+
+1. Click **Get Help**.
+2. Under "Or, Pick an Easy Template for Newbies", choose a category: **Newbie Templates** or **Popular Templates**.
+3. Choose a template in the second dropdown.
+4. Click **Load Template**. The launcher fills in the settings.
+5. Click **Launch**. The download starts now and can take a while.
+
+{% /steps %}
+
+<!-- SCREENSHOT: Help Menu with the template category dropdown, template dropdown and Load Template button -->
+
+### Newbie templates
+
+Sorted by how much graphics card memory (VRAM) they need:
+
+| Prefix | Recommended VRAM |
+|---|---|
+| LowSpec | 6 GB |
+| MidSpec | 12 GB |
+| HighSpec | 24 GB |
+
+| Template | For |
+|---|---|
+| `LowSpec-Chatbot`, `MidSpec-Chatbot` | Chat |
+| `LowSpec-ImageGen`, `MidSpec-ImageGen` | Image generation |
+| `LowSpec-MusicGen` | Music generation |
+| `HighSpec-CodingAgent` | The KoboldCpp Agent for coding |
+| `HighSpec-VideoGen` | Video generation |
+
+`LowSpec-Chatbot`, for example, loads Gemma 3 4B with vision, speech-to-text, text-to-speech and embeddings models, with a context size of 12288. Because that is below 16384, set KoboldAI Lite's **Context Size** to 12288 yourself; see [Context size](/docs/settings/context-size/#koboldai-lite).
+
+The templates live on Hugging Face: [newbie templates](https://huggingface.co/koboldcpp/newbie-templates) and [popular templates](https://huggingface.co/koboldcpp/popular-templates). The popular templates cover more models, such as Qwen3-VL 8B, Gemma 3 12B, and image and video models. More templates are in [koboldcpp/kcppt](https://huggingface.co/koboldcpp/kcppt).
+
+## Other ways to load a template
+
+A `.kcppt` file loads like a `.kcpps` config:
+
+- **Load Config** in the launcher.
+- Drag the file onto the KoboldCpp exe.
+- `--config` with a file name or an `https://` URL (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --config https://huggingface.co/koboldcpp/newbie-templates/resolve/main/LowSpec-Chatbot.kcppt
+```
+
+On the command line, the backend is chosen automatically unless you add `--usecuda` or `--usevulkan`.
+
+## Where downloads go
+
+KoboldCpp downloads every model field that holds a web address when you launch, not when you load the template. The one exception is **Text Lora:**, which must be a local file.
+
+- Files are saved in **Download Dir:** on the **Loaded Files** tab (`--downloaddir`). If that is empty, they go into the current working folder. When you double-click the exe, that is the folder the exe is in.
+- A file that is already there is reused, so the next launch starts without downloading.
+- For text models split into several parts (`-00001-of-00003.gguf` and so on), all parts are downloaded.
+- KoboldCpp downloads with `aria2c` (bundled on Windows), `curl` or `wget`. If none of them works, it asks you to install one.
+
+## Create a template
+
+Set everything up in the launcher, then go to the **Extra** tab and click **Generate LaunchTemplate**. The file is saved as `.kcppt`. The chat adapter and preload story files are copied into the template, so it works without them.
+
+For a template other people can use, enter web addresses instead of local file paths in the model fields, for example `https://huggingface.co/<user>/<repo>/resolve/main/<file>.gguf`. **HF Search** fills in addresses in this form.
+
+From the command line, `--exporttemplate` does the same, but does not copy the chat adapter and preload story files:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model https://huggingface.co/<user>/<repo>/resolve/main/<file>.gguf --contextsize 16384 --exporttemplate mytemplate
+```
+
+To share a template or report a broken one, use the Discussions page of the [popular templates](https://huggingface.co/koboldcpp/popular-templates) repository.
+
+## Related
+
+- [Choose a model](/getting-started/model/)
+- [Config files (.kcpps)](/docs/settings/config-files/)
+- [Launcher tour](/docs/settings/launcher-tour/)

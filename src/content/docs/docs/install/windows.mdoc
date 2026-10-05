@@ -1,0 +1,109 @@
+---
+title: "Install on Windows (SmartScreen, antivirus)"
+description: Download and run KoboldCpp on Windows, get past SmartScreen and antivirus warnings, and use it from the command line.
+sidebar:
+  label: "Windows"
+  order: 2
+---
+
+KoboldCpp for Windows is a single `.exe` file. There is no installer.
+
+{% steps %}
+
+1. Pick your file. Most NVIDIA users need `koboldcpp.exe`; see [Download KoboldCpp](/download/) for the others.
+
+   | Your PC | File |
+   |---|---|
+   | NVIDIA graphics card | [`koboldcpp.exe`](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp.exe) |
+   | AMD, Intel or no graphics card | [`koboldcpp-nocuda.exe`](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-nocuda.exe) |
+   | Older processor or older NVIDIA card | [`koboldcpp-oldpc.exe`](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-oldpc.exe) |
+
+2. Put the file in a folder of its own, for example `C:\mystuff`. When you start it by double-clicking, models that KoboldCpp downloads for you are saved in this folder. **Download Dir:** on the **Loaded Files** tab changes that. Use a path with plain ASCII characters (no umlauts or other accented letters).
+
+3. Double-click the file. A console window opens, then the launcher.
+
+   If Windows shows "Windows protected your PC", click **More info**, then **Run anyway**. This is expected: the file is not signed.
+
+{% /steps %}
+
+Continue with [Choose a model](/getting-started/model/).
+
+<!-- SCREENSHOT: the launcher window on Windows right after the first start -->
+
+## SmartScreen and antivirus warnings
+
+KoboldCpp's exe files are not code-signed, and they unpack their libraries into a temporary folder when they start. Some antivirus programs flag this as suspicious. These are false positives, as long as the file came from the [official GitHub releases](https://github.com/LostRuins/koboldcpp/releases/latest). See [Staying safe](/docs/install/staying-safe/).
+
+| What you see | What to do |
+|---|---|
+| "Windows protected your PC" (SmartScreen) | Click **More info**, then **Run anyway**. |
+| Microsoft Defender or another antivirus reports a trojan or "suspicious" file, or deletes it | Restore or re-download the file, add it to your antivirus exceptions, and report the false positive to your antivirus vendor. |
+| The exe shrinks to 0 bytes, or "Failed to extract … decompression resulted in return code -3!" | The file is damaged, often by your antivirus. Download it again; if it happens again, add an exception. |
+| Smart App Control blocks it | Smart App Control has no exception list. It blocks KoboldCpp for as long as it is turned on. |
+
+## If the window closes straight away
+
+When KoboldCpp crashes, the console window can close before you can read the error. Run it from Command Prompt instead, so the message stays on screen:
+
+1. Press the Windows key, type `cmd` and press Enter.
+2. Type `cd` followed by the folder with your file and press Enter. Then type your file's name and press Enter:
+
+   ```sh {% title="Command Prompt" frame="terminal" %}
+   cd C:\mystuff
+   koboldcpp.exe
+   ```
+
+KoboldCpp writes no log file by itself. Errors from the launcher appear in a message box.
+
+Common causes:
+
+- **Your processor lacks AVX2, or your NVIDIA card or driver is old.** Errors like `WinError 1114` or `0xc000001d` often mean this. Use `koboldcpp-oldpc.exe`, or update your NVIDIA driver. See [System requirements](/docs/install/releases/#system-requirements).
+- **The console stays blank and the launcher never appears.** KoboldCpp could not unpack itself. It needs about 1 GB of free space for temporary files on the system drive, and antivirus software can block the unpacking. Free up space, or try the smaller `koboldcpp-nocuda.exe`.
+- **Antivirus removed part of the file.** See the table above.
+
+More: [KoboldCpp won't start](/docs/troubleshooting/wont-start/).
+
+## Using the command line
+
+Pass flags after the file name. With a model, KoboldCpp skips the launcher and starts straight away:
+
+```sh {% title="Command Prompt" frame="terminal" %}
+C:\mystuff\koboldcpp.exe --model C:\models\mymodel.gguf --contextsize 8192
+```
+
+- `koboldcpp.exe --help` lists all flags. They are also in the [flag reference](/docs/reference/flags/).
+- `--config mysettings.kcpps` starts with a saved configuration.
+- The launcher opens a browser after loading; on the command line, add `--launch` for the same.
+- The launcher is not accessible to screen readers. Screen reader users can run KoboldCpp entirely from the command line.
+
+More: [Command line](/docs/settings/command-line/).
+
+## Advanced: unpack for faster startup
+
+The exe unpacks itself every time it starts. To skip that, unpack it once into an empty folder, then start `koboldcpp-launcher.exe` in that folder. It needs no Python installation.
+
+```sh {% title="Command Prompt" frame="terminal" %}
+koboldcpp.exe --unpack C:\kobold-unpacked
+```
+
+In the launcher, the same is on the **Extra** tab: **Unpack KoboldCpp To Folder**. The target folder must be empty.
+
+## Advanced: open files with KoboldCpp
+
+On the **Extra** tab, **Register** makes KoboldCpp the program that opens `.gguf`, `.ggml`, `.kcpps` and `.kcppt` files for your user account. **Unregister** removes this. It only works with the standalone exe.
+
+## Advanced: Windows 7
+
+Windows 7 is not recommended. The main builds use functions that only exist in Windows 8 and newer.
+
+- Use `koboldcpp-oldpc.exe`. Its libraries skip the Windows 8 functions.
+- If it still fails with an error about `msvcp140.dll` or `GetSystemTimePreciseAsFileTime`, one user fixed it by [unpacking KoboldCpp](#advanced-unpack-for-faster-startup) and replacing the `msvcp140.dll` in the unpacked folder with an older version. Don't replace the one in Windows itself.
+- `DLL load failed while importing pyexpat` was fixed by installing the Windows update KB3063858.
+- The third-party VxKex compatibility layer can make the main builds run.
+- CUDA on Windows 7 is untested.
+
+## Related
+
+- [Release files and system requirements](/docs/install/releases/)
+- [Updating](/docs/install/updating/)
+- [Build from source on Windows](/docs/install/from-source/#windows)

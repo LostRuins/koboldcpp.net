@@ -1,0 +1,108 @@
+---
+title: KoboldCpp Agent
+description: The coding agent bundled with KoboldCpp. It reads and edits files and runs commands in a terminal. Setup, safety, commands and options.
+sidebar:
+  order: 9
+---
+
+KoboldCpp includes a small terminal agent, similar to OpenCode or Claude Code. You give it a task, and it uses tools to read and edit files, run shell commands and fetch web pages. It talks to KoboldCpp's OpenAI-compatible API.
+
+At least 12 GB of VRAM is recommended.
+
+{% aside type="caution" %}
+The agent can change files and run commands on your computer. By default it asks before every tool call except `ask_user`. Keep it that way until you trust the model with your files. The agent works in the folder KoboldCpp was started from; change it with `/workdir`.
+{% /aside %}
+
+## Quick start
+
+{% steps %}
+
+1. With 24 GB of VRAM or more, click **Get Help** in the launcher, choose **Newbie Templates**, pick `HighSpec-CodingAgent` and click **Load Template**. With less, load your own model on the **Quick Launch** tab; it needs room for a context of 28672 (see below).
+2. On the **Admin** tab, tick **Launch KoboldCpp Agent**.
+3. Click **Launch**. When the model has loaded, the agent opens in a new terminal window.
+4. Type a task and press Enter. Approve or reject each tool call.
+
+{% /steps %}
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --agent
+```
+
+Add `--cli` to run the agent in the same terminal instead of a new window.
+
+<!-- SCREENSHOT: the agent in a terminal, asking to confirm a tool call -->
+
+## Settings KoboldCpp changes for the agent
+
+When the agent is on, KoboldCpp adjusts these settings at launch and prints a warning listing them:
+
+| Setting | Changed to |
+|---|---|
+| Context size | at least 28672 |
+| Default generation amount | at least 8192 |
+| **Use Jinja** (`--jinja`) | on |
+| **Jinja for Tools** (`--jinjatools`) | on |
+
+The larger context needs more memory. See [Context size](/docs/settings/context-size/).
+
+## Tools
+
+| Tool | What it does |
+|---|---|
+| `read`, `write`, `edit` | Read, create and change files. |
+| `shell` | Run a shell command. |
+| `glob`, `grep` | Find files and search their contents. |
+| `web_fetch` | Download a web page. |
+| `view_image` | Look at an image file. |
+| `ask_user` | Ask you a question. |
+
+If KoboldCpp has [MCP servers](/docs/features/web-search-and-mcp/) loaded, the agent adds their tools too. MCP tools run on the KoboldCpp server; the built-in tools run where the agent runs.
+
+If the working folder has an `AGENTS.md` file, the agent reads it as project instructions.
+
+## Commands
+
+Type these at the agent prompt:
+
+| Command | What it does |
+|---|---|
+| `/help` | List all commands. |
+| `/confirm on` | Ask before every tool call except `ask_user` (default). |
+| `/confirm off` | Run all tool calls without asking. |
+| `/confirm auto` | Ask only when the agent's own review does not approve the call. |
+| `/tools` | List the tools. `/tools NAME on` or `/tools NAME off` turns one on or off and clears the conversation. |
+| `/workdir PATH` | Change the working folder. Clears the conversation. |
+| `/compact` | Summarize the conversation to free context. |
+| `/clear` | Start over. |
+| `/reasoning on`, `/reasoning off` | Show or hide the model's reasoning. |
+| `/verbose on`, `/verbose off` | Show or hide full tool arguments and results. |
+| `/connect` | Switch to another endpoint, API key or model. |
+| `/exit` or `/quit` | Stop the agent. |
+
+## Other backends
+
+The agent works with any OpenAI-compatible API. `koboldcpp --agent` with no other arguments opens only the agent, without starting a server. It connects to `http://127.0.0.1:5001/v1`, or to the URL in the `OPENAI_BASE_URL` environment variable. Use `/connect` to change the endpoint.
+
+## Advanced: agent options
+
+When you run `kcpp_agent.py` from a source checkout, it takes these options:
+
+| Option | Default |
+|---|---|
+| `--base-url` | `OPENAI_BASE_URL`, or `http://127.0.0.1:5001/v1` |
+| `--api-key` | `OPENAI_API_KEY`, or `local` |
+| `--model` | `OPENAI_MODEL`, or `local-model` |
+| `--temperature` | `0.4` |
+| `--max-tokens` | not set |
+| `--request-timeout` | `600` seconds |
+| `--confirmation` | `on` (also `off`, `auto`) |
+| `--no-color` | off |
+
+On Linux, KoboldCpp opens the agent in the first terminal it finds: x-terminal-emulator, gnome-terminal, konsole, mate-terminal, xfce4-terminal or xterm. Without any of them, use `--cli`.
+
+## Related
+
+- [Web search and MCP tools](/docs/features/web-search-and-mcp/)
+- [Connect other apps](/docs/api/connect-apps/)

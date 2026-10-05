@@ -1,0 +1,84 @@
+---
+title: Old PCs and CPU-only
+description: Run KoboldCpp on the processor alone or on older PCs without AVX2 or AVX, and set threads and batch size for CPU use.
+sidebar:
+  order: 5
+---
+
+KoboldCpp runs without a graphics card. Every release file can run on the processor (CPU) alone. It is slower than a GPU, so smaller models and quants work best. See [GGUF and quantization](/docs/models/gguf-and-quantization/).
+
+## Run on the CPU only
+
+Choose **Use CPU** under **Backend:**, or pass `--usecpu` (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --usecpu --model mymodel.gguf
+```
+
+On a PC without a supported GPU, KoboldCpp picks the CPU by itself ("Auto Selected Default Backend") and sets **GPU Layers:** to `0`.
+
+## Older processors
+
+The main and nocuda builds run at full speed on processors with **AVX2**. For older processors, KoboldCpp has slower compatibility modes:
+
+| Launcher backend | Flag | CPU needs |
+|---|---|---|
+| **Use CPU** | `--usecpu` | AVX2 |
+| **Use CPU (Old CPU)** | `--usecpu --noavx2` | AVX |
+| **Use Vulkan (Old CPU)** | `--usevulkan --noavx2` | AVX |
+| **Use Vulkan (Older CPU)** | `--usevulkan --failsafe` | SSE3 and SSSE3 (oldpc builds only) |
+| **Failsafe Mode (Older CPU)** | `--usecpu --failsafe` | Any x86-64 CPU |
+
+- `--noavx2` is a slower compatibility mode for processors without AVX2.
+- `--failsafe` is an "extremely old CPU compatibility mode that should work on all devices". It is much slower and implies `--noavx2`.
+- `--noavx2` and `--failsafe` take priority over `--usecuda`: with them, CUDA is not loaded. Without a backend flag, KoboldCpp can still pick Vulkan for a discrete GPU; add `--usecpu` to stay on the CPU.
+- In the launcher, **Failsafe Mode (Older CPU)** also turns off **Use MMAP** and **Direct I/O**. The `--failsafe` flag does not.
+
+If KoboldCpp crashes at startup, try `--usecpu --noavx2`, then `--usecpu --failsafe`.
+
+### Automatic detection
+
+When you set no backend, KoboldCpp checks your processor and switches to the matching mode by itself: `--noavx2` without AVX2, `--noavx2 --failsafe` without AVX. It reads `/proc/cpuinfo` on Linux and uses a bundled helper on Windows. On other systems (for example ARM) it does not check.
+
+In Docker, this detection can be wrong and load the failsafe mode on a capable CPU. Set the backend yourself there.
+
+### oldpc builds
+
+The oldpc files (`koboldcpp-oldpc.exe`, `koboldcpp-linux-x64-oldpc`) are built for AVX instead of AVX2 and use CUDA 11. Use them for an older processor, an older NVIDIA card, or when the main build crashes. They are also the only builds with **Use Vulkan (Older CPU)**, for GPU use on processors without AVX. See [Release files and system requirements](/docs/install/releases/#processor-avx2-avx-no-avx).
+
+## Threads
+
+**Threads:** on the **Hardware** tab (`--threads`, `-t`) sets how many CPU threads generate text. Empty or `0` means automatic. The launcher fills in the automatic value for your PC; clear the field to keep it automatic in a config you use on another PC. The automatic value is:
+
+- Half of the logical processors, minus one, but at least 3. With 7 or fewer logical processors, exactly half (rounded down).
+- At most 8 on Windows with an Intel processor, to avoid its efficiency cores. Linux and macOS do not report the processor maker the way KoboldCpp checks it, so the cap does not apply there.
+- At most 64.
+
+For example, a 16-thread processor gets 7 threads. The console shows the result:
+
+```text
+Threadpool set to 7 threads and 7 blasthreads...
+```
+
+**Batch Threads:** (`--blasthreads`) sets the threads for processing the prompt. By default it is the same as **Threads:**.
+
+## Batch size
+
+**Batch Size:** on the **Hardware** tab (`--batchsize`) sets how many prompt tokens are processed at once. The default is 512; allowed values are 16 to 4096 in powers of two, or `-1`.
+
+- `-1` ("Don't Batch") turns batched processing off but keeps GPU offload.
+- **Physical Batch Size:** (`--ubatchsize`) defaults to the batch size.
+
+## Measure speed
+
+**Run Benchmark** on the **Hardware** tab (`--benchmark`) fills the context with a test prompt, generates text and prints the processing and generation speed, without starting the server. `--benchmark results.csv` also appends the result to a CSV file.
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --benchmark
+```
+
+## Related
+
+- [Release files and system requirements](/docs/install/releases/)
+- [GPU backends](/docs/hardware/backends/)
+- [How much memory a model needs](/docs/models/memory/)

@@ -1,0 +1,114 @@
+---
+title: Streaming and multiple users
+description: How each KoboldCpp API streams replies (SSE or NDJSON), how to poll and abort, and how the request queue behaves with several users.
+sidebar:
+  order: 6
+---
+
+Streaming sends the reply piece by piece while it is generated, instead of all at once at the end. KoboldAI Lite streams by default.
+
+## Streaming per API
+
+| API | How to turn it on | Format |
+|---|---|---|
+| KoboldAI | Call `/api/extra/generate/stream` in place of `/api/v1/generate` | Server-sent events (SSE): `event: message` + `data:` |
+| OpenAI completions and chat | `"stream": true` | SSE: `data:` lines, last one `data: [DONE]` |
+| OpenAI Responses | `"stream": true` | SSE with named `event:` lines |
+| Anthropic Messages | `"stream": true` | SSE with named `event:` lines |
+| Ollama (`/api/generate`, `/api/chat`) | On by default; `"stream": false` turns it off | NDJSON (`application/x-ndjson`), one JSON object per line |
+
+## What the streams look like
+
+Real first bytes from KoboldCpp, shortened.
+
+**KoboldAI** (`/api/extra/generate/stream`). The last event has a `finish_reason`; there is no `[DONE]`.
+
+```text
+event: message
+data: {"token": " to the team", "finish_reason": null}
+
+event: message
+data: {"token": "", "finish_reason": "length"}
+```
+
+**OpenAI chat** (`/v1/chat/completions`, `"stream": true`). Completions (`/v1/completions`) also end with `data: [DONE]`, but use `"object": "text_completion"` and put each piece in `choices[0].text` instead of `delta.content`.
+
+```text
+data: {"id": "chatcmpl-…", "object": "chat.completion.chunk", …, "choices": [{"index": 0, "finish_reason": null, "delta": {"role": "assistant", "content": "Hi! How can I"}}]}
+
+data: [DONE]
+```
+
+**Anthropic** (`/v1/messages`, `"stream": true`). The events arrive in this order: `message_start`, `content_block_start`, `content_block_delta` (repeated), `content_block_stop`, `message_delta` (with `stop_reason`), `message_stop`.
+
+**Ollama** (`/api/chat`). One JSON object per line; the last one has `"done": true` and a `done_reason`.
+
+## Polling instead of streaming (KoboldAI)
+
+Apps that can't read SSE can poll instead:
+
+1. Start the request with `POST /api/v1/generate`.
+2. While it runs, call `/api/extra/generate/check` to get the text generated so far.
+
+When several users share the server, send a unique `genkey` in the generate request and in `POST /api/extra/generate/check`. Each user then sees only their own text.
+
+KoboldAI Lite can also use polling; it is an option in Lite's settings.
+
+## Stopping a generation
+
+- `POST /api/extra/abort` stops the running generation. With `genkey` in the body, it only stops the request with that key.
+- Image generation stops when the client disconnects, unless the request sets `keep_image_gen_on_disconnect` in `kcpp_extra_args`.
+
+## Tool calls
+
+- Without **Jinja for Tools** (`--jinjatools`), a tool-call reply is sent all at once, in stream format.
+- With **Jinja for Tools**, tool calls stream as they are generated if KoboldCpp recognizes the model's tool-call format. Otherwise they are sent all at once. **Jinja for Tools** is on the **Context** tab and also turns on **Use Jinja**.
+- During tool-call streams, KoboldCpp sends whitespace now and then to keep the connection open.
+
+If generation fails in the middle of a stream, KoboldCpp sends an error object in the stream.
+
+## Several users at once
+
+KoboldCpp generates text for one request at a time. Other requests wait in a queue and run in turn. **Multiuser Queue:** on the **Network** tab (`--multiuser`) sets how many requests it accepts at once, counting the one that runs:
+
+| `--multiuser` | Behaviour |
+|---|---|
+| `10` (default) | 1 request runs, up to 9 wait |
+| `N` (2 or more) | 1 request runs, up to N−1 wait |
+| `1` | Same as 10 |
+| `0` | No queue: while one request runs, others get HTTP 503 |
+
+A request that finds the queue full gets HTTP 503 with `{"detail": {"msg": "Server is busy; please try again later.", "type": "service_unavailable"}}`.
+
+Measured with four requests sent at once, each taking about 2.5 seconds:
+
+| `--multiuser` | Results |
+|---|---|
+| default | All 4 succeed, finishing after about 2.5, 5, 7.5 and 10 seconds |
+| `2` | 2 succeed, 2 get 503 |
+| `0` | 1 succeeds, 3 get 503 |
+
+Exceptions to `0`:
+
+- When a Whisper, image, TTS or embeddings model is loaded, `0` acts like `2`.
+- Otherwise, with **Parallel Requests:** above 1, `0` acts like `10`.
+- The launcher shows values below 2 as 10. A `.kcpps` with `multiuser` set to `0` becomes 10 when you load it in the launcher.
+
+`GET /api/extra/perf` shows the current queue.
+
+## Advanced: parallel requests
+
+**Parallel Requests:** on the **Network** tab (`--parallelrequests N`, also `--contbatch`) runs up to N text requests at the same time with continuous batching. It is experimental.
+
+- Values from 0 to 32; 0 and 1 mean off.
+- It turns off **Use ContextShift**.
+- Only plain text requests run in parallel. Requests with images or audio, grammar, banned strings, many samplers (DRY, XTC, Mirostat and others), tool calls or reasoning effort run one at a time. **Use SmartCache**, a draft model and **Enable Guidance** also turn batching off.
+- The console prints `Batching disabled due to …` when a request can't be batched.
+
+See the [flag reference](/docs/reference/flags/#parallelrequests) for the full list.
+
+## Related
+
+- [Passwords and security](/docs/api/passwords-and-security/) for `--ratelimit` and other limits
+- [Endpoints](/docs/api/endpoints/)
+- [Multiplayer and saves](/docs/features/multiplayer-and-saves/)

@@ -1,0 +1,65 @@
+---
+title: Multiplayer and server saves
+description: Share one story with several people in KoboldAI Lite, keep saves on the server instead of in the browser, and preload a story for everyone.
+sidebar:
+  order: 11
+---
+
+KoboldAI Lite normally keeps your story in your browser. Three server features change that:
+
+- **Multiplayer:** several people work on one shared story.
+- **Server saves:** save slots on the KoboldCpp computer, shared by everyone who can connect.
+- **Preloaded story:** a story that KoboldCpp offers to everyone who connects.
+
+## Multiplayer
+
+{% steps %}
+
+1. In the launcher, open the **Network** tab and tick **Shared Multiplayer** (`--multiplayer`).
+2. Make KoboldCpp reachable for the others: same network, or **Remote Tunnel**. See [Remote access](/docs/api/remote-access/).
+3. Set a **Password:** on the **Network** tab before you share the address.
+4. Click **Launch**.
+5. Give everyone the address and the password. They open KoboldAI Lite at your address, enter the password in the **API Key Required** box, and click **Join Multiplayer** in the top menu. **Exit Multiplayer** leaves the session.
+
+{% /steps %}
+
+The multiplayer endpoints need the password when one is set.
+
+<!-- SCREENSHOT: Lite top menu with Join Multiplayer -->
+
+## Server saves
+
+{% steps %}
+
+1. In the launcher, open the **Loaded Files** tab, tick **Enable Server Side SaveData File** and choose a file in **SaveData File:** (`--savedatafile`).
+2. Click **Launch**.
+3. In KoboldAI Lite, open **Save / Load** and choose **KoboldCpp Server Storage** as the location. The slots appear as **Server Slot 1**, **Server Slot 2** and so on.
+
+{% /steps %}
+
+- There are 12 slots. Each story can be up to 10 MB.
+- KoboldCpp adds `.jsondb` to the file name: `--savedatafile saves` creates `saves.jsondb`. A missing file is created, including its folders.
+- The slots are not private. Anyone who can connect can load, overwrite or delete them. The save endpoints need the password when one is set.
+- Back up the `.jsondb` file to keep your saves. KoboldCpp rewrites the whole file on every save.
+
+## Preloaded story
+
+**Preload Story:** on the **Loaded Files** tab (`--preloadstory`) takes a story saved from Lite as JSON. KoboldCpp serves it to frontends such as Lite.
+
+When you export a template (`.kcppt`) from the launcher, the preloaded story is embedded in the template.
+
+## API
+
+| Endpoint | Needs |
+|---|---|
+| `POST /api/extra/multiplayer/status`, `/api/extra/multiplayer/getstory`, `/api/extra/multiplayer/setstory` | `--multiplayer` |
+| `POST /api/extra/data/list`, `/api/extra/data/load`, `/api/extra/data/save` | `--savedatafile` |
+| `GET /api/extra/preloadstory` | `--preloadstory`. Returns `{}` when none is set. |
+
+Without `--savedatafile`, `/api/extra/data/list` and `/api/extra/data/load` close the connection without an answer. `/api/extra/data/save` returns HTTP 400.
+
+## Related
+
+- [KoboldAI Lite](/docs/features/lite/)
+- [Remote access](/docs/api/remote-access/)
+- [Passwords and security](/docs/api/passwords-and-security/)

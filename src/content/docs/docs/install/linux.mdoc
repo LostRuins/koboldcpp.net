@@ -1,0 +1,96 @@
+---
+title: "Install on Linux, desktop or headless"
+description: Download KoboldCpp on Linux, make it executable and run it, with notes on the launcher, file pickers and headless servers.
+sidebar:
+  label: "Linux"
+  order: 3
+---
+
+KoboldCpp for Linux is a single file. There is no installer and no package to add.
+
+{% steps %}
+
+1. Pick your file. See [Download KoboldCpp](/download/) if you are unsure.
+
+   | Your PC | File |
+   |---|---|
+   | NVIDIA graphics card | [`koboldcpp-linux-x64`](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64) |
+   | AMD, Intel or no graphics card | [`koboldcpp-linux-x64-nocuda`](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64-nocuda) |
+   | Older processor or older NVIDIA card | [`koboldcpp-linux-x64-oldpc`](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64-oldpc) |
+
+2. Download it with your browser. It usually lands in `~/Downloads`.
+
+3. In a terminal, go to the folder with the file, make it executable and run it. This example uses the NVIDIA file; replace the name with yours:
+
+   ```sh {% title="Terminal" frame="terminal" %}
+   cd ~/Downloads
+   chmod +x koboldcpp-linux-x64
+   ./koboldcpp-linux-x64
+   ```
+
+   The launcher opens.
+
+{% /steps %}
+
+Continue with [Choose a model](/getting-started/model/).
+
+To download from the terminal instead, for example on a server:
+
+```sh {% title="Terminal" frame="terminal" %}
+curl -fLO https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64
+```
+
+"Permission denied" means the file is not executable yet; run `chmod +x` on it. If the main build fails on an older system, try `koboldcpp-linux-x64-oldpc`, the build with the greatest compatibility.
+
+## Programs the launcher uses
+
+| Program | Needed for |
+|---|---|
+| `yad` or `zenity` | A better file picker. `yad` is used if both are installed; without either, the launcher uses its built-in picker. |
+| `vulkan-tools` | Detecting your graphics card and its memory with `vulkaninfo`. NVIDIA cards are also detected with `nvidia-smi`, and AMD cards with `rocminfo` if ROCm is installed. If none of these works, you see "Unable to detect VRAM." |
+| `xdg-open` | Opening the browser after the model has loaded. |
+
+## Launcher problems
+
+- **The file picker does nothing (often on Wayland).** Install `yad`, or turn on **Use Classic FilePicker** on the launcher's **Extra** tab. The console may show `Zenity/YAD sanity check failed`.
+- **"Warning, GUI failed to start".** The launcher could not open a window, for example because there is no display. KoboldCpp then tells you to use the command line. See [Headless use](#headless-use).
+- **You want to see the console output.** **Spawn Terminal** on the **Extra** tab opens an `xterm` window that mirrors it.
+
+More: [OS-specific problems](/docs/troubleshooting/os-specific/#linux-the-file-picker-does-nothing).
+
+## AMD graphics cards
+
+Start with the **Vulkan** backend in `koboldcpp-linux-x64-nocuda`. Install `vulkan-tools` first, so the launcher can detect your card and select **Use Vulkan** by itself. Without it, KoboldCpp does not find the card and runs on the CPU.
+
+If generation is slow with Vulkan, try the experimental official ROCm build. It does not need ROCm installed. See [ROCm build for AMD on Linux](/docs/install/releases/#advanced-rocm-build-for-amd-on-linux) and [GPU backends: ROCm](/docs/hardware/backends/#rocm).
+
+## Headless use
+
+With a model on the command line, KoboldCpp skips the launcher and needs no display:
+
+```sh {% title="Terminal" frame="terminal" %}
+./koboldcpp-linux-x64 --model mymodel.gguf
+```
+
+- `./koboldcpp-linux-x64 --help` lists all flags.
+- `--config mysettings.kcpps` starts with a saved configuration. A config that contains a model also skips the launcher.
+- `--skiplauncher` overrides `--showgui`, including a `showgui` saved in a config. It does not pick a model: without a model from the command line or a config, KoboldCpp exits with an error.
+- By default KoboldCpp listens on all network interfaces, so other devices on your network can reach it. Add `--host 127.0.0.1` to allow connections from this machine only.
+
+More: [Command line](/docs/settings/command-line/), [Remote access](/docs/api/remote-access/), [Passwords and security](/docs/api/passwords-and-security/).
+
+## Advanced: ARM and other systems
+
+There is no ready-made file for ARM Linux. [Build from source](/docs/install/from-source/); `koboldcpp.sh` supports aarch64.
+
+The x64 files need glibc 2.29 or newer, for example Ubuntu 20.04 or newer. `ldd --version` shows your glibc version.
+
+## Advanced: unofficial packages
+
+The community maintains packages that are unofficial and get no official support: `koboldcpp-cuda` and `koboldcpp-hipblas` in the AUR, and `koboldcpp` in Nixpkgs.
+
+## Related
+
+- [Release files and system requirements](/docs/install/releases/)
+- [Updating](/docs/install/updating/)
+- [Build from source](/docs/install/from-source/)

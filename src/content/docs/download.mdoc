@@ -1,0 +1,66 @@
+---
+title: Download KoboldCpp
+description: "Download KoboldCpp for Windows, Linux or macOS from the official GitHub releases: one file, no installer. Pick the file for your graphics card."
+head:
+  - tag: title
+    content: Download KoboldCpp for Windows, Linux and macOS
+sidebar:
+  label: "1. Download"
+tableOfContents: false
+---
+
+KoboldCpp is one file. There is no installer. Pick your system, then click the file for your graphics card. Not sure which card you have? See [below](#which-graphics-card-do-i-have). Every link goes to the [latest official release on GitHub](https://github.com/LostRuins/koboldcpp/releases/latest).
+
+{% tabs syncKey="os" %}
+{% tabitem label="Windows" %}
+
+{% linkcard title="NVIDIA graphics card" description="koboldcpp.exe" href="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp.exe" /%}
+{% linkcard title="AMD or Intel graphics, or none" description="koboldcpp-nocuda.exe, a much smaller download" href="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-nocuda.exe" /%}
+{% linkcard title="Older PC" description="koboldcpp-oldpc.exe, if the others crash at start" href="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-oldpc.exe" /%}
+
+{% /tabitem %}
+{% tabitem label="Linux" %}
+
+{% linkcard title="NVIDIA graphics card" description="koboldcpp-linux-x64" href="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64" /%}
+{% linkcard title="AMD or Intel graphics, or none" description="koboldcpp-linux-x64-nocuda, a much smaller download" href="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64-nocuda" /%}
+{% linkcard title="Older PC" description="koboldcpp-linux-x64-oldpc, if the others crash at start" href="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-linux-x64-oldpc" /%}
+
+{% /tabitem %}
+{% tabitem label="macOS" %}
+
+{% linkcard title="Apple Silicon (M-series)" description="koboldcpp-mac-arm64" href="https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-mac-arm64" /%}
+
+Intel Macs have no ready-made file. See [Build from source](/docs/install/from-source/#macos).
+
+{% /tabitem %}
+{% /tabs %}
+
+{% aside type="caution" title="Only download from GitHub" %}
+"You should **ONLY** trust official downloads from the release binaries on the official github at https://github.com/LostRuins/koboldcpp/releases/latest". Quoted from the KoboldCpp README.
+{% /aside %}
+
+## Which graphics card do I have?
+
+On Windows, the Task Manager shows it.
+
+{% steps %}
+
+1. Right-click an empty spot on the taskbar and click **Task Manager**. The keyboard shortcut is Ctrl+Shift+Esc.
+
+   ![The menu after right-clicking the taskbar, with Task Manager highlighted](../../assets/docs/getting-started/windows-taskbar-menu.png)
+
+2. Click **Performance**.
+
+   ![Task Manager with Performance selected](../../assets/docs/getting-started/windows-task-manager-performance.png)
+
+3. Click **GPU** in the list on the left. The card's name is at the top right. **Dedicated GPU memory** is the card's own memory, its **VRAM**. You'll need this number when you choose a model.
+
+   ![Task Manager's GPU page with the card's name and Dedicated GPU memory](../../assets/docs/getting-started/windows-task-manager-gpu.png)
+
+{% /steps %}
+
+An NVIDIA card needs `koboldcpp.exe`. For an AMD or Intel card, or if there is no **GPU** entry, use `koboldcpp-nocuda.exe`.
+
+On Linux, `lspci | grep -iE 'vga|3d'` shows the card's name, and `nvidia-smi` shows an NVIDIA card's memory. On a Mac with Apple Silicon, the graphics chip uses the Mac's main memory.
+
+All files and what each contains: [Release files and system requirements](/docs/install/releases/).

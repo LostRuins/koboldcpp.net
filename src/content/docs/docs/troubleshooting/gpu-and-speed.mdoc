@@ -1,0 +1,156 @@
+---
+title: "GPU not used or generation slow"
+description: Fixes for KoboldCpp ignoring your graphics card, "Unable to detect VRAM", CUDA errors, old NVIDIA cards and slow generation.
+sidebar:
+  label: "GPU not used or slow"
+  order: 4
+---
+
+The console shows which backend KoboldCpp uses and how many layers went to the graphics card. Check it first when replies are slow.
+
+## The graphics card is not used
+
+```text
+Unable to detect VRAM.
+Auto Selected Default Backend (flag=0)
+No GPU backend found, or could not automatically determine GPU layers. You may prefer to set layers manually.
+```
+
+`Auto Selected Default Backend` means KoboldCpp chose the CPU. When you don't pick a backend, KoboldCpp picks one itself:
+
+- **CUDA** for an NVIDIA card with more than 3.5 GB of VRAM.
+- Otherwise **Vulkan**, but only for a dedicated graphics card.
+- Otherwise the CPU.
+
+On Linux, KoboldCpp finds the graphics card with `nvidia-smi` (NVIDIA), `rocminfo` (AMD with ROCm) or `vulkaninfo`. For Vulkan, detection fails without `vulkaninfo`.
+
+{% steps %}
+
+1. Pick the backend yourself: on **Quick Launch**, set **Backend:** to **Use CUDA** (NVIDIA) or **Use Vulkan** (any graphics card). On the command line: `--usecuda` or `--usevulkan`.
+2. On Linux, install the `vulkan-tools` package.
+3. If **Use CUDA** is missing from the list, you have the wrong file. See [below](#use-cuda-is-missing).
+4. If KoboldCpp still puts no layers on the graphics card, set **GPU Layers:** to a number yourself (`--gpulayers 20`), and lower it if you run [out of memory](/docs/troubleshooting/out-of-memory/).
+
+{% /steps %}
+
+On a Mac with Apple Silicon, `Unable to detect VRAM.` is normal. The Mac build puts all layers on the GPU automatically.
+
+## "GPU layers is set, but a GPU backend was not selected"
+
+```text
+WARNING: GPU layers is set, but a GPU backend was not selected! GPU will not be used!
+```
+
+**Backend:** is set to a CPU option (**Use CPU** or `--usecpu`), so the layers stay on the CPU. Choose **Use CUDA** or **Use Vulkan** instead.
+
+## "Use CUDA" is missing
+
+The launcher only lists backends that your file contains. `koboldcpp-nocuda.exe` and `koboldcpp-linux-x64-nocuda` contain no CUDA. With `--usecuda` on the command line, they fall back to the CPU without an error.
+
+{% steps %}
+
+1. For an NVIDIA card, download `koboldcpp.exe` (Linux: `koboldcpp-linux-x64`), or the `oldpc` file for an older card.
+2. For AMD and Intel cards, use **Use Vulkan**. Every Windows and Linux file includes Vulkan.
+
+{% /steps %}
+
+See [Download KoboldCpp](/download/)
+
+## Old NVIDIA card: "no device code compatible"
+
+```text
+ERROR: CUDA kernel mul_mat_vec has no device code compatible with CUDA arch 520
+ggml-cuda was compiled without support for the current GPU architecture
+```
+
+The CUDA 12 builds support NVIDIA cards from compute capability 5.0. The `oldpc` builds use CUDA 11 and go down to compute capability 3.5.
+
+{% steps %}
+
+1. Use `koboldcpp-oldpc.exe` or `koboldcpp-linux-x64-oldpc`.
+2. If that fails too, use **Use Vulkan**.
+
+{% /steps %}
+
+See [CUDA versions and NVIDIA cards](/docs/install/releases/#advanced-cuda-versions-and-nvidia-cards).
+
+## The first start with CUDA takes minutes
+
+```text
+Initializing CUDA/HIP, please wait, the following step may take a few minutes (only for first launch)...
+```
+
+On the first launch, CUDA prepares its code for your graphics card. This is normal and happens once. Wait for it to finish. On a PC with an RTX 3090, the first launch took 54 seconds and later launches about 10 seconds.
+
+## "CUDA error" while generating
+
+```text
+CUDA error: an illegal memory access was encountered
+  current device: 0, in function … at …
+```
+
+Other variants include `CUBLAS_STATUS_NOT_SUPPORTED`.
+
+{% steps %}
+
+1. Update your NVIDIA driver and [update KoboldCpp](/docs/install/updating/).
+2. With several graphics cards, try one card only: `--usecuda 0`.
+3. Turn off **Use MMQ** (`--nommq`).
+4. Switch to **Use Vulkan**.
+
+{% /steps %}
+
+## Replies are slow
+
+{% steps %}
+
+1. Check that the graphics card is used (see [above](#the-graphics-card-is-not-used)). On NVIDIA, **Use CUDA** is faster than **Use Vulkan**. On Linux with an AMD card, try the [ROCm build](/docs/hardware/backends/#rocm).
+2. Check how much of the model is on the graphics card. The more layers on the graphics card, the faster it runs. If only part fits, use a smaller quant or model, or lower **Context Size:** so more layers fit.
+3. Keep **Use FlashAttention** on (the default).
+4. For MoE models, leave **GPU Layers:** at `-1`. If the model does not fit, KoboldCpp then keeps part of the expert weights on the CPU and the rest on the graphics card by itself.
+5. If the console processes the whole prompt again on every message, see [The whole prompt is processed again](/docs/troubleshooting/output-quality/#the-whole-prompt-is-processed-again-on-every-message).
+
+{% /steps %}
+
+For example, Qwen3-VL-8B Q4_K_S on a PC with an RTX 3090 generated 82.0 tokens per second with all 37 layers on the graphics card, 45.2 with 30 layers, 23.9 with 20 and 11.9 on the CPU alone (prompt of about 1,000 tokens). Your numbers will differ.
+
+See [GPU layers](/docs/hardware/gpu-layers/) and [GPU backends](/docs/hardware/backends/).
+
+## Slow when the window is in the background (Windows)
+
+On Intel processors of the 12th generation and newer, Windows can run a background KoboldCpp on the slower efficiency cores. Generation then slows down when the window is minimized or in the background.
+
+{% steps %}
+
+1. Set **Threads:** on the **Hardware** tab (`--threads`) to the number of performance cores of your processor.
+2. Turn on **Keep Foreground** (`--foreground`, Windows only). It brings the console to the front for every new request.
+
+{% /steps %}
+
+## Integrated graphics
+
+KoboldCpp does not pick Vulkan automatically for integrated graphics. You can select **Use Vulkan** yourself. Compare its speed with the CPU alone and keep the faster one.
+
+## Vulkan got slower, or stutters
+
+Reports include slowdowns after playing games, which a restart fixed.
+
+{% steps %}
+
+1. Restart KoboldCpp, or the PC.
+2. Update your graphics driver.
+3. Update KoboldCpp. If a new version got slower, try the previous one and report it.
+
+{% /steps %}
+
+## Advanced: several graphics cards
+
+If CUDA errors appear only with several cards, test one card at a time with `--usecuda 0`, then `--usecuda 1`. Both CUDA and Vulkan support several cards.
+
+See [Multiple GPUs](/docs/hardware/multi-gpu/).
+
+## Related
+
+- [Out of memory](/docs/troubleshooting/out-of-memory/)
+- [Release files and system requirements](/docs/install/releases/)
+- [OS-specific problems](/docs/troubleshooting/os-specific/)

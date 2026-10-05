@@ -1,0 +1,138 @@
+---
+title: OS-specific problems
+description: KoboldCpp problems that only happen on Windows, Linux, macOS, Android or Docker, from Windows 7 and Wayland file pickers to Gatekeeper.
+sidebar:
+  order: 7
+---
+
+Problems that affect every system are on the other Troubleshooting pages. This page collects the ones specific to one system.
+
+## Windows: antivirus, SmartScreen or Smart App Control
+
+See [Antivirus or Windows blocks or deletes the file](/docs/troubleshooting/wont-start/#antivirus-or-windows-blocks-or-deletes-the-file).
+
+## Windows: a user name or folder with accented letters
+
+Paths with non-ASCII characters (umlauts, accents, other alphabets) can break model loading. Put KoboldCpp and your models in a folder with a plain ASCII path, for example `C:\mystuff`.
+
+A Windows user name with such characters has been reported to make image models fail with an access violation, because KoboldCpp unpacks itself into the temporary folder inside the user profile. The latest release contains a fix for this that has not been confirmed yet. If image models still fail this way, a Windows user account with a plain ASCII name avoids the problem.
+
+## Windows 7: KoboldCpp does not start
+
+```text
+DLL load failed while importing pyexpat
+```
+
+Or an error about a missing entry point such as `GetSystemTimePreciseAsFileTime`. The main builds use functions that exist only in Windows 8 and newer.
+
+{% steps %}
+
+1. Use `koboldcpp-oldpc.exe`. Its libraries skip the Windows 8 functions.
+2. For the `pyexpat` error, install the Windows update KB3063858.
+3. If `msvcp140.dll` still reports `GetSystemTimePreciseAsFileTime`, one user fixed it this way: unpack KoboldCpp with **Unpack KoboldCpp To Folder** on the **Extra** tab, then replace the `msvcp140.dll` in that folder with an older version. Do not replace the one in the Windows system folders.
+
+{% /steps %}
+
+The third-party VxKex compatibility layer can make the main builds run. CUDA on Windows 7 is untested. See [Windows 7](/docs/install/windows/#advanced-windows-7).
+
+## Windows: slow when the window is in the background
+
+See [Slow when the window is in the background](/docs/troubleshooting/gpu-and-speed/#slow-when-the-window-is-in-the-background-windows).
+
+## Linux: "Permission denied"
+
+The file is not executable yet.
+
+```sh {% title="Terminal" frame="terminal" %}
+chmod +x koboldcpp-linux-x64
+./koboldcpp-linux-x64
+```
+
+If the main build still fails on an older system, try `koboldcpp-linux-x64-oldpc`.
+
+## Linux: "Unable to detect VRAM."
+
+KoboldCpp finds your graphics card and its memory with `nvidia-smi` (NVIDIA), `rocminfo` (AMD with ROCm) or `vulkaninfo`. For Vulkan, install the `vulkan-tools` package, then restart KoboldCpp. See [The graphics card is not used](/docs/troubleshooting/gpu-and-speed/#the-graphics-card-is-not-used).
+
+## Linux: the file picker does nothing
+
+Often on Wayland. The console may show:
+
+```text
+Zenity/YAD sanity check failed
+```
+
+{% steps %}
+
+1. Install `yad`. KoboldCpp prefers it over `zenity`.
+2. Or turn on **Use Classic FilePicker** on the launcher's **Extra** tab.
+
+{% /steps %}
+
+## Linux: the launcher does not open
+
+See ["Warning, GUI failed to start"](/docs/troubleshooting/wont-start/#warning-gui-failed-to-start). On a server without a display, run KoboldCpp from the command line; see [Headless use](/docs/install/linux/#headless-use).
+
+## Linux: the browser does not open
+
+KoboldCpp tries `xdg-open` first, then Python's browser launcher. If neither works, open `http://localhost:5001` yourself.
+
+## Linux: AMD graphics card
+
+Use **Use Vulkan** in `koboldcpp-linux-x64-nocuda`. An experimental official ROCm build also exists; see [ROCm build for AMD on Linux](/docs/install/releases/#advanced-rocm-build-for-amd-on-linux).
+
+## Linux: a self-built binary does not run on another PC
+
+Since v1.122, `koboldcpp.sh` builds portable binaries only with `KCPP_PORTABLE=1`. See [Build from source](/docs/install/from-source/).
+
+## macOS: nothing happens, or macOS blocks the file
+
+The file is not executable yet, or Gatekeeper blocks it because it is not signed.
+
+{% steps %}
+
+1. In Terminal, make it executable and run it:
+
+   ```sh {% title="Terminal" frame="terminal" %}
+   chmod +x koboldcpp-mac-arm64
+   ./koboldcpp-mac-arm64
+   ```
+
+2. If macOS blocks it, allow it in **System Settings → Privacy & Security**, then run it again.
+
+{% /steps %}
+
+See [macOS](/docs/install/macos/).
+
+## macOS: "Unable to detect VRAM."
+
+This is normal on Apple Silicon. KoboldCpp puts all layers on the GPU (Metal) anyway:
+
+```text
+MacOS detected: Auto GPU layers set to maximum
+```
+
+## macOS: Intel Mac
+
+There is no ready-made file for Intel Macs, and they are poorly supported. You can [build from source](/docs/install/from-source/#macos).
+
+## macOS: run without Metal
+
+`--failsafe` switches to a CPU-only library that uses Apple's Accelerate framework instead of Metal.
+
+## Android: "Illegal instruction"
+
+Some devices crash with `Illegal instruction`. Compile with `make LLAMA_PORTABLE=1`, which turns off ARM-specific instructions. See [Android (Termux)](/docs/install/android/).
+
+## Android: packages fail to install
+
+Run `termux-change-repo` and pick another mirror, then run the setup again.
+
+## Docker: very slow
+
+The Docker image detects processor features only roughly and can fall back to the failsafe libraries, which are extremely slow. Choose the backend yourself, for example `--usecuda` or `--usevulkan` in `KCPP_ARGS`. See [Docker](/docs/install/colab-docker/#docker-experts).
+
+## Related
+
+- [KoboldCpp won't start](/docs/troubleshooting/wont-start/)
+- [Windows](/docs/install/windows/), [Linux](/docs/install/linux/), [macOS](/docs/install/macos/), [Android (Termux)](/docs/install/android/)

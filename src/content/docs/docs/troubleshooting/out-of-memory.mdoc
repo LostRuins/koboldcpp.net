@@ -1,0 +1,83 @@
+---
+title: "Out of memory errors (VRAM and RAM)"
+description: Fixes for KoboldCpp running out of VRAM or RAM, including cudaMalloc failed, ErrorOutOfDeviceMemory and being killed while loading.
+sidebar:
+  label: "Out of memory"
+  order: 3
+---
+
+A model needs memory for its weights (roughly the file size), for the context (the KV cache, which grows with **Context Size:**) and for working buffers. When that is more than your graphics card or PC has, loading fails.
+
+See [How much memory a model needs](/docs/models/memory/).
+
+## "cudaMalloc failed: out of memory" (NVIDIA)
+
+```text
+ggml_backend_cuda_buffer_type_alloc_buffer: allocating … MiB on device 0: cudaMalloc failed: out of memory
+```
+
+Followed by one of these:
+
+```text
+unable to allocate CUDA0 buffer
+failed to allocate buffer for kv cache
+failed to allocate compute pp buffers
+```
+
+The layers on the graphics card, the context and the buffers together need more VRAM than is free. Try these in order, and relaunch after each:
+
+{% steps %}
+
+1. Leave **GPU Layers:** at `-1` (`--gpulayers -1`). KoboldCpp then fits as many layers as possible into VRAM. If you set a number yourself, lower it.
+2. Lower **Context Size:** (`--contextsize`). The default is 16384. See [Context size](/docs/settings/context-size/).
+3. Close other programs that use the graphics card. KoboldCpp warns you about them:
+
+   ```text
+   Note: KoboldCpp has detected that a significant amount of GPU VRAM (… MB) is currently used by another application.
+   ```
+
+4. Quantize the context: set **Quantize KV Cache:** on the **Context** tab to `q8_0`, or `q4_0` for more savings (`--quantkv q8_0`). Keep **Use FlashAttention** on; without it, only part of the cache is quantized, and it can even use more VRAM.
+5. Use a smaller quant of the model, or a smaller model. See [Choosing a quant](/docs/models/gguf-and-quantization/).
+6. Lower **Batch Size:** on the **Hardware** tab (`--batchsize`, default 512).
+7. As a last resort, `--lowvram` keeps the context in system RAM. It is slow and not recommended.
+
+{% /steps %}
+
+More options: [GPU layers](/docs/hardware/gpu-layers/) and [Saving VRAM](/docs/hardware/saving-vram/).
+
+## "ErrorOutOfDeviceMemory" (Vulkan)
+
+```text
+ggml_vulkan: Device memory allocation of size … failed.
+vk::Device::allocateMemory: ErrorOutOfDeviceMemory
+alloc_tensor_range: failed to allocate Vulkan0 buffer of size …
+```
+
+The Vulkan backend ran out of VRAM. The fixes are the same as for [NVIDIA](#cudamalloc-failed-out-of-memory-nvidia): put fewer layers on the graphics card, lower the context size, close other programs.
+
+Some Vulkan devices cannot allocate more than about 2 GB in one piece, even with more VRAM free. For image generation, these flags help: `--sdvaeauto`, `--sdquant`, and `--sdconvdirect vaeonly`.
+
+See [Image generation](/docs/features/image-generation/).
+
+## KoboldCpp is killed while loading
+
+The console shows `Terminated`, or KoboldCpp ends without an error, while system memory (RAM) is almost full. The model does not fit into RAM.
+
+{% steps %}
+
+1. Use a smaller quant or a smaller model.
+2. Close other programs.
+3. Turn on **Use MMAP** (`--usemmap`). The system then reads the model file from disk as needed, instead of loading it all into RAM first.
+4. Lower **Context Size:**.
+
+{% /steps %}
+
+## Advanced: "not enough space in the scratch memory"
+
+Messages like `not enough space in the context's memory pool` or `scratch memory` come from old GGML models and very old versions. Current versions show the CUDA or Vulkan errors above. Update KoboldCpp and use a GGUF model.
+
+## Related
+
+- [Context size](/docs/settings/context-size/)
+- [GPU not used or slow](/docs/troubleshooting/gpu-and-speed/)
+- [Your first model: how much memory you need](/docs/models/memory/)

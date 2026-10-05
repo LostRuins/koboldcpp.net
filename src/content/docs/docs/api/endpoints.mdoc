@@ -1,0 +1,147 @@
+---
+title: "API endpoints reference"
+description: Every KoboldCpp API endpoint by family - path, method, purpose, whether the password protects it and which model or flag it needs.
+sidebar:
+  label: "Endpoints"
+  order: 3
+---
+
+Every endpoint KoboldCpp serves, grouped by API family. For request fields, see the API docs at `/api` on your instance or [lite.koboldai.net/koboldcpp_api](https://lite.koboldai.net/koboldcpp_api).
+
+How to read the tables:
+
+- **Password:** **Yes** means the endpoint needs the password when one is set (`--password`). **No** means it never checks. **Admin** means admin mode and the admin password. See [Passwords and security](/docs/api/passwords-and-security/).
+- **Needs:** the model or flag that must be loaded for the endpoint to do its job. "Text model" is the model in **GGUF Text Model:**.
+- A path in brackets is an alias that does the same.
+- A short path after a comma continues the first path's prefix: `/api/extra/multiplayer/status`, `/getstory` means `/api/extra/multiplayer/getstory`.
+
+## KoboldAI (native)
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/api/v1/generate` (`/api/latest/generate`) | POST | Yes | Generate text | Text model |
+| `/api/extra/generate/stream` | POST | Yes | Generate text, streamed as server-sent events | Text model |
+| `/api/extra/generate/check` | GET, POST | Yes | Text generated so far by the running request; POST with `genkey` for your own request | Text model |
+| `/api/extra/abort` | POST | Yes | Stop generating; with `genkey` only your own request | Text model |
+| `/api/extra/last_logprobs` | GET, POST | Yes | Token probabilities of the last generation | Text model |
+| `/api/extra/tokencount` (`/api/extra/tokenize`) | POST | Yes | Count and list tokens; also accepts OpenAI-style `messages` | Text model |
+| `/api/extra/detokenize` | POST | Yes | Turn token IDs back into text | Text model |
+| `/api/extra/json_to_grammar` | POST | Yes | Convert a JSON schema to a grammar | |
+| `/api/v1/model` | GET | Partly | Loaded model name; without a valid key it returns `koboldcpp/protected-model` | |
+| `/api/v1/config/max_length`, `/api/v1/config/max_context_length` | GET | No | Limits reported to KoboldAI clients: `max_length` is 1024 unless `--hordegenlen` is set (not **Default Gen Amt:**); `max_context_length` is the context size, or `--hordemaxctx` if set | |
+| `/api/v1/config/soft_prompt`, `/api/v1/config/soft_prompts_list` | GET | No | Compatibility stubs for KoboldAI clients | |
+| `/api/v1/info/version` | GET | No | KoboldAI API version (`1.2.5`) | |
+| `/api/extra/version` | GET | No | KoboldCpp version and active features | |
+| `/api/extra/true_max_context_length` | GET | No | Context size the server allocated | |
+| `/api/extra/perf` | GET | No | Speed of the last request, queue length | |
+| `/api/extra/preloadstory` | GET | No | Story set with `--preloadstory` | `--preloadstory` |
+| `/api/extra/websearch` | POST | Yes | Web search, body `{"q": "..."}`; returns `[]` when off | `--websearch` |
+| `/api/extra/multiplayer/status`, `/getstory`, `/setstory` | POST | Yes | Shared multiplayer session | `--multiplayer` |
+| `/api/extra/data/list`, `/load`, `/save` | POST | Yes | Server-side save slots | `--savedatafile` |
+| `/api/extra/transcribe` | POST | Yes | Speech-to-text | Whisper model or audio mmproj |
+| `/api/extra/tts` | POST | Yes | Text-to-speech | TTS model |
+| `/api/extra/speakers_list` | GET | No | TTS voices | |
+| `/api/extra/embeddings` | POST | Yes | Embeddings | Embeddings model |
+| `/api/extra/music/prepare` | POST | Yes | Plan a song (audio codes) | Music models |
+| `/api/extra/music/generate` | POST | Yes | Generate music as WAV or MP3 | Music models |
+| `/request` | POST | Yes | Legacy format: `{text, max}` in, `{"data": {"seqs": [...]}}` out | Text model |
+| `/api`, `/docs` | GET | No | API documentation | |
+
+Without `--savedatafile`, `/api/extra/data/list` and `/load` close the connection without an answer, and `/save` returns HTTP 400.
+
+## OpenAI-compatible
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/v1/completions` (`/v1/completion`, `/completions`) | POST | Yes | Text completion | Text model |
+| `/v1/chat/completions` (`/chat/completions`) | POST | Yes | Chat, with tools and images; thinking text in `reasoning_content` | Text model; vision mmproj for images |
+| `/v1/responses` (`/responses`) | POST | Yes | OpenAI Responses API | Text model |
+| `/v1/models` (`/models`) | GET | No | Loaded model; in router mode also the admin-directory configs | |
+| `/v1/embeddings` | POST | Yes | Embeddings; supports `encoding_format: base64` | Embeddings model |
+| `/v1/audio/transcriptions` (`/audio/transcriptions`) | POST | Yes | Speech-to-text; JSON with `audio_data`, or a multipart `file` upload | Whisper model or audio mmproj |
+| `/v1/audio/speech` (`/audio/speech`) | POST | Yes | Text-to-speech; `response_format: mp3` for MP3 | TTS model |
+| `/v1/audio/voices` (`/audio/voices`) | GET | No | TTS voices | |
+| `/v1/images/generations` (`/images/generations`) | POST | **No** | Generate an image | Image model |
+| `/v1/images/edits` (`/images/edits`) | POST | **No** | Edit an image | Image model |
+| `/v1` | GET | No | Landing page | |
+
+## Anthropic-compatible
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/v1/messages` (`/messages`) | POST | Yes, Bearer only | Anthropic Messages API, with images and tool calls | Text model |
+
+## Ollama-compatible
+
+Run KoboldCpp with `--port 11434` so Ollama apps find it.
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/api/generate` | POST | Yes | Text completion; streams unless `"stream": false` | Text model |
+| `/api/chat` | POST | Yes | Chat with tool calls; streams unless `"stream": false` | Text model |
+| `/api/embed` | POST | Yes | Embeddings | Embeddings model |
+| `/api/tags`, `/api/ps` | GET | No | Model list | |
+| `/api/version` | GET | No | Reports Ollama version `0.7.0` | |
+| `/api/show` | POST | No | Fixed placeholder model info | |
+
+## A1111 / Forge (images)
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/sdapi/v1/txt2img` | POST | **No** | Text to image; also video with `frames` | Image model |
+| `/sdapi/v1/img2img` | POST | **No** | Image to image, inpainting | Image model |
+| `/sdapi/v1/upscale`, `/sdapi/v1/extra-single-image` | POST | **No** | Upscale an image | Upscaler (`--sdupscaler`) |
+| `/sdapi/v1/interrogate` | POST | **No** | Describe an image | Vision mmproj; returns 503 `No Vision model loaded` without |
+| `/sdapi/v1/sd-models`, `/options`, `/samplers`, `/schedulers`, `/loras`, `/upscalers`, `/latent-upscale-modes` | GET | No | Lists and settings | Image model |
+| `/sdapi/v1/progress`, `/sdapi/v1/get_last.json` | GET | No (scoped by `genkey`) | Progress and last result | Image model |
+
+## ComfyUI-compatible (images)
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/prompt` | POST | **No** | Generate an image; answers when it is done, with a fixed job ID | Image model |
+| `/upload/image` (`/api/upload/image`) | POST | **No** | Upload an input image | Image model |
+| `/view` (`/view.png`, `/api/view`, `/view_image`) | GET | No | Get the generated image | Image model |
+| `/history` (`/api/history`) | GET | No | Emulated history that only holds the last image | Image model |
+| `/ping`, `/system_stats`, `/object_info` | GET | No | Compatibility answers; `/system_stats` holds placeholder values | |
+| `/models/checkpoints`, `/models/loras` (also under `/api/`) | GET | No | Model lists | |
+| `/ws` | GET | No | WebSocket handshake only | |
+
+## XTTS-compatible (speech)
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/tts_to_audio` | POST | **No** | Text-to-speech | TTS model |
+| `/speakers_list`, `/speakers` | GET | No | Voices | |
+| `/get_tts_settings` | GET | No | Settings stub | |
+| `/set_tts_settings` | POST | No | Accepts anything, changes nothing | |
+| `/voice/check`, `/voice/speakers`, `/voice/vits` | GET | No | Legacy TTS endpoints | |
+
+## Admin
+
+Only active with admin mode (**Enable Model Administration**, `--admin`). See [Admin mode](/docs/settings/admin-mode/).
+
+| Path | Method | Password | Purpose |
+|---|---|---|---|
+| `/api/admin/list_options` | GET | Admin | Configs and models you can switch to |
+| `/api/admin/reload_config` | POST | Admin | Switch config or model, body `{"filename": "..."}`; `unload_model` and `initial_model` are special names |
+| `/api/admin/check_state`, `/save_state`, `/load_state`, `/clear_state` | POST | Admin | Save and restore the KV cache |
+
+## Other
+
+| Path | Method | Password | Purpose | Needs |
+|---|---|---|---|---|
+| `/mcp` | POST | Yes | MCP JSON-RPC proxy (`initialize`, `tools/list`, `tools/call`) | `--mcpfile` |
+| `/props` | GET | No | llama.cpp-style info: chat template, `n_ctx`, vision and audio support | |
+| `/slots` | GET | No | Always 501; not supported | |
+| `/.well-known/serviceinfo` | GET | No | Service info | |
+| `/` | GET | No | KoboldAI Lite | |
+| `/noscript` | GET | No | Interface without JavaScript | |
+| `/lcpp/` | GET | No | llama.cpp WebUI | |
+| `/sdui` | GET | No | Stable UI for images | Image model to generate |
+| `/musicui` | GET | No | Music and TTS interface | Music or TTS model to generate |
+| `/manifest.json` | GET | No | Web app manifest | |
+
+## Not in the official API docs
+
+The API docs at `/api` leave out: the Ollama, ComfyUI and XTTS endpoints, `/v1/images/edits`, `/v1/audio/voices`, `/mcp`, `/request`, `/sdapi/v1/extra-single-image`, the A1111 GET lists other than `sd-models`, `options` and `samplers`, the soft prompt stubs and `/slots`.

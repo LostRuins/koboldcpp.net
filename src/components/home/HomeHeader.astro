@@ -1,0 +1,44 @@
+---
+/*
+ * Home page frame around the shared SiteNav, at the top of the hero: the same box as Starlight's
+ * docs <header class="header"> (height, padding), transparent on the hero gradient. Once the hero
+ * has scrolled away, Hero.astro sets [data-stuck] and the box turns into the docs bar: fixed at the
+ * top, on the same navy. Below 50rem it adds the phone menu (SiteMenu).
+ */
+import SiteNav from '../SiteNav.astro';
+import SiteMenu from '../SiteMenu.astro';
+---
+
+<div class="kc-header" data-kc-header>
+	<SiteNav />
+	<SiteMenu />
+</div>
+<div class="kc-header-spacer" aria-hidden="true"></div>
+
+<style>
+	/* Mirrors Starlight's PageFrame `.header` (see node_modules/@astrojs/starlight/dist/components/PageFrame.astro). */
+	.kc-header {
+		position: relative;
+		z-index: var(--sl-z-index-navbar);
+		width: 100%;
+		height: var(--sl-nav-height);
+		padding: var(--sl-nav-pad-y) var(--sl-nav-pad-x);
+		padding-inline-end: calc(var(--sl-nav-gap) + var(--sl-nav-pad-x) + var(--sl-menu-button-size));
+	}
+	/* The docs header (starlight.css header.header). The spacer keeps the page from jumping up. */
+	.kc-header[data-stuck] {
+		position: fixed;
+		inset: 0 0 auto;
+		background: var(--nav-bg);
+		box-shadow: 0 8px 24px -12px oklch(0.15 0.03 258 / 0.8);
+	}
+	.kc-header[data-stuck] + .kc-header-spacer {
+		height: var(--sl-nav-height);
+	}
+
+	@media (min-width: 50rem) {
+		.kc-header {
+			padding-inline-end: var(--sl-nav-pad-x);
+		}
+	}
+</style>

@@ -1,0 +1,101 @@
+---
+title: "KoboldAI Lite: the built-in web UI"
+description: KoboldAI Lite is the web interface built into KoboldCpp. Its modes, UI styles, where the settings and samplers are, and the other bundled UIs.
+sidebar:
+  label: "KoboldAI Lite"
+  order: 1
+---
+
+KoboldAI Lite is the web interface built into KoboldCpp. After you click **Launch**, it opens at `http://localhost:5001`. You need nothing else to chat, write stories or play text adventures.
+
+<!-- SCREENSHOT: KoboldAI Lite right after launch, top menu visible -->
+
+## Start chatting
+
+{% steps %}
+
+1. Launch KoboldCpp with a model. With **Launch Browser** ticked (the default in the launcher), Lite opens by itself. Otherwise, open `http://localhost:5001`.
+2. Type into the input box at the bottom and send.
+3. To change how Lite behaves, click **Settings** in the top menu.
+
+{% /steps %}
+
+## Modes
+
+Pick the mode in **Settings** > **General** > **Usage mode**.
+
+| Mode | Use it for |
+|---|---|
+| **Instruct Mode** | Giving the AI tasks, ChatGPT-style. |
+| **Chat Mode** | Conversations with a character. |
+| **Story Mode** | Novel-style writing, where you and the AI write the same text. |
+| **Adventure Mode** | Interactive fiction and text RPGs. |
+
+## UI styles
+
+Next to the mode, **UI style** changes how the text is shown. Some styles are only available in some modes.
+
+| Style | Look |
+|---|---|
+| **Classic Theme** | Plain text editor, for writing. |
+| **Messenger Theme** | Chat bubbles. |
+| **Aesthetic Theme** | Roleplay layout. The button next to it opens more display options. |
+| **Corpo Theme** | Assistant-style layout. |
+
+## Where the settings are
+
+The launcher decides what the server can do: which model, how much context memory is reserved, which features are loaded. Lite decides what it sends with each request.
+
+**Settings** has these tabs:
+
+| Tab | What you find there |
+|---|---|
+| **General** | Usage mode, UI style, your name and the AI's name. |
+| **GUI** | Appearance. |
+| **Samplers** | **Sampler Preset**, **Context Size**, **Max Output**, **Temperature** and the other samplers. |
+| **Media** | Image generation, text-to-speech (**Audio Output**) and voice input (**Audio Input**). |
+| **Tokens** | Token settings. |
+| **Tools** | MCP tool calling and web search. |
+| **Misc** | Save/load, advanced and experimental settings. |
+
+**Context Size** in Lite covers the text Lite sends plus the reply (**Max Output**). The server cuts it down to the context it reserved at launch. If the server reserved 16384 or more, Lite raises its own value to match. A value you lowered yourself stays until the server's context changes. See [Context size](/docs/settings/context-size/).
+
+The other top menu items:
+
+- **New Session** starts over.
+- **Scenarios** loads ready-made stories and characters.
+- **Save / Load** saves and loads your story as a JSON file.
+- **Context** (above the input box) holds memory, world info and the author's note.
+- **Add File** (above the input box) adds images or audio, or generates an image.
+
+## Other bundled interfaces
+
+| Address | Interface | Available when |
+|---|---|---|
+| `/` | KoboldAI Lite | Always. |
+| `/sdui` | StableUI, for images | Always. Generating images needs an image model. See [Image generation](/docs/features/image-generation/). |
+| `/musicui` | MusicUI, for music and speech | Always. Generating needs a music or TTS model. See [Music](/docs/features/music/). |
+| `/lcpp/` | The llama.cpp web UI | Always. It can connect to MCP servers. |
+| `/noscript` | A plain page without JavaScript, with story, chat and image modes | Always. For old or restricted browsers. |
+| `/api` | The API documentation | Always. |
+
+If you load only an image model, Lite offers to open StableUI. If you load only a music or TTS model, it offers MusicUI.
+
+## Lite without KoboldCpp
+
+Lite also runs at [lite.koboldai.net](https://lite.koboldai.net). That copy can connect to your KoboldCpp, to the AI Horde, or to online AI services.
+
+To use the bundled Lite without a local model, tick **Allow Launch Without Models** on the **Loaded Files** tab (`--nomodel`). Lite then asks whether to connect to an external service.
+
+## Advanced
+
+- **TextDB** (**Context** > **TextDB**) is Lite's document lookup (RAG). **Local TextDB** searches in the browser. **KoboldCpp Embeddings** uses the loaded [embeddings model](/docs/features/embeddings/).
+- Lite loads Tavern character cards, and imports SillyTavern chat exports (JSONL) and several other save formats.
+- In **Settings** > **Samplers**, **Sampler Preset** switches between curated sampler sets.
+
+## Related
+
+- [Chat in your browser](/getting-started/chat/)
+- [Context size](/docs/settings/context-size/)
+- [Multiplayer and server saves](/docs/features/multiplayer-and-saves/)
+- [Connect other apps](/docs/api/connect-apps/)

@@ -1,0 +1,51 @@
+---
+title: Choose a model and launch
+description: "Pick your first AI model for KoboldCpp: a newbie template that downloads everything for you, or one of four recommended model files. Then click Launch."
+sidebar:
+  label: "3. Choose a model"
+tableOfContents: false
+---
+
+KoboldCpp doesn't come with an AI model; you add one. A model is one large file that ends in `.gguf`.
+
+## The easy way: a newbie template
+
+A template fills in the launcher for you and downloads the model when you click **Launch**. The `Chatbot` templates also add voice input, read-aloud and picture understanding.
+
+{% steps %}
+
+1. In the launcher, click **Get Help**. **Newbie Templates** is already selected.
+
+2. Pick a template for your graphics card's memory (VRAM; [how to check](/download/#which-graphics-card-do-i-have)):
+
+   - `LowSpec-Chatbot`: for about 6 GB. Also pick it with less, or without a graphics card; it then runs slower. Downloads about 4 GB.
+   - `MidSpec-Chatbot`: for about 12 GB or more. Downloads about 7 GB.
+
+   The other templates make pictures, music or video, or run a coding agent.
+
+3. Click **Load Template**.
+
+   ![The Help Menu: Newbie Templates, the LowSpec-Chatbot template and the Load Template button](../../../assets/docs/getting-started/launcher-get-help.png)
+
+{% /steps %}
+
+## Or: download one model file
+
+These are the models the KoboldCpp README recommends. Click one to download it.
+
+{% cardgrid %}
+{% linkcard title="Qwen3-VL-8B" description="The best all-rounder · 4.8 GB" href="https://huggingface.co/unsloth/Qwen3-VL-8B-Instruct-GGUF/resolve/main/Qwen3-VL-8B-Instruct-Q4_K_S.gguf" /%}
+{% linkcard title="L3-8B-Stheno-v3.2" description="Creative writing and roleplay · 4.7 GB" href="https://huggingface.co/bartowski/L3-8B-Stheno-v3.2-GGUF/resolve/main/L3-8B-Stheno-v3.2-Q4_K_S.gguf" /%}
+{% linkcard title="Gemma 3 4B" description="Small and fast, for weaker PCs · 2.5 GB" href="https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf" /%}
+{% linkcard title="PicX Real" description="Makes pictures · 1.7 GB" href="https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q5_1.gguf" /%}
+{% /cardgrid %}
+
+In the launcher, click **Browse** next to **GGUF Text Model:** and select the file. PicX Real is an image model: it goes into **Image Model:** on the **Image Gen** tab instead.
+
+## Launch
+
+Click **Launch**.
+
+![GGUF Text Model field with a model selected (1) and the Launch button (2)](../../../assets/docs/getting-started/launcher-model-launch.png)
+
+The launcher closes, and the console window shows the model loading. With a template, it first downloads the files, which can take a while. The next launch reuses them.

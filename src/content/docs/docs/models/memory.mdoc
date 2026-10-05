@@ -1,0 +1,103 @@
+---
+title: "How much RAM and VRAM a model needs"
+description: Estimate the RAM and VRAM a model needs from its file size, the context (KV cache) and a safety margin, and what to do if it does not fit.
+sidebar:
+  label: "How much memory a model needs"
+  order: 3
+---
+
+A model needs memory for three things:
+
+1. **The weights:** roughly the size of the `.gguf` file.
+2. **The context:** the KV cache, which holds the text the model keeps in mind. It grows with the context size (16384 tokens by default).
+3. **A margin:** working buffers, plus any other models you load at the same time (image generation, speech, vision projector).
+
+KoboldCpp's own estimates work the same way: they start from the file size, add the context, and keep spare room. There is no fixed table of "X GB for a 7B model"; the numbers depend on the model, the quant and the context.
+
+For example, Qwen3-VL-8B Q4_K_S (a 4.80 GB file) at the default context, with all layers on a 16 GB Radeon RX 7600 XT, measured on KoboldCpp 1.122.1:
+
+| Part | Memory |
+|---|---|
+| Weights | 4240 MiB VRAM, plus 334 MiB RAM |
+| KV cache | 2340 MiB VRAM |
+| Compute buffers | 337 MiB VRAM |
+
+On an RTX 3090 with CUDA, the weights and the KV cache took the same VRAM, and the compute buffers took 305 MiB.
+
+## GPU memory and system memory
+
+- Whatever runs on the graphics card uses its memory (**VRAM**). The rest stays in system memory (**RAM**).
+- If everything fits in VRAM, the model runs fastest.
+- If not, KoboldCpp puts as many layers on the GPU as fit and runs the rest from RAM, which is slower. It does this automatically while **GPU Layers:** is at its default, `-1`. See [GPU layers](/docs/hardware/gpu-layers/). On macOS, `-1` puts all layers on the GPU without this check; see [Apple Silicon](/docs/hardware/apple-silicon/).
+
+At startup, the console shows what KoboldCpp found:
+
+```text
+Detected Available GPU Memory: <N> MB
+Detected Available RAM: <N> MB
+```
+
+## The context
+
+The KV cache grows with the context size. On most models it grows in proportion: twice the context needs twice the KV cache.
+
+Models with sliding window attention (SWA), such as the Gemma 3 family, use much less. SWA is on by default, and the KV cache of their SWA layers stays small no matter how large the context is. In a test with Gemma 3 270M at the default context, the SWA part of the KV cache took 16.88 MiB with SWA on and 243.75 MiB with SWA off (`--noswa`). SWA turns off [ContextShift](/docs/settings/context-size/#reusing-context-between-requests), which avoids reprocessing the chat once the context is full.
+
+The console prints the real KV cache size when the model loads:
+
+```text
+llama_kv_cache: size = ... MiB (... cells, ... layers, ... seqs), K (f16): ... MiB, V (f16): ... MiB
+```
+
+The log shows a slightly larger context than you set (for example `n_ctx = 16640` for 16384). KoboldCpp adds 128 tokens of headroom and llama.cpp rounds up to a multiple of 256. The API still reports the context you set.
+
+## If it does not fit
+
+Try these in order:
+
+1. **Lower the context size.** See [Context size](/docs/settings/context-size/).
+2. **Use a smaller quant** of the same model, for example `Q4_K_S` instead of `Q5_K_M`. See [GGUF and quantization](/docs/models/gguf-and-quantization/).
+3. **Quantize the KV cache** with **Quantize KV Cache:** (`--quantkv q8_0`). See [Saving VRAM](/docs/hardware/saving-vram/).
+4. **Close other programs that use the GPU.** If they use more than 2.5 GiB of VRAM, KoboldCpp prints a note at startup.
+5. **Load fewer extra models** (image generation, speech, TTS) at the same time.
+6. **Use a smaller model.**
+
+For MoE models, keeping the expert weights in RAM often makes a large model fit. See [Saving VRAM](/docs/hardware/saving-vram/#moe-models).
+
+If loading fails with an out-of-memory error, see [Out of memory](/docs/troubleshooting/out-of-memory/).
+
+## Advanced: estimating the KV cache
+
+For each layer, llama.cpp stores one K and one V tensor with one entry per token of context:
+
+```text
+KV bytes ≈ layers × context × (K width + V width) × bytes per element
+```
+
+- **K width** and **V width** are the number of KV heads (`head_count_kv`) times the key or value length (`key_length`, `value_length`). **Analyze Model** on the **Extra** tab (`--analyze`) shows these values in the model's metadata, together with the layer count (`block_count`).
+- This holds for full-attention layers. SWA layers only keep about the SWA window plus one batch.
+
+Bytes per element for each KV cache type:
+
+| `--quantkv` | Bytes per element | Compared with `f16` |
+|---|---|---|
+| `f16` (default) | 2 | 100% |
+| `bf16` | 2 | 100% |
+| `q8_0` | 1.0625 | about 53% |
+| `q5_1` | 0.75 | about 38% |
+| `q4_0` | 0.5625 | about 28% |
+
+Without flash attention, only the K half is quantized (except with `bf16`). See [Saving VRAM](/docs/hardware/saving-vram/#quantize-the-kv-cache).
+
+## Advanced: the margin KoboldCpp keeps
+
+- **Autofit** (the default with a GPU backend) reserves 1024 MB of spare VRAM on the first GPU, plus the memory of other loaded models, the vision projector and a draft model. Other GPUs get a fixed margin of 1 GiB.
+- **The fallback estimate**, used when autofit fails, keeps at least 1.25 GiB of VRAM free, or 0.5 GiB plus what other programs already use, whichever is more.
+
+Other models loaded at the same time (image generation, Whisper, TTS, embeddings, music) are counted as extra VRAM in both.
+
+## Related
+
+- [GPU layers](/docs/hardware/gpu-layers/)
+- [Saving VRAM](/docs/hardware/saving-vram/)
+- [Context size](/docs/settings/context-size/)

@@ -1,0 +1,121 @@
+---
+title: Admin mode
+description: Switch KoboldCpp models and configs while it runs, from KoboldAI Lite or the API, with router mode, autoswap and automatic unloading.
+sidebar:
+  order: 6
+---
+
+Admin mode lets you switch to another model or config while KoboldCpp keeps running, without going back to the launcher. You pick from a folder of prepared files, in KoboldAI Lite or through the API.
+
+On top of admin mode:
+
+- **Router mode** switches automatically, based on the model an app asks for.
+- **Autoswap mode** switches between model types (text, image, speech and so on) based on the request.
+- **Auto Unload Timeout** frees the memory when nobody has used the model for a while.
+
+## Set up admin mode
+
+{% steps %}
+
+1. Create a folder and put the files you want to switch between into it: `.kcpps` configs, `.kcppt` templates or `.gguf` models. Subfolders one level deep are included.
+2. In the launcher, open the **Admin** tab.
+3. Tick **Enable Model Administration**.
+4. Enter an **Admin Password:**.
+5. In **Config Directory (Required):**, select your folder.
+6. Set up your first model as usual and click **Launch**.
+
+{% /steps %}
+
+<!-- SCREENSHOT: Admin tab with admin mode enabled, a password and a config directory -->
+
+On the command line (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model mymodel.gguf --admin --admindir ./configs --adminpassword mysecret
+```
+
+Without a config directory, KoboldCpp uses the folder that contains KoboldCpp itself and prints a warning.
+
+{% aside type="caution" title="Set an admin password" %}
+Always set **Admin Password:** (`--adminpassword`, or the `KCPP_ADMINPASSWORD` environment variable) when admin mode is on.
+
+The admin password also works as a normal API key, so give it only to people who may manage the server.
+{% /aside %}
+
+## Switch models in KoboldAI Lite
+
+{% steps %}
+
+1. In KoboldAI Lite, click **Admin** in the top menu. The **KoboldCpp Admin Config** window opens.
+2. Under **Select New Model or Config (required):**, choose a file from your folder.
+3. Optional: under **Select Base Config (optional):**, choose a config to apply first (see [Base configs](#base-configs)).
+4. Click **Reload KoboldCpp**.
+
+{% /steps %}
+
+<!-- SCREENSHOT: KoboldAI Lite KoboldCpp Admin Config window -->
+
+KoboldCpp restarts with the new settings. If the new config fails to load, it goes back to the one it started with.
+
+Besides your files, the list has two special entries:
+
+| Entry | What it does |
+|---|---|
+| `initial_model` | Goes back to the model and settings KoboldCpp started with. |
+| `unload_model` | Unloads the model and frees its memory. |
+
+### What a switch cannot change
+
+Some settings stay as they were at startup, whatever the new config says. These include the port, host, passwords, admin settings (admin mode, config directory, base config, unload timeout, router mode), SSL, **Remote Tunnel**, the download folder and the RPC settings.
+
+## Base configs
+
+A base config is applied first, and the chosen config or model is layered on top. This is most useful for plain `.gguf` files: they would otherwise load with default settings.
+
+- In Lite, choose it under **Select Base Config (optional):**. It must be in the config directory.
+- To use one by default, set **Base config .kcpps (Optional, for reloading):** in the launcher (`--baseconfig`). It is used whenever a switch does not name its own base config.
+
+## Unload when idle
+
+**Auto Unload Timeout:** (`--adminunloadtimeout`) unloads the model when that many seconds have passed since the last request started. `0` (default) turns it off. It only works in admin mode. The timer does not wait for a reply that is still being written, so set it longer than your slowest replies.
+
+In router mode, the next generation request loads a model again: the one named in its `model` field, or the model KoboldCpp started with if the field is empty. A name that is not in the list loads nothing.
+
+Without router mode, nothing loads the model again by itself. Generation requests fail until you load a model in the **KoboldCpp Admin Config** window, for example `initial_model`.
+
+## Router mode
+
+Router mode lets apps choose the model per request. It works like llama-swap.
+
+- Launcher: tick **Router Mode** on the **Admin** tab. It appears once admin mode is on.
+- Command line: `--routermode`. It turns on admin mode by itself.
+
+How it works:
+
+- KoboldCpp listens on your usual port through a small proxy. The actual server runs on a free port between 15001 and 15010.
+- `/v1/models` lists the files in your config directory.
+- When a generation request names one of those files in its `model` field, KoboldCpp switches to it and then answers. The request waits until the new model is loaded. Ollama requests (`/api/generate`, `/api/chat`) and Anthropic requests (`/v1/messages`) do not switch models.
+- The name is the file name with its extension, for example `qwen.kcpps`. For files in a subfolder, include the folder exactly as `/v1/models` lists it (`chat/qwen.kcpps`; on Windows with a backslash). `initial_model` and `unload_model` work too.
+- **Request Timeout (s):** (`--reqtimeout`, default 600) is how long the proxy waits for the server. It is only used in router mode.
+
+## Autoswap mode
+
+Autoswap mode switches between model types inside one config, based on what each request needs: text, image, speech-to-text, text-to-speech, embeddings or music. Use it when the models don't all fit in memory at once.
+
+- Launcher: tick **Autoswap Mode** on the **Admin** tab. It appears once **Router Mode** is ticked.
+- Command line: `--autoswapmode`. It turns on router mode and admin mode by itself.
+- Put all models you want in the same config.
+- KoboldCpp starts with no model loaded and loads the right one on the first request.
+- **Autoswap Threshold (MB):** (`--autoswapthreshold`, default 256) keeps model types whose files add up to this size or less loaded at all times. Of the bigger ones, only one is loaded at a time.
+- With **Auto Unload Timeout:**, all models are unloaded when idle.
+
+## Related settings
+
+- **SingleInstance Mode** (`--singleinstance`): a new KoboldCpp started on the same port shuts this one down. Both need the setting.
+- The admin API (`/api/admin/list_options`, `/api/admin/reload_config`) does the same as the Lite window, for scripts. See [Endpoints](/docs/api/endpoints/).
+
+## Related
+
+- [Config files (.kcpps)](/docs/settings/config-files/)
+- [Passwords and security](/docs/api/passwords-and-security/)
+- [Remote access](/docs/api/remote-access/)

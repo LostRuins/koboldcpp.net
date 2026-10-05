@@ -1,0 +1,70 @@
+---
+title: "Where to get GGUF models"
+description: Recommended GGUF models, where to find more on Hugging Face, how to download from the launcher, and how to handle split GGUF files.
+sidebar:
+  label: "Where to get models"
+  order: 2
+---
+
+KoboldCpp does not include a model. Most GGUF models are on [Hugging Face](https://huggingface.co). Download **one** `.gguf` file in the quant you want, not the whole repository.
+
+The quickest start is a newbie template: in the launcher, click **Get Help** and pick one under **Newbie Templates**. It downloads a suitable model for you. See [Choose a model](/getting-started/model/).
+
+## Recommended models
+
+| Model | Good for | Download | File size |
+|---|---|---|---|
+| Qwen3-VL-8B | The recommended all-rounder | [Q4_K_S](https://huggingface.co/unsloth/Qwen3-VL-8B-Instruct-GGUF/resolve/main/Qwen3-VL-8B-Instruct-Q4_K_S.gguf) | 4.8 GB |
+| Gemma3-4B | Lightweight and fast | [Q4_K_M](https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf) | 2.5 GB |
+| L3-8B-Stheno-v3.2 | Creative writing and roleplay | [Q4_K_S](https://huggingface.co/bartowski/L3-8B-Stheno-v3.2-GGUF/resolve/main/L3-8B-Stheno-v3.2-Q4_K_S.gguf) | 4.7 GB |
+
+For image input, also download the model's vision projector (mmproj): [for Qwen3-VL-8B](https://huggingface.co/unsloth/Qwen3-VL-8B-Instruct-GGUF/resolve/main/mmproj-BF16.gguf) or [for Gemma3-4B](https://huggingface.co/koboldcpp/mmproj/resolve/main/gemma3-4b-mmproj-q8.gguf). See [Vision](/docs/features/vision/).
+
+## Finding more models
+
+- Search for "GGUF" on Hugging Face.
+- [Bartowski's Hugging Face page](https://huggingface.co/bartowski) has GGUF files of many popular models.
+- The official [koboldcpp organization](https://huggingface.co/koboldcpp) has vision projectors (`mmproj`), image, Whisper, TTS and music models, and launcher templates.
+
+A model repository usually lists one file per quant. Pick one with [GGUF and quantization](/docs/models/gguf-and-quantization/), and check that it fits with [How much memory a model needs](/docs/models/memory/).
+
+## Download from the launcher
+
+**HF Search** next to **GGUF Text Model:** on the **Quick Launch** tab (and next to **Text Model:** on **Loaded Files**) searches Hugging Face from inside the launcher.
+
+{% steps %}
+
+1. Click **HF Search**. The Model File Browser opens.
+2. Type a model name and click **Search Huggingface**.
+3. Pick a repository, then a `.gguf` file. Sizes are shown in GiB. A Q4 quant is preselected when the repository has one.
+4. Click **Confirm Selection**. The file's address appears in the model field.
+5. Click **Launch**. KoboldCpp downloads the file first, then loads it.
+
+{% /steps %}
+
+<!-- SCREENSHOT: the Model File Browser with a search result, a selected .gguf file and the Confirm Selection button -->
+
+You can also paste a Hugging Face download link into any model field, or pass it on the command line (`koboldcpp` stands for your KoboldCpp file; see [Command line](/docs/settings/command-line/)):
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf
+```
+
+- Links containing `/blob/main/` are changed to `/resolve/main/` for you.
+- Files are saved to the folder set in **Download Dir:** on the **Loaded Files** tab (`--downloaddir`). Without it, they go to the current working folder; on Windows, to the exe's folder if the working folder is `System32` or `SysWOW64`.
+- A file that is already there is reused, not downloaded again.
+- KoboldCpp downloads with `aria2c` (bundled on Windows), `curl` or `wget`. If none is available, it prints "Please install aria2, curl, or wget."
+
+## Split GGUF files
+
+Large models are often split into several files named like `model-00001-of-00003.gguf`.
+
+- **Local files:** keep all parts in the same folder and select the **first** part (`-00001-of-…`). KoboldCpp loads the others. Selecting another part fails with "model must be loaded with the first split".
+- **Download links:** give the link to the first part. For the text model, KoboldCpp downloads all parts. HF Search lists only the first part of each split model.
+- The automatic GPU layer estimate is less accurate for split files. KoboldCpp prints "Multi-Part GGUF detected. Layer estimates may not be very accurate". See [GPU layers](/docs/hardware/gpu-layers/).
+
+## Related
+
+- [GGUF and quantization](/docs/models/gguf-and-quantization/)
+- [How much memory a model needs](/docs/models/memory/)
+- [Choose a model](/getting-started/model/)

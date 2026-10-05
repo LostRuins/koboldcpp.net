@@ -1,0 +1,30 @@
+---
+/* One row of site links, then who makes KoboldCpp and where the official downloads are. Every other
+   external link is on the Links page. */
+import { LATEST_URL } from '../../data/release';
+import { ROUTES, EXT } from '../../data/routes';
+---
+
+<footer class="footer on-dark">
+	<div class="wrap footer-row">
+		<a class="brand" href={ROUTES.home}>
+			<span class="brand-mark"><img src="/favicon.png" alt="" width="32" height="32" /></span>
+			KoboldCpp
+		</a>
+		<nav aria-label="Footer">
+			<ul>
+				<li><a href={ROUTES.download}>Download</a></li>
+				<li><a href={ROUTES.gettingStarted}>Getting started</a></li>
+				<li><a href={ROUTES.docs}>Wiki</a></li>
+				<li><a href={ROUTES.links}>Links</a></li>
+				<li><a href={EXT.repo}>GitHub</a></li>
+			</ul>
+		</nav>
+	</div>
+	<div class="wrap footer-base">
+		<p>
+			KoboldCpp is free and open source (<span class="nw">AGPL-3.0</span>), made by concedo and contributors. Official
+			downloads are only on <a href={LATEST_URL}>GitHub</a>.
+		</p>
+	</div>
+</footer>

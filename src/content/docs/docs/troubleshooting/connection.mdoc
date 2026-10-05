@@ -1,0 +1,170 @@
+---
+title: Connection and API problems
+description: Fixes for apps and devices that can't reach KoboldCpp, Remote Tunnel errors, broken pipes, 401 Unauthorized, busy server and payload errors.
+sidebar:
+  order: 6
+---
+
+KoboldCpp serves the chat UI and its API on port 5001 by default. When the model has loaded, the console shows the address:
+
+```text
+Please connect to custom endpoint at http://localhost:5001
+```
+
+## The browser does not open after loading
+
+Open `http://localhost:5001` in any browser yourself.
+
+- The launcher opens the browser only while **Launch Browser** is on (the default). On the command line, add `--launch`.
+- On Linux, KoboldCpp tries `xdg-open` first, then Python's browser launcher.
+
+## An app can't connect
+
+{% steps %}
+
+1. Wait until the console shows `Please connect to custom endpoint at …`. The server starts only after the model has loaded.
+2. Use the address for the app's API type:
+
+   | The app speaks | Address |
+   |---|---|
+   | KoboldAI API | `http://localhost:5001` |
+   | OpenAI API | `http://localhost:5001/v1` |
+   | Ollama API | Start KoboldCpp with `--port 11434`, then use the app's Ollama default |
+
+3. If you changed **Port:** (`--port`), use that port instead of 5001.
+4. If you set a password, enter it in the app's API key field. See [below](#401-unauthorized).
+
+{% /steps %}
+
+See [Connect apps](/docs/api/connect-apps/).
+
+## Other devices on my network can't connect
+
+By default KoboldCpp accepts connections on all network interfaces. The console still prints `localhost`, which only works on the PC itself.
+
+{% steps %}
+
+1. On the other device, use your PC's local network IP address: `http://<PC-IP>:5001`.
+2. Allow KoboldCpp through the firewall on the PC. See [Remote access](/docs/api/remote-access/#same-network).
+3. Check that **Host:** on the **Network** tab (`--host`) is empty. With `127.0.0.1`, only the PC itself can connect.
+
+{% /steps %}
+
+Set a password before other people can reach KoboldCpp. See [Passwords and security](/docs/api/passwords-and-security/).
+
+## Remote Tunnel fails
+
+```text
+Error: Could not create cloudflare tunnel!
+Remote Tunnel Failed!
+```
+
+**Remote Tunnel** (`--remotetunnel`) downloads the `cloudflared` program from GitHub on first use and then connects to Cloudflare. Both need internet access.
+
+{% steps %}
+
+1. Check your internet connection, and that a firewall or antivirus does not block `cloudflared`.
+2. Read the lines after `More Info:` in the console for the reason.
+3. Restart KoboldCpp to try again.
+
+{% /steps %}
+
+`Could not create cloudflare tunnel!` appears when no link has arrived after about 15 seconds. If `Your remote tunnel is ready` follows later, the tunnel works.
+
+Common causes:
+
+| Cause | Fix |
+|---|---|
+| A firewall blocks `cloudflared`. | Allow outgoing connections on port 7844 (TCP and UDP). |
+| The download failed. The console shows `Could not find suitable download software, or all download methods failed.` | Check the internet connection. On Linux, install `curl`. |
+| The saved `cloudflared` file is broken or too old. | Delete it (on a Mac also `cloudflared-darwin-amd64.tgz`). KoboldCpp downloads the latest version on the next launch. |
+| **Download Dir:** on the **Loaded Files** tab (`--downloaddir`) is set. KoboldCpp then saves `cloudflared` there, but starts it from the folder KoboldCpp was started from. | Leave **Download Dir:** empty when you use **Remote Tunnel**. |
+| On a Mac with Apple silicon, KoboldCpp downloads the Intel version of `cloudflared`, which needs Rosetta. | Run `softwareupdate --install-rosetta`. |
+
+KoboldCpp saves `cloudflared` in the folder you start KoboldCpp from: `cloudflared.exe` on Windows, `cloudflared-linux-amd64` or `cloudflared-linux-arm64` on Linux, `cloudflared` on macOS. It reuses that file on every launch and does not update it. Cloudflare supports `cloudflared` versions up to one year old.
+
+See [Remote access](/docs/api/remote-access/).
+
+## "Network error" or "Broken pipe" during long prompts
+
+The app shows `Network error when attempting to fetch resource`, or the console shows `[Errno 32] Broken pipe` and:
+
+```text
+Generate: The response could not be sent, maybe connection was terminated?
+```
+
+The app gave up waiting. This happens most often when a long prompt is processed again near the context limit.
+
+{% steps %}
+
+1. Raise the timeout in your app, if it has one.
+2. Make processing faster: put more layers on the graphics card. See [GPU not used or slow](/docs/troubleshooting/gpu-and-speed/).
+3. Raise **Context Size:**, so the prompt is processed again less often.
+
+{% /steps %}
+
+## 401 Unauthorized
+
+```json
+{"detail": {"error": "Unauthorized", "msg": "Authentication key is missing or invalid.", "type": "unauthorized"}}
+```
+
+KoboldCpp runs with a password (**Password:**, `--password`), and the request did not send it.
+
+{% steps %}
+
+1. Enter the password in the app's API key field.
+2. For your own requests, send the header `Authorization: Bearer <password>`.
+
+{% /steps %}
+
+KoboldCpp accepts the key only in the `Authorization` header. Apps built on the Anthropic SDK send `x-api-key`, which KoboldCpp does not accept.
+
+Without the key, `/api/v1/model` shows the model name as `koboldcpp/protected-model`. That is expected. `/v1/models` still shows the real name.
+
+## "Server is busy; please try again later."
+
+KoboldCpp answers with HTTP 503. It handles one request at a time and queues the others, up to **Multiuser Queue:** (`--multiuser`, default 10) requests in total. This message means the queue is full, or queueing is off (`--multiuser 0`).
+
+`--multiuser 0` keeps a queue anyway while an image, Whisper, TTS or embeddings model is loaded, or when **Parallel Requests:** is above 1. With [parallel requests](/docs/api/streaming/#advanced-parallel-requests), simple text requests can run at the same time.
+
+{% steps %}
+
+1. Wait for the running requests to finish.
+2. Leave **Multiuser Queue:** at its default, or raise it.
+
+{% /steps %}
+
+With **IP Rate Limiter (s):** (`--ratelimit`) set, too many requests from one address get `You are sending requests too quickly.` instead.
+
+## "Payload is too big"
+
+```text
+Payload is too big. Max payload size is 32MB.
+```
+
+The request, for example with large images, is bigger than the limit. Raise **Max Req. Size (MB):** on the **Network** tab (`--maxrequestsize`, default 32).
+
+## Advanced: SSL does not work
+
+```text
+Your SSL configuration is INVALID. SSL will not be used.
+```
+
+KoboldCpp then serves plain HTTP.
+
+{% steps %}
+
+1. Give both files: **SSL Cert:** and **SSL Key:** (`--ssl cert.pem key.pem`), and check that both paths exist.
+2. Use an unencrypted key file (no passphrase), in `.pem` format.
+
+{% /steps %}
+
+Certificate errors from the Horde worker, web search or MCP servers are about outgoing connections. **NoCertify Mode (Insecure)** (`--nocertify`) turns off those checks; it does not affect KoboldCpp's own certificate.
+
+## Related
+
+- [Connect apps](/docs/api/connect-apps/)
+- [Remote access](/docs/api/remote-access/)
+- [Passwords and security](/docs/api/passwords-and-security/)
+- [Replies are cut short](/docs/troubleshooting/output-quality/#replies-are-cut-short)

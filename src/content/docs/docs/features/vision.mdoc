@@ -1,0 +1,75 @@
+---
+title: Vision and audio input
+description: Let the text model see images and hear audio with a matching mmproj file. Where to get it, how to load it, and how to send images from Lite and the API.
+sidebar:
+  order: 6
+---
+
+A vision model can describe and answer questions about images. Some models can also listen to audio. For this, the text model needs its matching projector file, called an **mmproj**.
+
+## Quick start
+
+Started with a `Chatbot` newbie template? It already loads a vision model and its mmproj. Skip to step 5.
+
+{% steps %}
+
+1. Use a text model that supports vision, for example [Qwen3-VL-8B](https://huggingface.co/unsloth/Qwen3-VL-8B-Instruct-GGUF/resolve/main/Qwen3-VL-8B-Instruct-Q4_K_S.gguf).
+2. Download its mmproj. For Qwen3-VL-8B, that is [mmproj-BF16.gguf](https://huggingface.co/unsloth/Qwen3-VL-8B-Instruct-GGUF/resolve/main/mmproj-BF16.gguf).
+3. In the launcher, open the **Loaded Files** tab and select the file in **Mmproj File:**.
+4. Click **Launch**.
+5. In KoboldAI Lite, click **Add File** > **Upload a File (Image / Audio)** and ask about the image.
+
+{% /steps %}
+
+On the command line:
+
+```sh {% title="Terminal" frame="terminal" %}
+koboldcpp --model Qwen3-VL-8B-Instruct-Q4_K_S.gguf --mmproj mmproj-BF16.gguf
+```
+
+<!-- SCREENSHOT: Lite chat with an uploaded image and the model's description -->
+
+## Getting the right mmproj
+
+An mmproj only works with the exact model it was made for, including its size: a Gemma3 12B model needs the Gemma3 12B mmproj, and a Qwen mmproj does not work with a Gemma model. The mismatch shows as `failed to load mmproj model!` or a crash while loading.
+
+- Look on the model's Hugging Face page for a file with `mmproj` in its name.
+- [huggingface.co/koboldcpp/mmproj](https://huggingface.co/koboldcpp/mmproj) collects mmproj files for many models.
+
+The mmproj works only with GGUF text models.
+
+## Audio input
+
+Some mmproj files handle audio. The launcher field accepts both ("Audio or Vision mmproj"). With an audio mmproj, you can send audio clips to the model the same way as images.
+
+If no Whisper model is loaded, KoboldCpp uses the audio mmproj for [speech-to-text](/docs/features/speech-to-text/) as well.
+
+## Sending images and audio
+
+- **KoboldAI Lite:** **Add File** offers **Upload a File (Image / Audio)**, **Camera** and **Drag Drop / Paste from Clipboard**. Images appear in the chat where you added them. From another device, **Camera** works only over HTTPS; see [Remote access](/docs/api/remote-access/#same-network).
+- **OpenAI API** (`/v1/chat/completions`): send images as multimodal message content, as with OpenAI vision models.
+- **KoboldAI API** (`/api/v1/generate`): send them in the `images` and `audio` arrays.
+- **A1111 API:** `POST /sdapi/v1/interrogate` describes an image. It is not protected by `--password`.
+
+Each request can carry up to 64 images and 64 audio clips. If you send more, only the last 64 of each are used.
+
+To check what a running server supports, `GET /props` shows `modalities.vision` and `modalities.audio`.
+
+## Advanced options
+
+All on the **Loaded Files** tab:
+
+| Launcher field | Flag | What it does |
+|---|---|---|
+| **Vision MaxRes:** | `--visionmaxres` | Largest image size in pixels. `512` to `2048`, default `1024`. |
+| **V.Min/Max Tok:** | `--visionmintokens`, `--visionmaxtokens` | Tokens per image, for models with variable image sizes. `-1` uses the model's default. Setting only one of them sets both to that value. |
+| **V.Force CPU** | `--mmprojcpu` | Runs the mmproj on the CPU instead of the GPU. |
+
+KoboldCpp prints a warning when you combine an mmproj with a draft model or MTP.
+
+The mmproj needs VRAM on top of the model. For Qwen3-VL-8B's `mmproj-F16.gguf`, autofit estimates it at startup: `MMProj Autofit Usage: 1105 MB`. **V.Force CPU** moves it to system RAM, and images are then processed more slowly. On a Radeon RX 7600 XT, the first reply to a 1920-pixel-wide screenshot took 16.1 s with the mmproj on the GPU and 22.9 s on the CPU.
+
+## Related
+
+- [Image generation](/docs/features/image-generation/): create images instead of reading them.
+- [Speech-to-text](/docs/features/speech-to-text/)

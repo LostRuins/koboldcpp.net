@@ -1,0 +1,67 @@
+---
+title: "Update to a new version"
+description: Update KoboldCpp by downloading the new release file. Your saved .kcpps configs and your models carry over.
+sidebar:
+  label: "Updating"
+  order: 7
+---
+
+KoboldCpp has no automatic updater. To update, download the new file and use it instead of the old one.
+
+{% steps %}
+
+1. If you haven't yet, save your settings: click **Save Config** in the launcher. It writes a `.kcpps` file.
+2. Click **Update** in the launcher, or go to the [latest release](https://github.com/LostRuins/koboldcpp/releases/latest). **Update** only opens that page in your browser.
+3. Download the same file you use now, for example `koboldcpp.exe`. See [Release files](/docs/install/releases/) if you are unsure.
+4. Replace the old file with the new one. On Linux and macOS, run `chmod +x` on the new file.
+5. Start it and load your settings with **Load Config**.
+
+{% /steps %}
+
+Your models are separate files and stay where they are.
+
+## Which version you have
+
+- The launcher's window title shows it: `KoboldCpp v…`.
+- `--version` on its own prints the version and exits:
+
+  ```sh {% title="Terminal" frame="terminal" %}
+  ./koboldcpp --version
+  ```
+
+## Why update
+
+New model architectures need a newer KoboldCpp. If a model fails with `unknown model architecture`, update first.
+
+## Your settings
+
+A `.kcpps` config holds your launch settings. You can load it three ways:
+
+- **Load Config** in the launcher
+- drag the `.kcpps` file onto the exe (Windows)
+- `--config mysettings.kcpps` on the command line
+
+Configs saved by older versions can keep old settings; see [Config files (.kcpps)](/docs/settings/config-files/#old-config-files).
+
+## Old file names
+
+The file names changed in the past, and the old names no longer exist. If a script downloads `koboldcpp_cu12.exe` or a similar name, update it; see [old file names](/docs/install/releases/#advanced-old-file-names).
+
+## Colab and Docker
+
+- **Colab:** the notebook downloads the latest release every time it runs.
+- **Docker:** the image downloads the latest KoboldCpp when the container starts, unless `KCPP_DONT_UPDATE=true` is set. The image itself only changes when its Docker setup changes; when it does, get it with `docker pull koboldai/koboldcpp`.
+
+## Advanced: rolling builds
+
+[Rolling builds](/docs/install/releases/#advanced-rolling-builds) are updated automatically and may be unstable. For stability and proper support, use the official releases.
+
+## Advanced: source builds and Termux
+
+- **`koboldcpp.sh`:** after pulling the new source, run `./koboldcpp.sh rebuild`. See [Build from source](/docs/install/from-source/#koboldcppsh-linux).
+- **Android (Termux):** re-running the setup script does not rebuild an existing install. See [Android](/docs/install/android/#updating).
+
+## Related
+
+- [Release files and system requirements](/docs/install/releases/)
+- [Staying safe](/docs/install/staying-safe/)
