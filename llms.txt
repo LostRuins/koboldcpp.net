@@ -1,0 +1,16 @@
+# KoboldCpp
+
+> KoboldCpp is free, open-source (AGPL-3.0) software for running GGUF AI models on your own computer. It is a single file with no install, builds on llama.cpp, and bundles the KoboldAI Lite web UI.
+
+- Official downloads come only from the GitHub releases: https://github.com/LostRuins/koboldcpp/releases/latest
+- Project home: https://github.com/LostRuins/koboldcpp
+
+## Documentation Sets
+
+- [Abridged documentation](https://koboldcpp.net/llms-small.txt): a compact version of the documentation for KoboldCpp, with non-essential content removed
+- [Complete documentation](https://koboldcpp.net/llms-full.txt): the full documentation for KoboldCpp
+
+## Notes
+
+- The complete documentation includes all content from the official documentation
+- The content is automatically generated from the same source as the official documentation

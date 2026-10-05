@@ -1,0 +1,171 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>KoboldCpp official site: run AI models locally</title><meta name="description" content="Free, open-source software for running GGUF AI models on Windows, Linux and macOS. One file, no install. Official downloads, guides and docs."><link rel="canonical" href="https://koboldcpp.net/"><meta property="og:type" content="website"><meta property="og:site_name" content="KoboldCpp"><meta property="og:title" content="KoboldCpp: run AI models on your own computer"><meta property="og:description" content="One free download for writing, chat, images, voice and music. No install, no account. Official downloads from GitHub."><meta property="og:url" content="https://koboldcpp.net/"><meta property="og:image" content="https://koboldcpp.net/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="KoboldCpp: run AI models on your own computer. koboldcpp.net"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#223351"><link rel="icon" href="/favicon.png" type="image/png"><link rel="preload" href="/_astro/atkinson-hyperlegible-next.QGM1N-Qq.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/_astro/young-serif.DaoCZKEW.woff2" as="font" type="font/woff2" crossorigin><link rel="sitemap" href="/sitemap-index.xml"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://koboldcpp.net/#website","name":"KoboldCpp","url":"https://koboldcpp.net/"},{"@type":"SoftwareApplication","@id":"https://koboldcpp.net/#software","name":"KoboldCpp","description":"Free, open-source software for running GGUF AI models on your own computer, with a bundled KoboldAI Lite interface. One file, no install.","url":"https://koboldcpp.net/","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, Linux, macOS","softwareVersion":"1.122.1","dateModified":"2026-09-26","license":"https://www.gnu.org/licenses/agpl-3.0.html","downloadUrl":"https://github.com/LostRuins/koboldcpp/releases/latest","screenshot":"https://koboldcpp.net/_astro/lite-vision.B904qlVL_1YyAxU.webp","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"sameAs":["https://github.com/LostRuins/koboldcpp","https://huggingface.co/koboldcpp","https://hub.docker.com/r/koboldai/koboldcpp"]}]}</script><script>/*
+ * Site-wide OS preference ("win" | "linux" | "mac"). Inlined into <head> on every page (home
+ * layout and Starlight `head` config), so it runs before any body content is parsed.
+ *
+ * - First visit: detected from navigator.userAgentData.platform / navigator.platform.
+ *   iPadOS reports "MacIntel" but has touch points; phones and tablets can't run KoboldCpp, so they
+ *   get the default ("win", the most common desktop), not "mac".
+ * - An explicit choice (clicking an OS tab) is stored and always wins.
+ * - Keeps Starlight's synced-tabs key (`starlight-synced-tabs__os`) in step in both directions:
+ *   it is seeded here before Starlight's tab-restore element runs (no flash of the wrong tab), and a
+ *   tab click that changed it on another page is adopted as an explicit choice.
+ * - Exposes window.kcppOs { get(), set(os) } and fires `kcpp:os` on document when it changes,
+ *   including on back/forward (bfcache `pageshow`) and when another browser tab changes it.
+ * All storage access is wrapped in try/catch (private mode, blocked storage).
+ */
+(function () {
+	var KEY = 'kcpp-os';
+	var EXPLICIT = 'kcpp-os-explicit';
+	var TABS = 'starlight-synced-tabs__os';
+	var LABEL = { win: 'Windows', linux: 'Linux', mac: 'macOS' };
+
+	function read(k) {
+		try { return localStorage.getItem(k); } catch (e) { return null; }
+	}
+	function write(k, v) {
+		try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ }
+	}
+	function fromLabel(label) {
+		for (var os in LABEL) if (LABEL[os] === label) return os;
+		return null;
+	}
+	function detect() {
+		var nav = navigator;
+		var ua = (nav.userAgent || '').toLowerCase();
+		var platform = ((nav.userAgentData && nav.userAgentData.platform) || nav.platform || '').toLowerCase();
+		var touchMac = platform.indexOf('mac') > -1 && nav.maxTouchPoints > 1; // iPadOS
+		if (/android|iphone|ipad|ipod/.test(ua) || touchMac) return 'win';
+		if (platform.indexOf('mac') > -1) return 'mac';
+		if (/linux|x11|cros/.test(platform)) return 'linux';
+		return 'win';
+	}
+
+	/** The OS to use now: an explicit choice, else a tab change made elsewhere, else detection. */
+	function resolve() {
+		var stored = read(KEY);
+		var explicit = read(EXPLICIT) === '1' && !!LABEL[stored];
+		var tabsOs = fromLabel(read(TABS));
+		var os = explicit ? stored : detect();
+		// A synced OS tab clicked on another page since we last wrote the key: that is a choice.
+		if (tabsOs && stored && tabsOs !== stored) {
+			os = tabsOs;
+			explicit = true;
+		}
+		write(KEY, os);
+		write(TABS, LABEL[os]);
+		if (explicit) write(EXPLICIT, '1');
+		return os;
+	}
+
+	function syncTabs(next) {
+		var groups = document.querySelectorAll('starlight-tabs[data-sync-key="os"]');
+		for (var g = 0; g < groups.length; g++) {
+			var el = groups[g];
+			if (!el.tabs || typeof el.switchTab !== 'function') continue;
+			for (var i = 0; i < el.tabs.length; i++) {
+				var tab = el.tabs[i];
+				if (tab.textContent.trim() === LABEL[next] && tab.getAttribute('aria-selected') !== 'true') {
+					el.switchTab(tab, i, false);
+				}
+			}
+		}
+	}
+
+	/** Show `next` everywhere on this page: <html data-os>, OS tabs, and `kcpp:os` listeners. */
+	function apply(next) {
+		if (!LABEL[next]) return;
+		var changed = document.documentElement.dataset.os !== next;
+		document.documentElement.dataset.os = next;
+		syncTabs(next);
+		if (changed) document.dispatchEvent(new CustomEvent('kcpp:os', { detail: next }));
+	}
+
+	document.documentElement.dataset.os = resolve();
+
+	window.kcppOs = {
+		labels: LABEL,
+		get: function () { return document.documentElement.dataset.os || 'win'; },
+		set: function (next) {
+			if (!LABEL[next]) return;
+			write(KEY, next);
+			write(EXPLICIT, '1');
+			write(TABS, LABEL[next]);
+			apply(next);
+		},
+	};
+
+	// Only a real tab control is a choice (a click inside a panel is not). Starlight has already
+	// switched the tab when this bubbling listener runs, for clicks and for arrow keys.
+	function fromTabEvent(e) {
+		var tab = e.target && e.target.closest && e.target.closest('[role="tab"]');
+		var group = tab && tab.closest('starlight-tabs[data-sync-key="os"]');
+		if (!group) return;
+		var selected = group.querySelector('[role="tab"][aria-selected="true"]');
+		var next = selected && fromLabel(selected.textContent.trim());
+		if (next) window.kcppOs.set(next);
+	}
+	document.addEventListener('click', fromTabEvent);
+	document.addEventListener('keydown', fromTabEvent);
+
+	// If storage is blocked, Starlight's restore can't read the seeded key: match the tabs to the
+	// in-memory choice once the page has parsed.
+	document.addEventListener('DOMContentLoaded', function () { syncTabs(window.kcppOs.get()); });
+
+	// Back/forward cache: the page comes back as it was left; pick up a choice made meanwhile.
+	window.addEventListener('pageshow', function (e) {
+		if (e.persisted) apply(resolve());
+	});
+
+	// Other open tabs of the site changed the choice.
+	window.addEventListener('storage', function (e) {
+		if (e.key === KEY || e.key === TABS || e.key === null) apply(resolve());
+	});
+})();
+</script><noscript><style>/*
+ * No-JS fallback, inlined in a <noscript><style> in <head> on every page (Starlight `head` config and
+ * HomeLayout). Without JS the OS tabs can't switch, so every panel is shown, stacked, each with its
+ * OS name; the tab strip (JS-only) is hidden.
+ * The labels rely on every OS tab set using the order Windows, Linux, macOS (the docs do).
+ */
+starlight-tabs [role='tabpanel'][hidden] {
+	display: block !important;
+}
+starlight-tabs .tablist-wrapper {
+	display: none !important;
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel'] {
+	margin-top: 1.25rem;
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel'] + [role='tabpanel'] {
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--navy-200);
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']::before {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 700;
+	color: var(--accent);
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']:nth-child(1 of [role='tabpanel'])::before {
+	content: 'Windows';
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']:nth-child(2 of [role='tabpanel'])::before {
+	content: 'Linux';
+}
+starlight-tabs[data-sync-key='os'] > [role='tabpanel']:nth-child(3 of [role='tabpanel'])::before {
+	content: 'macOS';
+}
+</style></noscript><link rel="stylesheet" href="/_astro/font-preloads.B8eOotC7.css"><link rel="stylesheet" href="/_astro/index.CyywbNah.css"><style>@layer starlight.components{svg:where(.astro-hkc32dio){color:var(--sl-icon-color);font-size:var(--sl-icon-size,1em);width:1em;height:1em}}
+</style><script type="module" src="/_astro/page.Dwipeu-R.js"></script></head><body><a class="skip-link" href="#main">Skip to content</a><svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-pen" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 40l3-11L32 8l8 8-21 21z"></path><path d="M28 12l8 8"></path><path d="M11 29l8 8"></path><path d="M26 40h14"></path></symbol><symbol id="i-image" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="9" width="36" height="30" rx="2"></rect><circle cx="17" cy="19" r="3.5"></circle><path d="M6 33l11-10 9 8 5-4 11 9"></path></symbol><symbol id="i-music" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 34V10l20-4v24"></path><circle cx="14" cy="34" r="5"></circle><circle cx="34" cy="30" r="5"></circle><path d="M19 17l20-4"></path></symbol><symbol id="i-plug" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6v9M30 6v9"></path><path d="M12 15h24v7a12 12 0 01-24 0z"></path><path d="M24 34v8"></path></symbol></defs></svg><header class="hero"><div class="kc-header astro-had7q4i4" data-kc-header><div class="kc-nav astro-rutobish"><a class="kc-brand astro-rutobish" href="/" aria-label="KoboldCpp home"><span class="kc-brand__mark astro-rutobish"><img src="/favicon.png" width="32" height="32" alt="" class="astro-rutobish"></span><span class="kc-brand__name astro-rutobish">KoboldCpp</span></a><nav class="kc-links astro-rutobish" aria-label="Site"><a href="/" class="tier-3 astro-rutobish" aria-current="page">Home</a><a href="/download/" class="tier-1 astro-rutobish">Download</a><a href="/getting-started/" class="tier-1 astro-rutobish">Getting started</a><a href="/docs/" class="tier-1 astro-rutobish">Wiki</a><a href="/links/" class="tier-2 astro-rutobish">Links</a></nav><div class="kc-tools astro-rutobish"><site-search class="astro-rutobish astro-b5kgnn7o" data-translations="{&quot;placeholder&quot;:&quot;Search&quot;}"><button data-open-modal disabled aria-label="Search" aria-keyshortcuts="Control+K" class="astro-b5kgnn7o"><svg aria-hidden="true" class="astro-b5kgnn7o astro-hkc32dio" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21.71 20.29 18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg><span class="sl-hidden md:sl-block astro-b5kgnn7o" aria-hidden="true">Search</span><kbd class="sl-hidden md:sl-flex astro-b5kgnn7o" style="display: none;"><kbd class="astro-b5kgnn7o">Ctrl</kbd><kbd class="astro-b5kgnn7o">K</kbd></kbd></button><dialog style="padding:0" aria-label="Search" class="astro-b5kgnn7o"><div class="dialog-frame sl-flex astro-b5kgnn7o"><button data-close-modal class="sl-flex md:sl-hidden astro-b5kgnn7o">Cancel</button><div class="search-container astro-b5kgnn7o"><div id="starlight__search" class="astro-b5kgnn7o"></div></div></div></dialog></site-search><script>
+	(() => {
+		const openBtn = document.querySelector('button[data-open-modal]');
+		const shortcut = openBtn?.querySelector('kbd');
+		if (!openBtn || !(shortcut instanceof HTMLElement)) return;
+		const platformKey = shortcut.querySelector('kbd');
+		if (platformKey && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)) {
+			platformKey.textContent = '⌘';
+			openBtn.setAttribute('aria-keyshortcuts', 'Meta+K');
+		}
+		shortcut.style.display = '';
+	})();
+</script><script type="module" src="/_astro/Search.astro_astro_type_script_index_0_lang.DZqJ8Bdf.js"></script><a class="btn btn-light kc-gh astro-rutobish" href="https://github.com/LostRuins/koboldcpp">GitHub</a></div></div><button popovertarget="kc-site-menu" class="kc-menu-button astro-lceocqfp"><svg class="open-menu astro-lceocqfp" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 8h18a1 1 0 1 0 0-2H3a1 1 0 0 0 0 2Zm18 8H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Zm0-5H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Z" class="astro-lceocqfp"></path></svg><svg class="close-menu astro-lceocqfp" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="m13.41 12 6.3-6.29a1 1 0 1 0-1.42-1.42L12 10.59l-6.29-6.3a1 1 0 0 0-1.42 1.42l6.3 6.29-6.3 6.29a1 1 0 0 0 .33 1.64 1 1 0 0 0 1.09-.22l6.29-6.3 6.29 6.3a1 1 0 0 0 1.64-.33 1 1 0 0 0-.22-1.09L13.41 12Z" class="astro-lceocqfp"></path></svg><span class="sr-only astro-lceocqfp">Menu</span></button><div id="kc-site-menu" popover class="kc-menu astro-lceocqfp"><nav class="kc-menu-links astro-khktpzte" aria-label="Site"><a href="/" class="astro-khktpzte">Home</a><a href="/download/" class="astro-khktpzte">Download</a><a href="/getting-started/" class="astro-khktpzte">Getting started</a><a href="/docs/" class="astro-khktpzte">Wiki</a><a href="/links/" class="astro-khktpzte">Links</a><a href="https://github.com/LostRuins/koboldcpp" class="astro-khktpzte">GitHub</a></nav></div></div><div class="kc-header-spacer astro-had7q4i4" aria-hidden="true"></div><div class="wrap hero-body"><div class="hero-copy"><h1>Run AI models on your own computer</h1><p class="hero-lead">KoboldCpp is one free file for Windows, Linux and macOS. Load a model, then chat, write stories or make images in your browser. No install, no account.</p><div class="hero-actions"><a class="btn btn-light" href="/download/">Download</a><a class="btn btn-outline" href="/getting-started/">Getting started</a></div><p class="hero-meta">Free and open source · Works offline · Official downloads only on <a href="https://github.com/LostRuins/koboldcpp/releases/latest">GitHub</a></p></div><figure class="showcase"><div class="shots"><div class="browser"><div class="browser-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="url">localhost:5001</span></div><img src="/_astro/lite-vision.B904qlVL_1YyAxU.webp" srcset="/_astro/lite-vision.B904qlVL_1G6vgi.webp 800w, /_astro/lite-vision.B904qlVL_21Ch1F.webp 1600w" sizes="(min-width: 64rem) 36rem, 86vw" alt="KoboldAI Lite in the Corpo theme: the user shares two pictures, a red fox in a snowy forest and a ginger cat asleep on a sunny windowsill, and asks to compare them. The reply says both show animals at rest, one in the wild winter outdoors and one in a cozy home." loading="eager" decoding="sync" fetchpriority="high" width="1920" height="1600"></div><img src="/_astro/lite-aesthetic.BlO3aK5p_OgfsC.webp" srcset="/_astro/lite-aesthetic.BlO3aK5p_Z1oqpSD.webp 400w, /_astro/lite-aesthetic.BlO3aK5p_OL5vS.webp 800w" sizes="(min-width: 64rem) 14rem, 36vw" alt="KoboldAI Lite in the Aesthetic theme: a chat with Emily, a kobold character, who happily agrees to go to the lantern festival." loading="lazy" decoding="async" width="1360" height="1200" class="shot-second"></div><figcaption>KoboldAI Lite, the app KoboldCpp opens in your browser. Gemma 3 4B compares two pictures made with PicX Real and chats as a character.</figcaption></figure></div></header><script type="module">var e=document.querySelector(`[data-kc-header]`),t=document.querySelector(`.hero-copy`);e&&t&&new IntersectionObserver(([t])=>{t&&e.toggleAttribute(`data-stuck`,!t.isIntersecting&&t.boundingClientRect.top<0)}).observe(t);</script><main id="main"><section class="section" aria-labelledby="steps-title"><div class="wrap"><h2 id="steps-title">Start in three steps</h2><ol class="steps"><li><h3><a href="/download/">Download KoboldCpp</a></h3><p>One file from the official GitHub releases. There is no installer.</p></li><li><h3><a href="/getting-started/model/">Choose a model</a></h3><p>Pick a ready-made template in the launcher, or download one model file.</p></li><li><h3><a href="/getting-started/chat/">Launch and chat</a></h3><p>Click Launch. KoboldAI Lite opens in your browser, ready to chat.</p></li></ol><p class="steps-more">New to this? The <a href="/getting-started/">beginner guide</a> shows every click, with screenshots.</p></div></section><section class="section section-tint" aria-labelledby="features-title"><div class="wrap"><h2 id="features-title">What you can do</h2><p class="section-lead">Everything runs on your computer, with an NVIDIA, AMD, Intel or Apple Silicon graphics chip, or on the processor alone.</p><ul class="features"><li><svg aria-hidden="true"><use href="#i-pen"></use></svg><h3>Chat and write</h3><p>Chat, write stories and play text adventures. Memory and character cards keep long stories on track.</p></li><li><svg aria-hidden="true"><use href="#i-image"></use></svg><h3>Images</h3><p>Make and edit pictures with Stable Diffusion, Flux and other image models.</p></li><li><svg aria-hidden="true"><use href="#i-music"></use></svg><h3>Voice and music</h3><p>Talk instead of typing, hear replies read aloud, and make songs.</p></li><li><svg aria-hidden="true"><use href="#i-plug"></use></svg><h3>Your other apps</h3><p>SillyTavern and apps made for the OpenAI or Ollama API can use KoboldCpp as their AI.</p></li></ul><p class="section-more"><a href="/docs/#features">All features in the wiki</a></p></div></section></main><footer class="footer on-dark"><div class="wrap footer-row"><a class="brand" href="/"><span class="brand-mark"><img src="/favicon.png" alt="" width="32" height="32"></span>KoboldCpp</a><nav aria-label="Footer"><ul><li><a href="/download/">Download</a></li><li><a href="/getting-started/">Getting started</a></li><li><a href="/docs/">Wiki</a></li><li><a href="/links/">Links</a></li><li><a href="https://github.com/LostRuins/koboldcpp">GitHub</a></li></ul></nav></div><div class="wrap footer-base"><p>KoboldCpp is free and open source (<span class="nw">AGPL-3.0</span>), made by concedo and contributors. Official downloads are only on <a href="https://github.com/LostRuins/koboldcpp/releases/latest">GitHub</a>.</p></div></footer></body></html>
