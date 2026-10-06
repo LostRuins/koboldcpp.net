@@ -14,17 +14,16 @@ import { ROUTES } from '../../data/routes';
 	<HomeHeader />
 	<div class="wrap hero-body">
 		<div class="hero-copy">
-			<h1>Run AI models on your own computer</h1>
+			<h1>Run AI models locally with KoboldCpp</h1>
 			<p class="hero-lead">
-				KoboldCpp is one free file for Windows, Linux and macOS. Load a model, then chat, write stories or make images in
-				your browser. No install, no account.
+				KoboldCpp runs AI models on your own computer. Write stories, roleplay chat, generate music, and make images for free. One file, no install.
 			</p>
 			<div class="hero-actions">
 				<a class="btn btn-light" href={ROUTES.download}>Download</a>
 				<a class="btn btn-outline" href={ROUTES.gettingStarted}>Getting started</a>
 			</div>
 			<p class="hero-meta">
-				Free and open source · Works offline · Official downloads only on <a href={LATEST_URL}>GitHub</a>
+				Free and open source · Works offline · Official downloads on <a href={LATEST_URL}>GitHub</a>
 			</p>
 		</div>
 		<figure class="showcase">
@@ -36,14 +35,14 @@ import { ROUTES } from '../../data/routes';
 					<Image
 						src={liteVision}
 						widths={[800, 1600]}
-						sizes="(min-width: 64rem) 36rem, 86vw"
+						sizes="(min-width: 64rem) 33rem, 79vw"
 						priority
-						alt="KoboldAI Lite in the Corpo theme: the user shares two pictures, a red fox in a snowy forest and a ginger cat asleep on a sunny windowsill, and asks to compare them. The reply says both show animals at rest, one in the wild winter outdoors and one in a cozy home."
+						alt="KoboldAI Lite in the Corpo theme: comparing two images with vision."
 					/>
 				</div>
-				<Image class="shot-second" src={liteAesthetic} widths={[400, 800]} sizes="(min-width: 64rem) 14rem, 36vw" alt="KoboldAI Lite in the Aesthetic theme: a chat with Emily, a kobold character, who happily agrees to go to the lantern festival." />
+				<Image class="shot-second" src={liteAesthetic} widths={[400, 800]} sizes="(min-width: 64rem) 14rem, 36vw" alt="KoboldAI Lite in the Aesthetic theme: a roleplay chat." />
 			</div>
-			<figcaption>KoboldAI Lite, the app KoboldCpp opens in your browser. Gemma 3 4B compares two pictures made with PicX Real and chats as a character.</figcaption>
+			<figcaption>KoboldCpp runs on Windows, Linux and macOS. KoboldAI Lite WebUI runs on any browser.</figcaption>
 		</figure>
 	</div>
 </header>
