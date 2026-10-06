@@ -96,14 +96,17 @@
 
   /* The main screenshot in a plain dark browser frame (Lite's Corpo theme is dark); the second one overlaps
      its bottom-right corner. The padding leaves room for the part that hangs out. */
-  .shots { position: relative; padding: 0 6% 13% 0; }
+  .shots {
+    position: relative; width: 100%; max-width: 44rem; margin-inline: auto;
+    padding-bottom: 13%;
+  }
   .shot-second {
     position: absolute; right: 0; bottom: 0; width: 38%; height: auto;
     border: 5px solid #fff; border-radius: var(--radius-l);
     box-shadow: 0 20px 40px -16px oklch(0.15 0.04 258 / .55);
   }
   .browser {
-    width: 92%;
+    width: 86%;
     border-radius: var(--radius-l); overflow: clip; background: #222;
     box-shadow: 0 0 0 1px oklch(0.2 0.02 258 / .25), 0 28px 60px -24px oklch(0.15 0.04 258 / .6);
   }
@@ -167,13 +170,17 @@
     .showcase figcaption { color: var(--navy-200); }
   }
   @media (max-width: 63.99rem) {
+    .hero { --overlap: 0px; }
     .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .browser { width: 64%; margin-inline-start: 8%; }
+    .shot-second { right: 8%; }
+    .browser-bar { display: none; }
+    .showcase figcaption { color: var(--navy-200); }
   }
   @media (max-width: 47.99rem) {
     .steps { grid-template-columns: 1fr; gap: var(--space-m); }
     .steps li { grid-template-columns: 2.5rem minmax(0, 1fr); column-gap: 1rem; }
     .steps li::before { grid-row: span 2; margin: 0; }
-    .browser-bar { display: none; }
   }
   @media (max-width: 35rem) {
     .features { grid-template-columns: 1fr; }
