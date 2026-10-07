@@ -7037,7 +7037,7 @@ KoboldCpp is one file. There is no installer. Pick your system, then click the f
 
   [AMD or Intel graphics, or none](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-nocuda.exe)koboldcpp-nocuda.exe, a much smaller download
 
-  [Older PC](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-oldpc.exe)koboldcpp-oldpc.exe, if the others crash at start
+  [Older PC](https://github.com/LostRuins/koboldcpp/releases/latest/download/koboldcpp-oldpc.exe)koboldcpp-oldpc.exe, for older devices, if the others crash at start
 
 * Linux
 
@@ -7053,29 +7053,21 @@ KoboldCpp is one file. There is no installer. Pick your system, then click the f
 
   Intel Macs have no ready-made file. See [Build from source](https://koboldcpp.net/docs/install/from-source/#macos).
 
-Only download from GitHub
+Beware of fake sites
 
-"You should **ONLY** trust official downloads from the release binaries on the official github at https\://github.com/LostRuins/koboldcpp/releases/latest". Quoted from the KoboldCpp README.
+You should **ONLY** trust official downloads from the release binaries linked here and the official KoboldCpp Github at ![https://github.com/LostRuins/koboldcpp/releases/latest](https://github.com/LostRuins/koboldcpp/releases/latest).
 
 ## Which graphics card do I have?
 
 On Windows, the Task Manager shows it.
 
-1. Right-click an empty spot on the taskbar and click **Task Manager**. The keyboard shortcut is Ctrl+Shift+Esc.
-
-   [![The menu after right-clicking the taskbar, with Task Manager highlighted](https://koboldcpp.net/_astro/windows-taskbar-menu.DLgy8Dh4_xEAp5.webp)](https://koboldcpp.net/_astro/windows-taskbar-menu.DLgy8Dh4.png)
-
-2. Click **Performance**.
-
-   [![Task Manager with Performance selected](https://koboldcpp.net/_astro/windows-task-manager-performance.BJ_xxszf_ZWi54S.webp)](https://koboldcpp.net/_astro/windows-task-manager-performance.BJ_xxszf.png)
-
-3. Click **GPU** in the list on the left. The card's name is at the top right. **Dedicated GPU memory** is the card's own memory, its **VRAM**. You'll need this number when you choose a model.
-
-   [![Task Manager's GPU page with the card's name and Dedicated GPU memory](https://koboldcpp.net/_astro/windows-task-manager-gpu.Db_pwjpJ_5BNs6.webp)](https://koboldcpp.net/_astro/windows-task-manager-gpu.Db_pwjpJ.png)
-
-An NVIDIA card needs `koboldcpp.exe`. For an AMD or Intel card, or if there is no **GPU** entry, use `koboldcpp-nocuda.exe`.
+1. Launch **Windows Task Manager** with keyboard shortcut Ctrl+Alt+Del or Ctrl+Shift+Esc.
+2. Click **Performance** tab.
+3. Click **GPU** in the list on the left. The card's name is at the top right. **Dedicated GPU memory** is the card's own memory, its **VRAM**. It determines what models work well for your system. [![Windows Task Manager showing GPU name](https://koboldcpp.net/_astro/windows-task-manager.BdMTKDqZ_Z2ckVSL.webp)](https://koboldcpp.net/_astro/windows-task-manager.BdMTKDqZ.png)
 
 On Linux, `lspci | grep -iE 'vga|3d'` shows the card's name, and `nvidia-smi` shows an NVIDIA card's memory. On a Mac with Apple Silicon, the graphics chip uses the Mac's main memory.
+
+Pick the download suited to your system and GPU card.
 
 All files and what each contains: [Release files and system requirements](https://koboldcpp.net/docs/install/releases/).
 
@@ -7114,6 +7106,8 @@ When the model has loaded, your browser opens KoboldAI Lite, the chat app built 
 2. Type a message and click the arrow button to send it (in Classic UI: **Submit**).
 
    [![A first message and the model's reply in KoboldAI Lite](https://koboldcpp.net/_astro/lite-first-chat._0bc6cLK_1JB7Cb.webp)](https://koboldcpp.net/_astro/lite-first-chat._0bc6cLK.png)
+
+Here are all the WebUIs bundled with KoboldCpp for various tasks (assuming port 5001) http\://localhost:5001 - KoboldAI Lite WebUI: Versatile multi-purpose WebUI for chatting/roleplay and basic image generation. http\://localhost:5001/lcpp - llama.cpp WebUI: Ported from llama.cpp and mimics ChatGPT. Use if you prefer a more "Assistant" feel. http\://localhost:5001/sdui - Stable-UI: A dedicated image generation WebUI. Use this if you are generating or editing images or videos. http\://localhost:5001/musicui - MusicUI: A dedicate music generation WebUI. Use this to generate music, you can also use this to generate speech with TTS models.
 
 That's it: everything runs on your computer. To stop KoboldCpp, close its console window.
 
@@ -7165,14 +7159,27 @@ KoboldCpp doesn't come with an AI model; you add one. A model is one large file 
 
 A template fills in the launcher for you and downloads the model when you click **Launch**. The `Chatbot` templates also add voice input, read-aloud and picture understanding.
 
-1. In the launcher, click **Get Help**. **Newbie Templates** is already selected.
+1. In the launcher, click **Get Help** and the dropdown **Newbie Templates**.
 
 2. Pick a template for your graphics card's memory (VRAM; [how to check](https://koboldcpp.net/download/#which-graphics-card-do-i-have)):
 
-   * `LowSpec-Chatbot`: for about 6 GB. Also pick it with less, or without a graphics card; it then runs slower. Downloads about 4 GB.
-   * `MidSpec-Chatbot`: for about 12 GB or more. Downloads about 7 GB.
+   * Chat with the AI:
 
-   The other templates make pictures, music or video, or run a coding agent.
+     * `LowSpec-Chatbot`: recommend for 6 GB VRAM or no GPU. Chat or roleplay, also has vision, speech generation and voice recognition capabilities.
+     * `MidSpec-Chatbot`: recommend for 12 GB VRAM or more. Chat or roleplay, also has vision, speech generation and voice recognition capabilities.
+
+   * Generating Images:
+
+     * `LowSpec-ImageGen`: recommend for 6 GB VRAM or no GPU for creating and editing AI images. Launch the dedicated SDUI when prompted.
+     * `LowSpec-ImageGen`: recommend for 12 GB VRAM for creating and editing AI images. Launch the dedicated SDUI when prompted.
+
+   * Generating Music:
+     * `LowSpec-MusicGen`: recommend for 6 GB VRAM or no GPU for generating music. Launch the dedicated MusicUI when prompted. You can add an extra LLM model for better lyrics generation.
+
+   * Agent and Coding:
+
+     * `LowSpec-CodingAgent`: recommend for 6 GB VRAM or no GPU for coding tasks. Launches an agentic terminal.
+     * `MidSpec-CodingAgent`: recommend for 12 GB VRAM for coding tasks. Launches an agentic terminal.
 
 3. Click **Load Template**.
 
@@ -7180,7 +7187,7 @@ A template fills in the launcher for you and downloads the model when you click 
 
 ## Or: download one model file
 
-These are the models the KoboldCpp README recommends. Click one to download it.
+These are some basic models that work in KoboldCpp. Click one to download it. For more models, visit [Huggingface](https://huggingface.co/models?library=gguf).
 
 [Qwen3-VL-8B](https://huggingface.co/unsloth/Qwen3-VL-8B-Instruct-GGUF/resolve/main/Qwen3-VL-8B-Instruct-Q4_K_S.gguf)The best all-rounder · 4.8 GB
 
@@ -7190,7 +7197,7 @@ These are the models the KoboldCpp README recommends. Click one to download it.
 
 [PicX Real](https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q5_1.gguf)Makes pictures · 1.7 GB
 
-In the launcher, click **Browse** next to **GGUF Text Model:** and select the file. PicX Real is an image model: it goes into **Image Model:** on the **Image Gen** tab instead.
+In the launcher, click **Browse** next to **GGUF Text Model:** and select the file. PicX Real is an image model: it goes into **Image Model** on the **Image Gen** tab instead.
 
 ## Launch
 
