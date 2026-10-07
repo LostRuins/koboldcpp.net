@@ -14,14 +14,20 @@ A template fills in the launcher for you and downloads the model when you click 
 
 {% steps %}
 
-1. In the launcher, click **Get Help**. **Newbie Templates** is already selected.
+1. In the launcher, click **Get Help** and the dropdown **Newbie Templates**.
 
 2. Pick a template for your graphics card's memory (VRAM; [how to check](/download/#which-graphics-card-do-i-have)):
-
-   - `LowSpec-Chatbot`: for about 6 GB. Also pick it with less, or without a graphics card; it then runs slower. Downloads about 4 GB.
-   - `MidSpec-Chatbot`: for about 12 GB or more. Downloads about 7 GB.
-
-   The other templates make pictures, music or video, or run a coding agent.
+   - Chat with the AI:
+     - `LowSpec-Chatbot`: recommend for 6 GB VRAM or no GPU. Chat or roleplay, also has vision, speech generation and voice recognition capabilities.
+     - `MidSpec-Chatbot`: recommend for 12 GB VRAM or more. Chat or roleplay, also has vision, speech generation and voice recognition capabilities.
+   - Generating Images:
+     - `LowSpec-ImageGen`: recommend for 6 GB VRAM or no GPU for creating and editing AI images. Launch the dedicated SDUI when prompted.
+     - `LowSpec-ImageGen`: recommend for 12 GB VRAM for creating and editing AI images. Launch the dedicated SDUI when prompted.
+   - Generating Music:
+     - `LowSpec-MusicGen`: recommend for 6 GB VRAM or no GPU for generating music. Launch the dedicated MusicUI when prompted. You can add an extra LLM model for better lyrics generation.
+   - Agent and Coding:
+     - `LowSpec-CodingAgent`: recommend for 6 GB VRAM or no GPU for coding tasks. Launches an agentic terminal.
+     - `MidSpec-CodingAgent`: recommend for 12 GB VRAM for coding tasks. Launches an agentic terminal.
 
 3. Click **Load Template**.
 
@@ -31,7 +37,7 @@ A template fills in the launcher for you and downloads the model when you click 
 
 ## Or: download one model file
 
-These are the models the KoboldCpp README recommends. Click one to download it.
+These are some basic models that work in KoboldCpp. Click one to download it. For more models, visit [Huggingface](https://huggingface.co/models?library=gguf).
 
 {% cardgrid %}
 {% linkcard title="Qwen3-VL-8B" description="The best all-rounder · 4.8 GB" href="https://huggingface.co/unsloth/Qwen3-VL-8B-Instruct-GGUF/resolve/main/Qwen3-VL-8B-Instruct-Q4_K_S.gguf" /%}
@@ -40,7 +46,7 @@ These are the models the KoboldCpp README recommends. Click one to download it.
 {% linkcard title="PicX Real" description="Makes pictures · 1.7 GB" href="https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q5_1.gguf" /%}
 {% /cardgrid %}
 
-In the launcher, click **Browse** next to **GGUF Text Model:** and select the file. PicX Real is an image model: it goes into **Image Model:** on the **Image Gen** tab instead.
+In the launcher, click **Browse** next to **GGUF Text Model:** and select the file. PicX Real is an image model: it goes into **Image Model** on the **Image Gen** tab instead.
 
 ## Launch
 
