@@ -4,7 +4,7 @@
 
 > Guides and reference for KoboldCpp: download and install, models and hardware, launcher settings, features, the API and troubleshooting.
 
-KoboldCpp runs AI models on your own computer. This wiki has the details. New to it? The [beginner guide](https://koboldcpp.net/getting-started/) takes you from download to your first chat in four steps. The project also has its own [wiki on GitHub](https://github.com/LostRuins/koboldcpp/wiki).
+KoboldCpp runs AI models on your own computer. This community wiki has the details. New to it? The [beginner guide](https://koboldcpp.net/getting-started/) takes you from download to your first chat in four steps. The project also has its own [KoboldCpp wiki on GitHub](https://github.com/LostRuins/koboldcpp/wiki).
 
 ## Download and install
 
@@ -3137,15 +3137,15 @@ The release notes link [conversion and quantization tools](https://kcpptools.con
 * [Updating](https://koboldcpp.net/docs/install/updating/)
 * [Staying safe](https://koboldcpp.net/docs/install/staying-safe/)
 
-# Staying safe: download only from GitHub
+# Staying safe: where to download
 
 > Where to get KoboldCpp safely, how to check a downloaded file, and why antivirus may flag the Windows exe.
 
-Download KoboldCpp only from the official GitHub releases: [github.com/LostRuins/koboldcpp/releases/latest](https://github.com/LostRuins/koboldcpp/releases/latest).
+Download KoboldCpp only from legitimate sources. The recommended is the official GitHub releases: [github.com/LostRuins/koboldcpp/releases/latest](https://github.com/LostRuins/koboldcpp/releases/latest).
 
-Official downloads only
+Beware of fake sites
 
-"You should **ONLY** trust official downloads from the release binaries on the official github at https\://github.com/LostRuins/koboldcpp/releases/latest"
+You should **ONLY** trust official downloads from the release binaries linked here and the official KoboldCpp Github at <https://github.com/LostRuins/koboldcpp/releases/latest>
 
 ## Other download sites
 
@@ -3162,6 +3162,7 @@ The official downloads are on GitHub. Files from any other site are not official
 | Docker image         | [hub.docker.com/r/koboldai/koboldcpp](https://hub.docker.com/r/koboldai/koboldcpp)                                                                                         |
 | Android setup script | `raw.githubusercontent.com/LostRuins/koboldcpp/concedo/android_install.sh`                                                                                                 |
 | Short links          | `koboldai.org`, for example `koboldai.org/cpplinuxrocm`, `koboldai.org/colabcpp`, `koboldai.org/runpodcpp`, `koboldai.org/discord`                                         |
+| Official resources   | [Official links and mirrors](https://koboldcpp.net/links/)                                                                                                                                      |
 
 This site links to these sources for every download and hosts no files itself.
 
@@ -7055,7 +7056,7 @@ KoboldCpp is one file. There is no installer. Pick your system, then click the f
 
 Beware of fake sites
 
-You should **ONLY** trust official downloads from the release binaries linked here and the official KoboldCpp Github at ![https://github.com/LostRuins/koboldcpp/releases/latest](https://github.com/LostRuins/koboldcpp/releases/latest).
+You should **ONLY** trust official downloads from the release binaries linked here and the official KoboldCpp Github at <https://github.com/LostRuins/koboldcpp/releases/latest>.
 
 ## Which graphics card do I have?
 
@@ -7263,6 +7264,8 @@ Keep the console window (or terminal) open while you use KoboldCpp. Closing it s
 * [GitHub wiki](https://github.com/LostRuins/koboldcpp/wiki): the project's own wiki and FAQ.
 * [Report a bug](https://github.com/LostRuins/koboldcpp/issues) or [ask in Discussions](https://github.com/LostRuins/koboldcpp/discussions).
 * [Docker image](https://hub.docker.com/r/koboldai/koboldcpp) and [Colab notebook](https://colab.research.google.com/github/LostRuins/koboldcpp/blob/concedo/colab.ipynb): run KoboldCpp on a server or on a Google cloud GPU.
+* [RunPod Cloud Image](https://koboldai.org/runpodcpp): run KoboldCpp in the cloud on a rental GPU
+* [KoboldCpp Public Demo](https://koboldai-koboldcpp-tiefighter.hf.space/): try our public online KoboldCpp demo instance.
 
 ## Models and templates
 
