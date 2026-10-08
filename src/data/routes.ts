@@ -33,7 +33,7 @@ export const NAV_LINKS = [
 /** The menu on phones (home menu and the docs sidebar footer): every nav link plus GitHub. */
 export const MENU_LINKS = [
 	...NAV_LINKS.map(({ href, label }) => ({ href, label })),
-	{ href: EXT.repo, label: 'GitHub' },
+	{ href: EXT.repo, label: 'KoboldCpp GitHub' },
 ] as const;
 
 /** Label of the beginner guide's sidebar group (astro.config.mjs); src/starlightRouteData.ts looks it up. */
