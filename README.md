@@ -1,9 +1,14 @@
 # koboldcpp.net
 
-The website and documentation for [KoboldCpp](https://github.com/LostRuins/koboldcpp). Astro + Starlight (Markdoc
-pages), built as a static site with Bun.
+KoboldCpp.net is the official community website for [KoboldCpp](https://github.com/LostRuins/koboldcpp). This website contains introductory documentation and resources for KoboldCpp users. 
 
-## Commands
+[Visit Official KoboldCpp Community Website at koboldcpp.net](https://koboldcpp.net)
+
+Caution: Other fake sites exist! Only the downloads from the official KoboldCpp Github at https://github.com/LostRuins/koboldcpp and the links referenced in their readme and wiki should be considered trustworthy sources. 
+
+## Build Commands
+
+The website uses Astro + Starlight (Markdoc pages), built as a static site with Bun.
 
 | Command | What it does |
 | --- | --- |
