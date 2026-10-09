@@ -1230,7 +1230,7 @@ KoboldCpp generates and edits images with a bundled copy of stable-diffusion.cpp
 
 ## Quick start
 
-1. Download an image model. A good first pick is [PicX Real](https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q5_1.gguf).
+1. Download an image model. A good first pick is [PicX Real](https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q8_0.gguf).
 2. In the launcher, open the **Image Gen** tab and select the file in **Image Model:**.
 3. Click **Launch**.
 4. Open `http://localhost:5001/sdui` for StableUI, the bundled image interface.
@@ -1242,7 +1242,7 @@ On the command line:
 Terminal
 
 ```sh
-koboldcpp --sdmodel picx_real_q5_1.gguf
+koboldcpp --sdmodel picx_real_q8_0.gguf
 ```
 
 Add `--model` with a text model if you want to chat as well.
@@ -7198,7 +7198,7 @@ These are some basic models that work in KoboldCpp. Click one to download it. Fo
 
 [Gemma 3 4B](https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf)Small and fast, for weaker PCs · 2.5 GB
 
-[PicX Real](https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q5_1.gguf)Makes pictures · 1.7 GB
+[PicX Real](https://huggingface.co/koboldcpp/imgmodel/resolve/main/picx_real_q8_0.gguf)Makes pictures · 1.8 GB
 
 In the launcher, click **Browse** next to **GGUF Text Model:** and select the file. PicX Real is an image model: it goes into **Image Model** on the **Image Gen** tab instead.
 
