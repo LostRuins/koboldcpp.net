@@ -34,9 +34,10 @@ import { ROUTES } from '../../data/routes';
 					</div>
 					<Image
 						src={liteVision}
-						widths={[800, 1600]}
+						widths={[480, 800, 1600]}
 						sizes="(min-width: 64rem) 33rem, min(58vw, 28rem)"
-						priority
+						loading="eager"
+						fetchpriority="high"
 						alt="KoboldAI Lite in the Corpo theme: comparing two images with vision."
 					/>
 				</div>

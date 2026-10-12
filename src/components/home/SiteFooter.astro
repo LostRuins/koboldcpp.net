@@ -1,6 +1,8 @@
 ---
 /* One row of site links, then who makes KoboldCpp and where the official downloads are. Every other
    external link is on the Links page. */
+import { Image } from 'astro:assets';
+import logo from '../../assets/kobold-favicon.png';
 import { LATEST_URL } from '../../data/release';
 import { ROUTES, EXT } from '../../data/routes';
 ---
@@ -8,7 +10,7 @@ import { ROUTES, EXT } from '../../data/routes';
 <footer class="footer on-dark">
 	<div class="wrap footer-row">
 		<a class="brand" href={ROUTES.home}>
-			<span class="brand-mark"><img src="/favicon.png" alt="" width="32" height="32" /></span>
+			<span class="brand-mark"><Image src={logo} width={32} height={32} densities={[1, 2, 3]} alt="" /></span>
 			KoboldCpp
 		</a>
 		<nav aria-label="Footer">

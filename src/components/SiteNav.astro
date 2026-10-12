@@ -8,7 +8,9 @@
  *
  * Contents (the mint-home nav): brand, site links (by width tier), Starlight's Pagefind search, GitHub.
  */
+import { Image } from 'astro:assets';
 import Search from '@astrojs/starlight/components/Search.astro';
+import logo from '../assets/kobold-favicon.png';
 import { NAV_LINKS, ROUTES, EXT } from '../data/routes';
 
 const path = Astro.url.pathname;
@@ -18,7 +20,7 @@ const currentOf = (href: string) => (href === path ? 'page' : href !== '/' && pa
 
 <div class="kc-nav">
 	<a class="kc-brand" href={ROUTES.home} aria-label="KoboldCpp home"
-		><span class="kc-brand__mark"><img src="/favicon.png" width="32" height="32" alt="" /></span><span
+		><span class="kc-brand__mark"><Image src={logo} width={32} height={32} densities={[1, 2, 3]} loading="eager" alt="" /></span><span
 			class="kc-brand__name">KoboldCpp</span
 		></a
 	>
