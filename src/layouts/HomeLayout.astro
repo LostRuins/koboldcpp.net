@@ -69,7 +69,10 @@ const jsonLd = {
 		<meta property="og:image:alt" content={OG_IMAGE.alt} />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="theme-color" content="#223351" />
-		<link rel="icon" href="/favicon.png" type="image/png" />
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+		<link rel="icon" href="/favicon-192x192.png" type="image/png" sizes="192x192" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 		{FONT_PRELOADS.map((attrs) => <link {...attrs} />)}
 		<link rel="sitemap" href="/sitemap-index.xml" />
 		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

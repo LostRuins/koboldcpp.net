@@ -36,12 +36,16 @@ export default defineConfig({
 			description:
 				'Documentation for KoboldCpp: free, open-source software for running GGUF AI models on your own computer.',
 			logo: { src: './src/assets/kobold-favicon.png', alt: '' },
-			favicon: '/favicon.png',
+			// Keep the conventional ICO fallback for crawlers such as Bing, and declare sized PNGs below.
+			favicon: '/favicon.ico',
 			// Own 404 page (src/pages/404.astro), kept out of the docs collection so it stays out of llms-full.txt.
 			disable404Route: true,
 			// Adds the font preloads (src/data/font-preloads.ts) to every docs page and picks its sidebar.
 			routeMiddleware: './src/starlightRouteData.ts',
 			head: [
+				{ tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' } },
+				{ tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/favicon-192x192.png' } },
+				{ tag: 'link', attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' } },
 				// One share image for every page (the home page sets the same in HomeLayout).
 				{ tag: 'meta', attrs: { property: 'og:image', content: OG_IMAGE.url } },
 				{ tag: 'meta', attrs: { property: 'og:image:width', content: OG_IMAGE.width } },
