@@ -1,10 +1,10 @@
 # koboldcpp.net
 
-KoboldCpp.net is the official community website for [KoboldCpp](https://github.com/LostRuins/koboldcpp). This website contains introductory documentation and resources for KoboldCpp users. 
+KoboldCpp.net is the official website for [KoboldCpp](https://github.com/LostRuins/koboldcpp). This website contains introductory documentation and resources for KoboldCpp users.
 
-[Visit Official KoboldCpp Community Website at koboldcpp.net](https://koboldcpp.net)
+[Visit Official KoboldCpp Website at koboldcpp.net](https://koboldcpp.net)
 
-Caution: Other fake sites exist! Only the downloads from the official KoboldCpp Github at https://github.com/LostRuins/koboldcpp and the links referenced in their readme and wiki should be considered trustworthy sources. 
+Caution: Other fake sites exist! Only the downloads from the official KoboldCpp Github at https://github.com/LostRuins/koboldcpp and the links referenced in their readme and wiki should be considered trustworthy sources.
 
 ## Build Commands
 
