@@ -7177,6 +7177,8 @@ A template fills in the launcher for you and downloads the model when you click 
 
 1. In the launcher, click **Get Help** and the dropdown **Newbie Templates**.
 
+   [![Newbie Template Launcher UI](https://koboldcpp.net/_astro/newbie-template.Dqr0dyBt_ZGtvzm.webp)](https://koboldcpp.net/_astro/newbie-template.Dqr0dyBt.png)
+
 2. Pick a template for your graphics card's memory (VRAM; [how to check](https://koboldcpp.net/download/#which-graphics-card-do-i-have)):
 
    * Chat with the AI:
