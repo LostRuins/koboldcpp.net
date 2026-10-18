@@ -8,6 +8,15 @@ sidebar:
 
 KoboldCpp serves several APIs at once, all on the same port (5001 by default). Many apps built for other servers, such as OpenAI, Ollama or Automatic1111, can use KoboldCpp once you point them to its address. Not every feature of those servers is supported.
 
+## API documentation
+
+KoboldCpp serves many compatibility REST APIs. Swagger API documentation is provided:
+
+- **On your instance:** Run KoboldCpp, then open `http://localhost:5001/api` for interactive API docs hosted locally.
+- **Online API docs:** An online copy of the docs is hosted at [lite.koboldai.net/koboldcpp_api](https://lite.koboldai.net/koboldcpp_api).
+
+Both cover the KoboldAI, OpenAI, Anthropic and A1111 endpoints. The Ollama, ComfyUI and XTTS emulation is not in them; see [Endpoints](/docs/api/endpoints/).
+
 ## API families
 
 | API | Base path | Use it for |
@@ -23,13 +32,6 @@ KoboldCpp serves several APIs at once, all on the same port (5001 by default). M
 | OpenAI audio (Whisper) | `/v1/audio/transcriptions`, `/v1/audio/speech` | Speech-to-text and text-to-speech |
 
 Each family needs the matching model loaded. Text endpoints need a text model, image endpoints an image model, and so on. [Endpoints](/docs/api/endpoints/) lists every path and what it needs.
-
-## API documentation
-
-- **On your instance:** open `http://localhost:5001/api` for interactive API docs.
-- **Online:** [lite.koboldai.net/koboldcpp_api](https://lite.koboldai.net/koboldcpp_api) has the same docs.
-
-Both cover the KoboldAI, OpenAI, Anthropic and A1111 endpoints. The Ollama, ComfyUI and XTTS emulation is not in them; see [Endpoints](/docs/api/endpoints/).
 
 ## First requests
 
@@ -50,7 +52,7 @@ OpenAI chat completions:
 ```sh {% title="Terminal" frame="terminal" %}
 curl http://localhost:5001/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"messages": [{"role": "user", "content": "Hello!"}], "max_tokens": 50}'
+  -d '{"messages": [{"role": "user", "content": "Hello there!"}], "max_tokens": 50}'
 ```
 
 On Windows, Command Prompt needs the command on one line, with the inner quotes escaped. In PowerShell, type `curl.exe` instead of `curl`.
