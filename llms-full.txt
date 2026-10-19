@@ -759,7 +759,7 @@ Yes. KoboldCpp and KoboldAI Lite are open source under AGPL-3.0; the included ll
 
 ### Where is the official download?
 
-Only on GitHub: the [official releases](https://github.com/LostRuins/koboldcpp/releases/latest). Files from other sites are not official. See [Staying safe](https://koboldcpp.net/docs/install/staying-safe/).
+Only on GitHub: the [official releases](https://github.com/LostRuins/koboldcpp/releases/latest). Files from other sites are not official. See [Staying safe](https://koboldcpp.net/docs/install/staying-safe/) for a list of known fake sites.
 
 ### Are my chats private?
 
@@ -3139,7 +3139,7 @@ The release notes link [conversion and quantization tools](https://kcpptools.con
 * [Updating](https://koboldcpp.net/docs/install/updating/)
 * [Staying safe](https://koboldcpp.net/docs/install/staying-safe/)
 
-# Staying safe: where to download
+# Staying safe: where to download KoboldCpp, and known fake sites
 
 > Where to get KoboldCpp safely, how to check a downloaded file, and why antivirus may flag the Windows exe.
 
@@ -7068,7 +7068,7 @@ KoboldCpp is one file. There is no installer. Pick your system, then click the f
 
 Beware of fake sites
 
-You should **ONLY** trust official downloads from the release binaries linked here and the official KoboldCpp Github at <https://github.com/LostRuins/koboldcpp/releases/latest>. (See: [Staying Safe](https://koboldcpp.net/docs/install/staying-safe/))
+You should **ONLY** trust official downloads from the release binaries linked here and the official KoboldCpp Github at <https://github.com/LostRuins/koboldcpp/releases/latest>. (See: [Staying Safe](https://koboldcpp.net/docs/install/staying-safe/) for a list of known fake sites)
 
 ## Which graphics card do I have?
 
@@ -7302,3 +7302,4 @@ Keep the console window (or terminal) open while you use KoboldCpp. Closing it s
 * [AI Horde](https://aihorde.net): a volunteer network that shares AI models; KoboldCpp can join it as a worker.
 * [llama.cpp](https://github.com/ggml-org/llama.cpp) and [stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp): the projects KoboldCpp builds on.
 * [KoboldAI.com](https://koboldai.com): guides for the KoboldAI projects.
+* [Staying safe: Beware of fake sites](https://koboldcpp.net/docs/install/staying-safe/): there are many fake sites impersonating KoboldCpp. Read more here.
