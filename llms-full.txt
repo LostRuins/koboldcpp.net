@@ -6,6 +6,8 @@
 
 KoboldCpp runs AI models on your own computer. This community wiki has the details. New to it? The [beginner guide](https://koboldcpp.net/getting-started/) takes you from download to your first chat in four steps. The project also has its own [KoboldCpp wiki on GitHub](https://github.com/LostRuins/koboldcpp/wiki).
 
+[Click here for online KoboldCpp API documentation](https://lite.koboldai.net/koboldcpp_api)
+
 ## Download and install
 
 Every release file and what it needs: [Release files and system requirements](https://koboldcpp.net/docs/install/releases/). Step by step for [Windows](https://koboldcpp.net/docs/install/windows/), [Linux](https://koboldcpp.net/docs/install/linux/), [macOS](https://koboldcpp.net/docs/install/macos/), [Android](https://koboldcpp.net/docs/install/android/), and [Colab and Docker](https://koboldcpp.net/docs/install/colab-docker/). Also: [Updating](https://koboldcpp.net/docs/install/updating/), [Build from source](https://koboldcpp.net/docs/install/from-source/) and [Staying safe](https://koboldcpp.net/docs/install/staying-safe/).
