@@ -8,8 +8,6 @@ name: Build and deploy
 on:
   push:
   pull_request:
-  schedule:
-    - cron: '23 6 * * *'
   workflow_dispatch:
 
 permissions:
