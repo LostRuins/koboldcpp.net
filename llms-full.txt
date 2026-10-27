@@ -7082,6 +7082,8 @@ Pick the download suited to your system and GPU card.
 
 All files and what each contains: [Release files and system requirements](https://koboldcpp.net/docs/install/releases/).
 
+[Next Step: Launching KoboldCpp](https://koboldcpp.net/getting-started/start/)
+
 # Getting started with KoboldCpp
 
 > A beginner's guide to KoboldCpp with screenshots: download one file, start it, choose a model and chat in your browser. No installer, no account.
@@ -7102,7 +7104,7 @@ KoboldCpp runs AI models on your own computer. This guide takes you from downloa
 * Up to about 8 GB of free disk space for KoboldCpp and a beginner model.
 * A graphics card is not required. With one, replies come much faster.
 
-[Next Step](https://koboldcpp.net/download/)
+[Next Step: Downloading KoboldCpp](https://koboldcpp.net/download/)
 
 Stuck at any point? See [Help](https://koboldcpp.net/getting-started/help/). Everything beyond the basics is in the [wiki](https://koboldcpp.net/docs/).
 
@@ -7223,6 +7225,8 @@ Click **Launch**.
 
 The launcher closes, and the console window shows the model loading. With a template, it first downloads the files, which can take a while. The next launch reuses them.
 
+[Next Step: Chatting](https://koboldcpp.net/getting-started/chat/)
+
 # Start KoboldCpp for the first time
 
 > Open the KoboldCpp file on Windows, Linux or macOS, get past the first-start warning, and reach the launcher.
@@ -7266,6 +7270,8 @@ The launcher opens on the **Quick Launch** tab. KoboldCpp picks the **Backend:**
 [![The KoboldCpp launcher on the Quick Launch tab with default settings](https://koboldcpp.net/_astro/launcher-start.Dobnsw9D_2mAU0B.webp)](https://koboldcpp.net/_astro/launcher-start.Dobnsw9D.png)
 
 Keep the console window (or terminal) open while you use KoboldCpp. Closing it stops KoboldCpp.
+
+[Next Step: Choosing a model](https://koboldcpp.net/getting-started/model/)
 
 # Links and resources
 
