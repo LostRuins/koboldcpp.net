@@ -1,17 +1,5 @@
 /*
- * Site-wide OS preference ("win" | "linux" | "mac"). Inlined into <head> on every page (home
- * layout and Starlight `head` config), so it runs before any body content is parsed.
- *
- * - First visit: detected from navigator.userAgentData.platform / navigator.platform.
- *   iPadOS reports "MacIntel" but has touch points; phones and tablets can't run KoboldCpp, so they
- *   get the default ("win", the most common desktop), not "mac".
- * - An explicit choice (clicking an OS tab) is stored and always wins.
- * - Keeps Starlight's synced-tabs key (`starlight-synced-tabs__os`) in step in both directions:
- *   it is seeded here before Starlight's tab-restore element runs (no flash of the wrong tab), and a
- *   tab click that changed it on another page is adopted as an explicit choice.
- * - Exposes window.kcppOs { get(), set(os) } and fires `kcpp:os` on document when it changes,
- *   including on back/forward (bfcache `pageshow`) and when another browser tab changes it.
- * All storage access is wrapped in try/catch (private mode, blocked storage).
+ * Site-wide OS preference
  */
 (function () {
 	var KEY = 'kcpp-os';
