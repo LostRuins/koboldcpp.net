@@ -1,17 +1,5 @@
 <!DOCTYPE html><html lang="en" dir="ltr" data-theme="dark" data-has-toc data-has-sidebar class="astro-g5ptsecz"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Passwords and security | KoboldCpp</title><link rel="canonical" href="https://koboldcpp.net/docs/api/passwords-and-security/"/><link rel="sitemap" href="/sitemap-index.xml"/><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/><link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png"/><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/><script>/*
- * Site-wide OS preference ("win" | "linux" | "mac"). Inlined into <head> on every page (home
- * layout and Starlight `head` config), so it runs before any body content is parsed.
- *
- * - First visit: detected from navigator.userAgentData.platform / navigator.platform.
- *   iPadOS reports "MacIntel" but has touch points; phones and tablets can't run KoboldCpp, so they
- *   get the default ("win", the most common desktop), not "mac".
- * - An explicit choice (clicking an OS tab) is stored and always wins.
- * - Keeps Starlight's synced-tabs key (`starlight-synced-tabs__os`) in step in both directions:
- *   it is seeded here before Starlight's tab-restore element runs (no flash of the wrong tab), and a
- *   tab click that changed it on another page is adopted as an explicit choice.
- * - Exposes window.kcppOs { get(), set(os) } and fires `kcpp:os` on document when it changes,
- *   including on back/forward (bfcache `pageshow`) and when another browser tab changes it.
- * All storage access is wrapped in try/catch (private mode, blocked storage).
+ * Site-wide OS preference
  */
 (function () {
 	var KEY = 'kcpp-os';
